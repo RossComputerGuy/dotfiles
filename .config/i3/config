@@ -235,7 +235,7 @@ client.background       #22252c
 
 # startup applications
 exec --no-startup-id compton
-exec_always --no-startup-id feh --bg-scale ~/Pictures/wallpaper.jpg
+exec_always --no-startup-id feh --bg-scale ~/Pictures/wallpaper.png
 exec polybar main-monitor -r
 exec --no-startup-id spacefm -d
 exec --no-startup-id sh -c "eval $(/usr/bin/gnome-keyring-daemon --start --components=pkcs11,secrets,ssh)"
