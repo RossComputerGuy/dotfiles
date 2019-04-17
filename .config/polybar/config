@@ -9,6 +9,7 @@ monitor=LVDS-0
 background=${colors.background}
 foreground=${colors.foreground}
 border-size=0
+border-color=${colors.background}
 width=100%
 height=27
 enable-ipc=true
