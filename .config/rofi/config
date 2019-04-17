@@ -1,0 +1,12 @@
+rofi.modi: drun
+rofi.font: DejaVuSansMono Nerd Font 10
+rofi.color-window: #22252c, #22252c
+rofi.color-normal: #22252c, #b5bdc2, #63686e
+rofi.color-active: #22252c, #b5bdc2, #63686e, #62727b
+rofi.color-urgent: #22252c, #b5bdc2, #63686e, #63686e
+rofi.terminal: sakura
+rofi.columns: 2
+rofi.display-window: Select Window
+rofi.display-run: Run Command
+rofi.display-ssh: Connect to SSH
+rofi.display-drun: Open Program

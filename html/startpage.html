@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+    .label {
+      color: #acb1b8;
+    }
+
+    .disabled {
+      color: #63686e;
+    }
+
+    .foreground, p, h1, h2, h3, h4, h5, h6, a:visited, a:link, a:hover, a:active {
+      color: #acb1b8;
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    .left {
+      text-align: left;
+    }
+
+    .box {
+      width: 33%;
+      float: left;
+    }
+
+    .row:after {
+      content: "";
+      display: table;
+      clear: both;
+    }
+
+    input {
+      background-color: #1b1d24;
+      border: 1px #acb1b8 solid;
+      border-radius: 2px;
+      color: #62727b;
+    }
+    input[type="search"] {
+      width: 45%;
+    }
+
+    ul {
+      list-style-type: none;
+    }
+
+    a:visited, a:link, a:hover, a:active {
+      text-decoration: none;
+    }
+
+    * {
+      font-family: DejaVuSansMono Nerd Font;
+      -moz-user-select: none;
+    }
+
+    body {
+      background-color: #1b1d24;
+    }
+    </style>
+    <script>
+    const categories = {
+      "Anime": {
+        "AniList": "https://anilist.co/home",
+        "Crunchyroll": "https://crunchyroll.com",
+        "KissAnime": "https://kissanime.ru",
+        "Gundam Wiki": "https://gundam.wikia.com",
+        "Kino's Journey Wiki": "http://kinosjourney.fandom.com/",
+        "OS-Tan Collections": "https://www.ostan-collections.net",
+        "Pixiv": "https://www.pixiv.net",
+        "Senpai Heat": "https://www.senpaiheat.com/"
+      },
+      "Gaming": {
+        "GameJolt": "https://gamejolt.com/",
+        "PlayOnLinux": "https://www.playonlinux.com/en/",
+        "Steam": "https://store.steampowered.com/"
+      },
+      "Hardware": {
+        "Dell": "https://dell.com",
+        "Lenovo": "https://lenovo.com"
+      },
+      "Linux and Open Source": {
+        "Arch Linux": "https://archlinux.org",
+        "Debian": "https://www.debian.org/",
+        "GitHub": "https://github.com",
+        "Lunduke.com": "http://lunduke.com/",
+        "Open Invention Network": "https://openinventionnetwork.com",
+        "Void Linux": "https://voidlinux.org"
+      },
+      "Media and Chat": {
+        "Discord": "https://discordapp.com",
+        "Gitter": "https://gitter.im",
+        "Imgur": "https://imgur.com",
+        "Netflix": "https://netflix.com",
+        "Twitch": "https://twitch.tv",
+        "Twitter": "https://twitter.com",
+        "YouTube": "https://youtube.com"
+      },
+      "School": {
+        "Canvas": "https://sherwood.instructure.com",
+        "Naviance": "https://student.naviance.com/sherwoodhigh",
+        "SHS": "http://shs.sherwood.k12.or.us/",
+        "StudentVue": "https://student-sherwood.cascadetech.org/"
+      },
+      "Software": {
+        "i3wm": "https://i3wm.org",
+        "The Linux Kernel Archives": "https://kernel.org",
+      },
+      "Servers": {
+        "Cloudnode": "https://cloudno.de"
+      }
+    };
+
+    const positions = ["left", "center", "right"];
+
+    const removeAllChildren = (elem) => {
+      while (elem.firstChild) {
+        removeAllChildren(elem.firstChild);
+        elem.removeChild(elem.firstChild);
+      }
+    };
+    const buildEntry = (name, url) => {
+      let root_elem = document.createElement("a");
+      root_elem.innerText = name;
+      root_elem.href = url;
+      return root_elem;
+    };
+    const buildRow = (sites, categoryName, pos) => {
+      let root_elem = document.createElement("div");
+      root_elem.classList.add(pos);
+      root_elem.classList.add("box");
+
+      let label_elem = document.createElement("h3");
+      label_elem.classList.add("center");
+      label_elem.innerText = categoryName;
+      root_elem.appendChild(label_elem);
+
+      let list_elem = document.createElement("ul");
+      list_elem.classList.add("links");
+      list_elem.classList.add("left");
+      root_elem.appendChild(list_elem);
+
+      for (const siteName of Object.keys(sites).sort((a, b) => a.localeCompare(b))) {
+        const site = sites[siteName];
+        const item_elem = document.createElement("li");
+        item_elem.appendChild(buildEntry(siteName, site));
+        list_elem.appendChild(item_elem);
+      }
+      return root_elem;
+    };
+    const buildBoxes = (query="") => {
+      let boxes_elem = document.getElementById("boxes");
+      let cats = {};
+      for (const catName of Object.keys(categories).sort((a, b) => a.localeCompare(b))) {
+        for (const siteName in categories[catName]) {
+          if (siteName.toLowerCase().includes(query.toLowerCase())) {
+            if (typeof cats[catName] === "undefined") {
+              cats[catName] = {};
+            }
+            cats[catName][siteName] = categories[catName][siteName];
+          }
+        }
+      }
+      removeAllChildren(boxes_elem);
+      let index = 0;
+      let rows = [];
+      for (const categoryName in cats) {
+        if (Object.keys(cats[categoryName]).length === 0) {
+          continue;
+        }
+        if (index % 3 === 0) {
+          let row_elem = document.createElement("div");
+          row_elem.classList.add("row");
+          rows.push(row_elem);
+        }
+        rows[rows.length-1].appendChild(buildRow(cats[categoryName], categoryName, positions[index % 3]));
+        index++;
+      }
+      for (const row of rows) {
+        row.appendChild(document.createElement("br"));
+        boxes_elem.appendChild(row);
+      }
+    };
+    window.onload = () => {
+      buildBoxes();
+      let search_elem = document.getElementById("search");
+      search_elem.oninput = () => buildBoxes(search_elem.value);
+      search_elem.onsubmit = (ev) => ev.preventDefault();
+    };
+    </script>
+    <title>Start Page</title>
+  </head>
+  <body>
+    <div class="title center">
+      <h1>Start Page</h1>
+      <input type="search" id="search" />
+    </div>
+    <div id="boxes">
+    </div>
+  </body>
+</html>

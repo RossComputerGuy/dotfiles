@@ -1,0 +1,22 @@
+Rxvt.background:  #22252c
+Rxvt.foreground:  #b5bdc2
+Rxvt.color0:  #14161b
+Rxvt.color1:  #dc0f0f
+Rxvt.color2:  #0fdc0f
+Rxvt.color3:  #dcdc0f
+Rxvt.color4:  #3498db
+Rxvt.color5:  #dc0fdc
+Rxvt.color6:  #0fdcdc
+Rxvt.color7:  #b5bdc2
+Rxvt.color8:  #262a32
+Rxvt.color9:  #ff0f0f
+Rxvt.color10:  #0fff0f
+Rxvt.color11:  #ffff0f
+Rxvt.color12:  #3498db
+Rxvt.color13:  #ff0fff
+Rxvt.color14:  #0fffff
+Rxvt.color15:  #ffffff
+Rxvt.font: xft:DejaVuSansMono Nerd Font:pixelsize=10,xft:Terminus:pixelsize=12,xft:Inconsolata\ for\ Powerline:pixelsize=12
+Rxvt.scrollBar: false
+URxvt.perl-ext-common: bell-command
+URxvt.bell-command: canberra-gtk-play -i bell
