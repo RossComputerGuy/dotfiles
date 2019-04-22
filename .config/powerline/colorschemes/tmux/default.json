@@ -1,0 +1,14 @@
+{
+	"groups": {
+		"active_window_status": {"fg": "white", "bg": "black",    "attrs": []},
+		"window_status":        {"fg": "white", "bg": "black",    "attrs": []},
+		"activity_status":      {"fg": "white", "bg": "black",    "attrs": []},
+		"bell_status":          {"fg": "white", "bg": "black",    "attrs": []},
+		"window":               {"fg": "white", "bg": "black",    "attrs": []},
+		"window:divider":       {"fg": "white", "bg": "black",    "attrs": []},
+		"window:current":       {"fg": "white", "bg": "black", "attrs": []},
+		"window_name":          {"fg": "white", "bg": "black", "attrs": ["bold"]},
+		"session":              {"fg": "white", "bg": "black",   "attrs": ["bold"]},
+		"session:prefix":       {"fg": "white", "bg": "black", "attrs": ["bold"]}
+	}
+}

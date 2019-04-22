@@ -1,0 +1,153 @@
+{
+	"name": "Default color scheme",
+	"groups": {
+		"information:unimportant":  { "fg": "white", "bg": "black", "attrs": [] },
+		"information:additional":   { "fg": "white", "bg": "black", "attrs": [] },
+		"background":               { "fg": "white", "bg": "black", "attrs": [] },
+		"background:divider":       { "fg": "white", "bg": "black", "attrs": [] },
+		"mode":                     { "fg": "white", "bg": "black", "attrs": ["bold"] },
+		"visual_range":             { "fg": "white", "bg": "black", "attrs": ["bold"] },
+		"modified_indicator":       { "fg": "white", "bg": "black", "attrs": ["bold"] },
+		"paste_indicator":          { "fg": "white", "bg": "black", "attrs": ["bold"] },
+		"readonly_indicator":       { "fg": "white", "bg": "black", "attrs": [] },
+		"branch_dirty":             { "fg": "white", "bg": "black", "attrs": [] },
+		"branch:divider":           { "fg": "white", "bg": "black", "attrs": [] },
+		"file_name":                { "fg": "white", "bg": "black", "attrs": ["bold"] },
+		"window_title":             { "fg": "white", "bg": "black", "attrs": [] },
+		"file_name_no_file":        { "fg": "black", "bg": "black", "attrs": ["bold"] },
+		"file_vcs_status":          { "fg": "white", "bg": "black", "attrs": [] },
+		"file_vcs_status_M":        { "fg": "white", "bg": "black", "attrs": [] },
+		"file_vcs_status_A":        { "fg": "white", "bg": "black", "attrs": [] },
+		"line_percent":             { "fg": "white", "bg": "black", "attrs": [] },
+		"line_percent_gradient":    { "fg": "white", "bg": "black", "attrs": [] },
+		"position":                 { "fg": "white", "bg": "black", "attrs": [] },
+		"position_gradient":        { "fg": "white", "bg": "black", "attrs": [] },
+		"line_current":             { "fg": "white", "bg": "black", "attrs": ["bold"] },
+		"line_current_symbol":      { "fg": "white", "bg": "black", "attrs": [] },
+		"virtcol_current_gradient": { "fg": "white", "bg": "black", "attrs": [] },
+		"col_current":              { "fg": "white", "bg": "black", "attrs": [] },
+		"modified_buffers":         { "fg": "white", "bg": "black", "attrs": [] },
+		"attached_clients":         { "fg": "white", "bg": "black", "attrs": [] },
+		"error":                    { "fg": "white", "bg": "black", "attrs": ["bold"] },
+		"warning":                  { "fg": "white", "bg": "black", "attrs": ["bold"] },
+		"current_tag":              { "fg": "white", "bg": "black", "attrs": [] },
+
+		"tab_nc:modified_indicator": { "fg": "white", "bg": "black", "attrs": ["bold"] }
+	},
+	"mode_translations": {
+		"nc": {
+			"colors": {
+				"brightyellow": "black",
+				"brightestred": "white",
+				"gray0": "black",
+				"gray1": "black",
+				"gray2": "black",
+				"gray3": "black",
+				"gray4": "black",
+				"gray5": "black",
+				"gray6": "black",
+				"gray7": "white",
+				"gray8": "white",
+				"gray9": "white",
+				"gray10": "white",
+				"dark_green_gray": "black"
+			}
+		},
+		"i": {
+			"colors": {
+				"gray0": "black",
+				"gray1": "black",
+				"gray2": "black",
+				"gray3": "black",
+				"gray4": "black",
+				"gray5": "black",
+				"gray6": "white",
+				"gray7": "white",
+				"gray8": "white",
+				"gray9": "white",
+				"gray10": "white",
+				"green_yellow_red": "white",
+				"dark_green_gray": "black"
+			},
+			"groups": {
+				"mode":               { "fg": "white", "bg": "black", "attrs": ["bold"] },
+				"background:divider": { "fg": "white", "bg": "black", "attrs": [] },
+				"branch:divider":     { "fg": "white", "bg": "black", "attrs": [] }
+			}
+		},
+		"ic": {
+			"colors": {
+				"gray0": "black",
+				"gray1": "black",
+				"gray2": "black",
+				"gray3": "black",
+				"gray4": "black",
+				"gray5": "black",
+				"gray6": "white",
+				"gray7": "white",
+				"gray8": "white",
+				"gray9": "white",
+				"gray10": "white",
+				"green_yellow_red": "white",
+				"dark_green_gray": "black"
+			},
+			"groups": {
+				"mode":               { "fg": "white", "bg": "black", "attrs": ["bold"] },
+				"background:divider": { "fg": "white", "bg": "black", "attrs": [] },
+				"branch:divider":     { "fg": "white", "bg": "black", "attrs": [] }
+			}
+		},
+		"ix": {
+			"colors": {
+				"gray0": "black",
+				"gray1": "black",
+				"gray2": "black",
+				"gray3": "black",
+				"gray4": "black",
+				"gray5": "black",
+				"gray6": "white",
+				"gray7": "white",
+				"gray8": "white",
+				"gray9": "white",
+				"gray10": "white",
+				"green_yellow_red": "white",
+				"dark_green_gray": "black"
+			},
+			"groups": {
+				"mode":               { "fg": "white", "bg": "black", "attrs": ["bold"] },
+				"background:divider": { "fg": "white", "bg": "black", "attrs": [] },
+				"branch:divider":     { "fg": "white", "bg": "black", "attrs": [] }
+			}
+		},
+		"v": {
+			"groups": {
+				"mode": { "fg": "white", "bg": "black", "attrs": ["bold"] }
+			}
+		},
+		"V": {
+			"groups": {
+				"mode": { "fg": "white", "bg": "black", "attrs": ["bold"] }
+			}
+		},
+		"^V": {
+			"groups": {
+				"mode": { "fg": "white", "bg": "black", "attrs": ["bold"] }
+			}
+		},
+		"R": {
+			"groups": {
+				"mode": { "fg": "white", "bg": "black", "attrs": ["bold"] }
+			}
+		},
+		"Rc": {
+			"groups": {
+				"mode": { "fg": "white", "bg": "black", "attrs": ["bold"] }
+			}
+		},
+		"Rx": {
+			"groups": {
+				"mode": { "fg": "white", "bg": "black", "attrs": ["bold"] }
+			}
+		}
+	}
+}
