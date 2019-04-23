@@ -42,6 +42,12 @@
     }
     input[type="search"] {
       width: 45%;
+      border: none;
+      border-bottom: 1px #63686e solid;
+      text-align: center;
+    }
+    input[type="search"]:hover, input[type="search"]:focus {
+      border-bottom-color: #acb1b8;
     }
 
     ul {
@@ -196,7 +202,7 @@
   <body>
     <div class="title center">
       <h1>Start Page</h1>
-      <input type="search" id="search" />
+      <input type="search" id="search" placeholder="Search" />
     </div>
     <div id="boxes">
     </div>
