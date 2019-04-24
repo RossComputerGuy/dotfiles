@@ -1,0 +1,106 @@
+<?xml version="1.0"?>
+<rhythmdb-playlists>
+  <playlist name="My Top Rated" show-browser="true" browser-position="188" search-type="search-match" type="automatic" sort-key="Rating" sort-direction="1">
+    <conjunction>
+      <equals prop="type">song</equals>
+      <subquery>
+        <conjunction>
+          <greater prop="rating">4.000000</greater>
+        </conjunction>
+      </subquery>
+    </conjunction>
+  </playlist>
+  <playlist name="Recently Added" show-browser="true" browser-position="188" search-type="search-match" type="automatic" sort-key="FirstSeen" sort-direction="1">
+    <conjunction>
+      <equals prop="type">song</equals>
+      <subquery>
+        <conjunction>
+          <current-time-within prop="first-seen">604800</current-time-within>
+        </conjunction>
+      </subquery>
+    </conjunction>
+  </playlist>
+  <playlist name="Recently Played" show-browser="true" browser-position="188" search-type="search-match" type="automatic" sort-key="LastPlayed" sort-direction="1">
+    <conjunction>
+      <equals prop="type">song</equals>
+      <subquery>
+        <conjunction>
+          <current-time-within prop="last-played">604800</current-time-within>
+        </conjunction>
+      </subquery>
+    </conjunction>
+  </playlist>
+  <playlist name="Favorites" show-browser="true" browser-position="180" search-type="search-match" type="static">
+    <location>file:///home/ross/Music/Turn%20A%20Gundam/%E2%88%80%E3%82%AC%E3%83%B3%E3%83%80%E3%83%A0%20CENTURY%20COLOR%20%E3%80%80%E9%AB%98%E9%9F%B3%E8%B3%AA.mp4.mp3</location>
+    <location>file:///home/ross/Music/Turn%20A%20Gundam/%E2%88%80%20Gundam%20OST%203%20_%2001%20The%20Endless%20Journey.mp3</location>
+    <location>file:///home/ross/Music/Turn%20A%20Gundam/%E2%88%80%20Gundam%20OST%202%20_%2001%20Turn%20A%20Turn%20(Opening%20Version).mp3</location>
+    <location>file:///home/ross/Music/Turn%20A%20Gundam/%E2%88%80%20Gundam%20OST%202%20_%2007%20Heavy%20Mechanics.mp3</location>
+    <location>file:///home/ross/Music/Turn%20A%20Gundam/%E2%88%80%20Gundam%20OST%202%20_%2022%20She's%20So%20High.mp3</location>
+    <location>file:///home/ross/Music/Turn%20A%20Gundam/%E2%88%80%20Gundam%20OST%203%20_%2008%20Position%20X.mp3</location>
+    <location>file:///home/ross/Music/After%20War%20Gundam%20X/Gundam%20X%20OST%201%20_%2002%20Dreams.mp3</location>
+    <location>file:///home/ross/Music/After%20War%20Gundam%20X/Gundam%20X%20OST%202%20_%2002%20Dreams%20(T.V.%20Size%20Version).mp3</location>
+    <location>file:///home/ross/Music/After%20War%20Gundam%20X/Gundam%20X%20OST%203%20_%2002%20Resolution%20(T.V.%20Size%20Version).mp3</location>
+    <location>file:///home/ross/Music/After%20War%20Gundam%20X/Gundam%20X%20OST%203%20_%2017%20Resolution.mp3</location>
+    <location>file:///home/ross/Music/Domestic%20Girlfriend/Crying%20for%20Rain.mp3</location>
+    <location>file:///home/ross/Music/Kino's%20Journey:%20The%20Beautiful%20World%20-%20The%20Animated%20Series/%E3%80%90%E3%82%AD%E3%83%8E%E3%81%AE%E6%97%85%20-the%20Beautiful%20World-%20the%20Animated%20Series%E3%80%91%20OP%E3%83%86%E3%83%BC%E3%83%9E%20%E3%82%84%E3%81%AA%E3%81%8E%E3%81%AA%E3%81%8E%E3%80%8Chere%20and%20there%E3%80%8D.mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Fighter%20G%20Gundam/G%20Gundam%20OST%201%20_%2001%20Flying%20in%20the%20Sky.mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Fighter%20G%20Gundam/G%20Gundam%20OST%202%20_%2004%20Flying%20in%20the%20Sky.mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Fighter%20G%20Gundam/G%20Gundam%20OST%204%20_%2014%20Flying%20in%20the%20Sky%20(Instrumental%20Version%201).mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Fighter%20G%20Gundam/G%20Gundam%20OST%204%20_%2015%20Flying%20in%20the%20Sky%20(Instrumental%20Version%202).mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Suit%20Gundam/Mobile%20Suit%20Gundam%20OST%201%20Track%2006%20-%20Gundam%20on%20the%20Earth.mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Suit%20Gundam/Mobile%20Suit%20Gundam%20OST%201%20Track%2008%20-%20The%20Heroic%20Gundam.mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Suit%20Gundam/Mobile%20Suit%20Gundam%20OST%201%20Track%2007%20-%20Gallant%20Char.mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Suit%20Gundam/Mobile%20Suit%20Gundam%20OST%201%20Track%2001%20-%20Tobe!%20Gundam.mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Suit%20Gundam%200080:%20War%20in%20the%20Pocket/gundam%200080%20ost%20itsuka%20sora%20ni%20todinite..mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Suit%20Gundam%200080:%20War%20in%20the%20Pocket/gundam%200080%20ost%20reach%20out%20to%20the%20sky%20one%20day%20short%20version..mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Suit%20Gundam%200083:%20Stardust%20Memory/Gundam%200083%20OST%20_%2039%20Men%20of%20Destiny%20(Video%20Edit).mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Suit%20Gundam%200083:%20Stardust%20Memory/Gundam%200083%20OST%20_%2038%20The%20Winner%20(Video%20Edit).mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Suit%20Gundam%20F91/Eternal%20Wind%20%E3%81%BB%E3%81%BB%E3%81%88%E3%81%BF%E3%81%AF%E5%85%89%E3%82%8B%E9%A2%A8%E3%81%AE%E4%B8%AD%20-%20Hiroko%20Moriguchi.mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Suit%20Gundam%20F91/Kimi%20wo%20mitumete.mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Suit%20Gundam%20F91/Mobile%20Suit%20Gundam%20F91%20Track%206%20CrossbornbanGunno%20Sinkouto.mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Suit%20Gundam/Mobile%20Suit%20Gundam%20Soldiers%20of%20Sorrow%20Ending.mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Suit%20Gundam/Encounters%20by%20Daisuke%20Inoue.mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Suit%20Gundam%20Wing/Mobile%20Suit%20Gundam%20Wing%20opening%201.mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Suit%20Gundam%20Wing/Gundam%20Wing%20OST%203%20_%2027%20Rhythm%20Emotion%20%5BT.V.%20Size%20Version%5D.mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Suit%20Gundam%20Wing/Gundam%20Wing%20OST%20-%20The%20Wings%20of%20a%20Boy%20that%20Killed%20Adolescence.mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Suit%20Gundam%20Wing/Gundam%20Wing%20OST%201%20_%2038%20Just%20Communication%20-%20Instrumental%20Version.mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Suit%20Gundam%20Wing/Gundam%20Wing%20OST%201%20_%2040%20It's%20Just%20Love!.mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Suit%20Gundam%20Wing/Gundam%20Wing%20OST%202%20_%2004%20I'm%20Your%20Friend.mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Suit%20Gundam%20Wing/Gundam%20Wing%20OST%202%20_%2005%20Knock%20on%20Tomorrow's%20Door.mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Suit%20Gundam%20Wing/Gundam%20Wing%20OST%203%20_%2004%20It'll%20Be%20OK!.mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Suit%20Gundam%20Wing/Gundam%20Wing%20OST%203%20_%2005%20Joy%20to%20My%20Life.mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Suit%20Gundam%20Wing/Gundam%20Wing%20OST%204%20_%2003%20Wild%20Wing.mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Suit%20Gundam%20Wing/Gundam%20Wing%20OST%204%20_%2006%20Love%20Is%20a%20Shooting%20Star.mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Suit%20Gundam%20Wing/Gundam%20Wing%20OST%204%20_%2009%20Rhythm%20Emotion.mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Suit%20Gundam%20Wing:%20Endless%20Waltz/last%20impression.mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Suit%20Gundam%20Wing:%20Endless%20Waltz/Gundam%20Wing%20-%20Endless%20Waltz%20OST%20_%2023%20White%20Reflection.mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Suit%20Gundam%20Wing:%20Frozen%20Teardrop/Gundam%20Wing%20-%20Frozen%20Teardrop%20OP%20Full.mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Suit%20Gundam%20ZZ/Mobile%20Suit%20Gundam%20ZZ%20OST%202%20Track%2006-Gundam%20ZZ.mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Suit%20Gundam%20ZZ/ZZ%20Gundam%20-%20Jun%20Hiroe%20'Silent%20Voice'%20(%E3%82%B5%E3%82%A4%E3%83%AC%E3%83%B3%E3%83%88%E3%83%BB%E3%83%B4%E3%82%A9%E3%82%A4%E3%82%B9).mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Suit%20Gundam%20ZZ/Mobile%20Suit%20%20Gundam%20ZZ%20-%20It's%20Not%20Anime.mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Suit%20Gundam:%20Char's%20Counterattack/Beyond%20The%20Time.mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Suit%20Gundam:%20Char's%20Counterattack/CCA%20OST%20-%20MAIN%20TITLE.mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Suit%20Gundam:%20Char's%20Counterattack/CCA%20OST%20-%20%CE%BD%20GUNDAM.mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Suit%20Gundam:%20The%2008th%20MS%20Team/Mobile%20Suit%20Gundam%20-%20The%2008th%20MS%20Team%20Theme.mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Suit%20Victory%20Gundam/INFIX%20-%20Winners%20Forever.mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Suit%20Victory%20Gundam/Kawazoe%20Tomohisa%20-%20Stand%20up%20to%20the%20Victory.mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Suit%20Zeta%20Gundam/Zeta%20Gundam%202nd%20Op.mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Suit%20Zeta%20Gundam/Mobile%20Suit%20Zeta%20Gundam%20OST%201%20Track%202%20-%20Zeta%20-%20Toki%20wo%20Koete.mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Suit%20Zeta%20Gundam/Zeta%20Gundam%20Soundtrack%20-%20Riders%20in%20the%20Skies_Kamille%20theme.mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Suit%20Zeta%20Gundam/Zeta%20Gundam%20Soundtrack%20-%20Titans%20Main%20Theme.mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Suit%20Zeta%20Gundam/Gackt%20-%20Metamorphoze%20(Zeta%20Gundam%20Movie).mp3</location>
+    <location>file:///home/ross/Music/Patlabor%20The%20Mobile%20Police/Patlabor%20Opening%201%20Full%20Song.mp3</location>
+    <location>file:///home/ross/Music/Vocaloid/%5BEng%20Sub%5D%20%E3%80%90Kagamine%20Rin%E3%80%91%20I%20Can%20Take%20Off%20My%20Panties!.mp3</location>
+    <location>file:///home/ross/Music/Vocaloid/%E3%80%90Hatsune%20Miku,%20GUMI%E3%80%91%20Rasputin%20%E3%80%90VOCALOID%204%E3%80%91.mp3</location>
+    <location>file:///home/ross/Music/Vocaloid/Hatsune%20Miku%20Triple%20Baka.mp3</location>
+    <location>file:///home/ross/Music/Vocaloid/I%20Like%20You,%20I%20Love%20You%20with%20English%20Sub%20-%20Kagamine%20Rin%20-%20%E3%81%99..%E3%81%99..%E3%81%99%E3%81%8D%E5%A4%A7%E3%81%99%E3%81%8D%20-%20HQ.mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Suit%20Gundam%20SEED/T.M.Revolution%20-%20Invoke%20(Video_DVD%20Version).mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Suit%20Gundam%20SEED/Gundam%20Seed%20%20%20Believe(OP3FULL).mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Suit%20Gundam%20SEED/%E6%A9%9F%E5%8B%95%E6%88%A6%E5%A3%AB%E3%82%AC%E3%83%B3%E3%83%80%E3%83%A0SEED%E3%80%80%E3%82%88%E3%82%8A%E3%80%80Moment.mp3</location>
+    <location>file:///home/ross/Music/Mobile%20Suit%20Gundam%20SEED/Nami%20Tamaki%20-%20Realize%20HQ.mp3</location>
+    <location>file:///home/ross/Music/Initial%20D%20First%20Stage/Initial%20D%20-%20Running%20in%20The%2090s.mp3</location>
+    <location>file:///home/ross/Music/Initial%20D%20Fith%20Stage/Manuel%20-%20Gas%20Gas%20Gas.mp3</location>
+    <location>file:///home/ross/Music/Initial%20D%20Second%20Stage/Initial%20D%20-%20Deja%20Vu.mp3</location>
+  </playlist>
+  <playlist name="Play Queue" show-browser="false" browser-position="180" search-type="search-match" type="queue"/>
+</rhythmdb-playlists>
