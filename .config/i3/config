@@ -241,6 +241,7 @@ exec --no-startup-id spacefm -d
 exec --no-startup-id sh -c "eval $(/usr/bin/gnome-keyring-daemon --start --components=pkcs11,secrets,ssh)"
 exec firefox
 exec discord
+exec dropbox
 
 # Start i3bar to display a workspace bar (plus the system information i3status
 # finds out, if available)
