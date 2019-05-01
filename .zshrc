@@ -8,18 +8,18 @@ autoload -U compinit; compinit
 
 alias ls="ls --color=auto"
 
-export PATH=$PATH:~/bin:~/go/bin
+export PATH=$PATH:~/bin:~/go/bin:~/.bin/:~/RonixOS/devtools
 export XDG_CONFIG_HOME=~/.config
 export GOPATH=$HOME/go
 export POWERLINE_CONFIG_PATHS=~/.config/powerline/
 
-export EDITOR=nvim
+export EDITOR=vim
 alias music-dl="youtube-dl -o \"%(title)s.%(ext)s\" -x --embed-thumbnail --add-metadata --audio-format mp3"
 alias nestx="Xephyr -ac -screen 800x600 -reset :2"
 
 if [ -z "$TMUX" ]
 then
-    tmux attach -t TMUX || tmux new -s TMUX
+    tmux attach -t MAIN || tmux new -s MAIN
 fi
 
 bindkey -v
