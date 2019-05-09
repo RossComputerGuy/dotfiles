@@ -12,10 +12,11 @@
   <property name="last-menubar-visible" type="bool" value="false"/>
   <property name="last-statusbar-visible" type="bool" value="false"/>
   <property name="last-details-view-zoom-level" type="string" value="THUNAR_ZOOM_LEVEL_38_PERCENT"/>
-  <property name="last-details-view-column-widths" type="string" value="50,121,50,50,413,50,50,59,50,218"/>
+  <property name="last-details-view-column-widths" type="string" value="50,121,50,50,387,50,50,71,50,232"/>
   <property name="default-view" type="string" value="ThunarDetailsView"/>
   <property name="misc-thumbnail-mode" type="string" value="THUNAR_THUMBNAIL_MODE_ALWAYS"/>
   <property name="misc-text-beside-icons" type="bool" value="false"/>
   <property name="shortcuts-icon-size" type="string" value="THUNAR_ICON_SIZE_16"/>
   <property name="last-separator-position" type="int" value="170"/>
+  <property name="last-show-hidden" type="bool" value="false"/>
 </channel>

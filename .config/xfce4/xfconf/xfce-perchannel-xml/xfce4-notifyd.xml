@@ -8,6 +8,7 @@
   <property name="applications" type="empty">
     <property name="known_applications" type="array">
       <value type="string" value="com.github.wwmm.pulseeffects"/>
+      <value type="string" value="discord"/>
       <value type="string" value="notify-send"/>
       <value type="string" value="Xfce4-notifyd settings"/>
     </property>
