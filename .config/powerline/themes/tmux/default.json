@@ -1,21 +1,6 @@
 {
 	"segments": {
 		"right": [
-      {
-        "function": "powerline.segments.common.bat.battery",
-        "priority": 50
-      },
-			{
-				"function": "powerline.segments.common.time.date"
-			},
-			{
-				"function": "powerline.segments.common.time.date",
-				"name": "time",
-				"args": {
-					"format": "%H:%M",
-					"istime": true
-				}
-			}
 		]
 	}
 }

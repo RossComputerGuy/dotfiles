@@ -1,12 +1,7 @@
 {
 	"colors": {
-		"black": "06151a",
+		"black": 16,
 		"white": 231,
-
-    "background": "06151a",
-    "foreground": "b5bdc2",
-    "disabled": "63686e",
-    "label": "62727b",
 
 		"green": 2,
 		"darkestgreen": 22,

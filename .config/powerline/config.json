@@ -1,6 +1,6 @@
 {
 	"common": {
-		"term_truecolor": true
+		"term_truecolor": false
 	},
 	"ext": {
 		"ipython": {
@@ -25,7 +25,7 @@
 			}
 		},
 		"tmux": {
-		  "colorscheme": "default",
+			"colorscheme": "default",
 			"theme": "default"
 		},
 		"vim": {
