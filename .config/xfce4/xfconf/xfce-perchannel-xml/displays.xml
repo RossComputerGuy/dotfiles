@@ -3,7 +3,7 @@
 <channel name="displays" version="1.0">
   <property name="Default" type="empty">
     <property name="VGA-0" type="string" value="1. Dell 20&quot;">
-      <property name="Active" type="bool" value="true"/>
+      <property name="Active" type="bool" value="false"/>
       <property name="Resolution" type="string" value="1600x900"/>
       <property name="RefreshRate" type="double" value="59.978156"/>
       <property name="Rotation" type="int" value="0"/>

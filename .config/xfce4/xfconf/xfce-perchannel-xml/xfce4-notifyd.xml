@@ -9,8 +9,12 @@
     <property name="known_applications" type="array">
       <value type="string" value="com.github.wwmm.pulseeffects"/>
       <value type="string" value="discord"/>
+      <value type="string" value="Firefox"/>
       <value type="string" value="notify-send"/>
+      <value type="string" value="org.gnome.Geary"/>
+      <value type="string" value="Xfce volume control"/>
       <value type="string" value="Xfce4-notifyd settings"/>
+      <value type="string" value="xfce4-power-manager"/>
     </property>
   </property>
   <property name="do-fadeout" type="bool" value="true"/>
