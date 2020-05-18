@@ -9,5 +9,6 @@ alias ls='ls --color=auto'
 alias grep="grep --color"
 PS1='[\u@\h \W]\$ '
 export PAGER="vimpager"
+export EDITOR="vim"
 
 eval "$(starship init bash)"

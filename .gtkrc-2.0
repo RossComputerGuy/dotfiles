@@ -3,7 +3,7 @@
 
 include "/home/ross/.gtkrc-2.0.mine"
 gtk-theme-name="Lazengann"
-gtk-icon-theme-name="Adwaita"
+gtk-icon-theme-name="Lazengann"
 gtk-font-name="DejaVuSansMono Nerd Font Mono 11"
 gtk-cursor-theme-name="Adwaita"
 gtk-cursor-theme-size=0
