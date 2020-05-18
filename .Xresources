@@ -1,0 +1,24 @@
+*background:  #404552
+*foreground:  #d3dae3
+*color0:  #495058
+*color1:  #7b558c
+*color2:  #54c93f
+*color3:  #848732
+*color4:  #4055c7
+*color5:  #67559f
+*color6:  #17c59f
+*color7:  #8b929b
+*color8:  #778a9a
+*color9:  #96949e
+*color10:  #66e47e
+*color11:  #96b47e
+*color12:  #5294e2
+*color13:  #7e94b6
+*color14:  #4cd9b8
+*color15:  #bec4cd
+URxvt.depth: 32
+URxvt.background: [95]#404552
+URxvt.perl-ext-common: bell-command
+URxvt.bell-command: canberra-gtk-play -i bell
+URxvt.font: xft:DejaVuSansMono Nerd Font:style=Book:size=8
+URxvt.scrollBar: 0
