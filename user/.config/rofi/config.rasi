@@ -1,0 +1,8 @@
+configuration {
+	show-icons: true;
+	columns: 2;
+	font: "DejaVuSansMono Nerd Font Mono 10";
+	icon-theme: "oomox-Tokyonight";
+	theme: "Tokyonight";
+	terminal: "alacritty";
+}
