@@ -1,6 +1,0 @@
-#!/usr/bin/env bash
-
-export QT_QPA_PLATFORMTHEME=gtk2
-mkdir -p "$XDG_RUNTIME_DIR/i3"
-DISPLAY=:0.1 I3SOCK="$XDG_RUNTIME_DIR/i3/ipc-socket.disp2" i3 -c "$HOME/.config/i3/disp2" &
-#DISPLAY=:0 I3SOCK="$XDG_RUNTIME_DIR/i3/ipc-socket.disp1" i3 -c "$HOME/.config/i3/config"
