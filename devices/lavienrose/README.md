@@ -7,7 +7,7 @@
 
 ## Specifications
 
-CPU: `AMD Ryzen 5 3600`
-Motherboard: `MSI X470 Gaming Plux Max`
-Memory: `48GB`
-Graphics Card: `NVIDIA GeForce RTX 2060`
+- CPU: `AMD Ryzen 5 3600`
+- Motherboard: `MSI X470 Gaming Plux Max`
+- Memory: `48GB`
+- Graphics Card: `NVIDIA GeForce RTX 2060`

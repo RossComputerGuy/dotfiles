@@ -1,10 +1,14 @@
 # Base Configuration for nixOS
 
-{ config, pkgs, modulesPath ... }:
-
+{ config, pkgs, modulesPath, ... }:
+let
+  home-manager = builtins.fetchTarball "https://github.com/nix-community/home-manager/archive/master.tar.gz";
+in
 {
   imports =
-    [ (modulesPath + "/installer/scan/not-detected.nix")
+    [
+      (import "${home-manager}/nixos")
+      (modulesPath + "/installer/scan/not-detected.nix")
     ];
   nixpkgs.config.allowUnfree = true;
 
@@ -77,6 +81,7 @@
   # Applications & Services
   services.fwupd.enable = true;
   services.flatpak.enable = true;
+  programs.dconf.enable = true;
 
   xdg = {
     portal = {
