@@ -1,0 +1,59 @@
+(defwidget bar []
+  (centerbox :orientation "h"
+    (workspaces)
+    (music)
+    (sidestuff)))
+
+(defwidget sidestuff []
+  (box :class "sidestuff" :orientation "h" :space-evenly false :halign "end"
+    (metric :label "🔊"
+      :value volume
+      :onclick "pamixer -t"
+      :onchange "pamixer --set-volume $(echo {} | sed 's/\\..*//g')")
+    time))
+
+(defwidget workspaces []
+  (box :class "workspaces"
+      :orientation "h"
+      :space-evenly true
+      :halign "start"
+      :spacing 10
+    (button :onclick "swaymsg workspace 1" 1)
+    (button :onclick "swaymsg workspace 2" 2)
+    (button :onclick "swaymsg workspace 3" 3)
+    (button :onclick "swaymsg workspace 4" 4)
+    (button :onclick "swaymsg workspace 5" 5)
+    (button :onclick "swaymsg workspace 6" 6)
+    (button :onclick "swaymsg workspace 7" 7)
+    (button :onclick "swaymsg workspace 8" 8)
+    (button :onclick "swaymsg workspace 9" 9)
+    (button :onclick "swaymsg workspace 0" 0)))
+
+(defwidget music []
+  (box :class "music"
+      :orientation "h"
+      :space-evenly false
+      :halign "center"
+    {music != "" ? "🎵${music}" : ""}))
+
+(defwidget metric [label value onchange onclick]
+  (box :orientation "h"
+      :class "metric"
+      :space-evenly false
+    (box :class "label" (button :onclick onclick label))
+    (scale :min 0
+        :max 101
+        :active {onchange != ""}
+        :value value
+        :onchange onchange)))
+
+(deflisten music :initial ""
+  "playerctl --follow metadata --format '{{ artist }} - {{ title }}' || true")
+
+(defpoll volume :interval "1s"
+  "pamixer --get-volume")
+
+(defpoll time :interval "10s"
+  "date '+%H:%M %Y-%m-%d'")
+
+(include "./device.yuck")

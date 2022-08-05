@@ -1,4 +1,3 @@
-set $mod Mod4
 set $menu nwg-drawer
 set $term alacritty
 
@@ -7,14 +6,71 @@ gaps outer 5
 
 default_border none
 default_floating_border none
+hide_edge_borders smart
 for_window [title="^.*"] title_format ""
 
 output "*" bg ~/Pictures/wallpaper.jpg fill
 
-bindsym $mod+d exec $menu
-bindsym $mod+return exec $term
+bindsym Mod4+q kill
+bindsym Mod4+d exec $menu
+bindsym Mod4+return exec $term
+bindsym Mod1+Control+R reload
+bindsym Mod1+Control+Q exit
+
+bindsym Mod4+1 workspace 1
+bindsym Mod4+2 workspace 2
+bindsym Mod4+3 workspace 3
+bindsym Mod4+4 workspace 4
+bindsym Mod4+5 workspace 5
+bindsym Mod4+6 workspace 6
+bindsym Mod4+7 workspace 7
+bindsym Mod4+8 workspace 8
+bindsym Mod4+9 workspace 9
+bindsym Mod4+0 workspace 0
+
+bindsym Mod4+Shift+1 move container to workspace 1
+bindsym Mod4+Shift+2 move container to workspace 2
+bindsym Mod4+Shift+3 move container to workspace 3
+bindsym Mod4+Shift+4 move container to workspace 4
+bindsym Mod4+Shift+5 move container to workspace 5
+bindsym Mod4+Shift+6 move container to workspace 6
+bindsym Mod4+Shift+7 move container to workspace 7
+bindsym Mod4+Shift+8 move container to workspace 8
+bindsym Mod4+Shift+9 move container to workspace 9
+bindsym Mod4+Shift+0 move container to workspace 0
+
+bindsym Mod4+Left focus left
+bindsym Mod4+Down focus down
+bindsym Mod4+Up focus up
+bindsym Mod4+Right focus right
+
+bindsym Mod4+Shift+Left move left
+bindsym Mod4+Shift+Down move down
+bindsym Mod4+Shift+Up move up
+bindsym Mod4+Shift+Right move right
+
+bindsym XF86AudioRaiseVolume exec pamixer -ui 2
+bindsym XF86AudioLowerVolume exec pamixer -ud 2
+bindsym XF86AudioMute exec pamixer --toggle-mute
+
+bindsym Print exec grim -o $(swaymsg -t get_outputs | jq -r '.[] | select(.focused) | .name') $(xdg-user-dir)/Pictures/Screenshot_$(date +'%Y-%m-%d-%H%M%S.png')
+bindsym Alt+Print exec grim $(xdg-user-dir)/Pictures/Screenshot_$(date +'%Y-%m-%d-%H%M%S.png')
+bindsym Control+Print exec grim -g "$(slurp)" $(xdg-user-dir)/Pictures/Screenshot_$(date +'%Y-%m-%d-%H%M%S.png')
+bindsym Shift+Print exec grim -g "$(slurp)" - | wl-copy
+
+mode "resize" {
+  bindsym Left resize shrink width 10px
+  bindsym Down resize grow height 10px
+  bindsym Up resize shrink height 10px
+  bindsym Right resize grow width 10px
+  bindsym Return mode "default"
+  bindsym Escape mode "default"
+}
+
+bindsym Mod4+r mode "resize"
 
 exec dbus-sway-environment
 exec mako
+exec eww daemon
 
 include ~/.config/sway/config.d/*

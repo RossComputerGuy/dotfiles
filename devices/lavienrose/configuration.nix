@@ -35,6 +35,11 @@
   hardware.nvidia.modesetting.enable = true;
   hardware.nvidia.package = config.boot.kernelPackages.nvidiaPackages.stable;
 
+  programs.sway.extraOptions = [ "--unsupported-gpu" ];
+  programs.sway.extraSessionCommands = ''
+    export WLR_NO_HARDWARE_CURSORS=1
+  '';
+
   # Services
   services.irqbalance.enable = true;
   services.ananicy.enable = true;
@@ -93,5 +98,6 @@
     };
 
   # Users
+  home-manager.users.ross.xdg.configFile."eww/device.yuck".source = ./config/eww/device.yuck;
   home-manager.users.ross.xdg.configFile."sway/config.d/device.conf".source = ./config/sway/config.d/device.conf;
 }

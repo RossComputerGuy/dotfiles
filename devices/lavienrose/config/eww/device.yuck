@@ -1,0 +1,14 @@
+(defwindow panel
+  :monitor 2
+  :geometry (geometry :x "0%"
+      :y "5px"
+      :width "98%"
+      :height "30px"
+      :anchor "top center"
+    )
+  :stacking "fg"
+  :windowtype "dock"
+  :exclusive true
+  :reserve (strust :side "top" :distance "4%")
+  :wm-ignore false
+    (bar))

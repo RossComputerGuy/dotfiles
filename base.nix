@@ -3,6 +3,7 @@
 { config, pkgs, modulesPath, ... }:
 let
   home-manager = builtins.fetchTarball "https://github.com/nix-community/home-manager/archive/release-22.05.tar.gz";
+  expr = import ./pkgs { inherit pkgs; };
 
   dbus-sway-environment = pkgs.writeTextFile {
     name = "dbus-sway-environment";
@@ -90,6 +91,13 @@ in
   hardware.opengl.driSupport32Bit = true;
   hardware.opengl.enable = true;
 
+  # Fonts
+  fonts.fonts = with pkgs; [
+    noto-fonts
+    noto-fonts-cjk
+    noto-fonts-emoji
+  ];
+
   # Applications & Services
   services.fwupd.enable = true;
   services.flatpak.enable = true;
@@ -123,16 +131,19 @@ in
     wlr-randr
     mako
     wlogout
+    playerctl
+    pamixer
+    xdg-user-dirs
+    grim
+    slurp
+    wl-clipboard
+    jq
     dbus-sway-environment
   ];
 
   programs.sway = {
     enable = true;
     wrapperFeatures.gtk = true;
-    extraOptions = [ "--unsupported-gpu" ];
-    extraSessionCommands = ''
-      export WLR_NO_HARDWARE_CURSORS=1
-    '';
   };
 
   services.dbus.enable = true;
@@ -147,6 +158,23 @@ in
 
   home-manager.users.ross = {
     xdg.configFile."sway/config".source = ./config/sway/config;
+    xdg.configFile."eww/eww.yuck".source = ./config/eww/eww.yuck;
+    xdg.configFile."eww/eww.scss".source = ./config/eww/eww.scss;
     home.file."Pictures/wallpaper.jpg".source = ./pictures/wallpaper.jpg;
+    gtk = {
+      enable = true;
+      iconTheme = {
+        package = pkgs.papirus-icon-theme;
+	name = "Papirus-Dark";
+      };
+      theme = {
+        package = expr.tokyonight-gtk-themes;
+	name = "material-tokyo-night";
+      };
+    };
+    programs.git = {
+      userEmail = "tristan.ross@midstall.com";
+      userName = "Tristan Ross";
+    };
   };
 }
