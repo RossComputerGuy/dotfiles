@@ -95,8 +95,14 @@ in
   fonts.fonts = with pkgs; [
     noto-fonts
     noto-fonts-cjk
+    noto-fonts-cjk-sans
+    noto-fonts-cjk-serif
     noto-fonts-emoji
+    ipaexfont
+    hanazono
+    migu
   ];
+  fonts.fontDir.enable = true;
 
   # Applications & Services
   services.fwupd.enable = true;
@@ -157,6 +163,7 @@ in
   };
 
   home-manager.users.ross = {
+    xdg.configFile."alacritty/alacritty.yml".source = ./config/alacritty/alacritty.yml;
     xdg.configFile."sway/config".source = ./config/sway/config;
     xdg.configFile."eww/eww.yuck".source = ./config/eww/eww.yuck;
     xdg.configFile."eww/eww.scss".source = ./config/eww/eww.scss;
