@@ -1,0 +1,20 @@
+set $mod Mod4
+set $menu nwg-drawer
+set $term alacritty
+
+gaps inner 10
+gaps outer 5
+
+default_border none
+default_floating_border none
+for_window [title="^.*"] title_format ""
+
+output "*" bg ~/Pictures/wallpaper.jpg fill
+
+bindsym $mod+d exec $menu
+bindsym $mod+return exec $term
+
+exec dbus-sway-environment
+exec mako
+
+include ~/.config/sway/config.d/*

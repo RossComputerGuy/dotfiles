@@ -32,6 +32,7 @@
 
   # Graphics
   services.xserver.videoDrivers = [ "nvidia" ];
+  hardware.nvidia.modesetting.enable = true;
   hardware.nvidia.package = config.boot.kernelPackages.nvidiaPackages.stable;
 
   # Services
@@ -90,4 +91,7 @@
       fsType = "zfs";
       options = [ "zfsutil" ];
     };
+
+  # Users
+  home-manager.users.ross.xdg.configFile."sway/config.d/device.conf".source = ./config/sway/config.d/device.conf;
 }

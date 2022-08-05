@@ -2,13 +2,25 @@
 
 { config, pkgs, modulesPath, ... }:
 let
-  home-manager = builtins.fetchTarball "https://github.com/nix-community/home-manager/archive/master.tar.gz";
+  home-manager = builtins.fetchTarball "https://github.com/nix-community/home-manager/archive/release-22.05.tar.gz";
+
+  dbus-sway-environment = pkgs.writeTextFile {
+    name = "dbus-sway-environment";
+    destination = "/bin/dbus-sway-environment";
+    executable = true;
+
+    text = ''
+      dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=sway
+      systemctl --user stop pipewire pipewire-media-session xdg-desktop-portal xdg-desktop-portal-wlr
+      systemctl --user start pipewire pipewire-media-session xdg-desktop-portal xdg-desktop-portal-wlr
+    '';
+  };
 in
 {
   imports =
     [
-      (import "${home-manager}/nixos")
       (modulesPath + "/installer/scan/not-detected.nix")
+      (import "${home-manager}/nixos")
     ];
   nixpkgs.config.allowUnfree = true;
 
@@ -32,13 +44,6 @@ in
   services.printing.enable = true;
   services.avahi.enable = true;
   services.avahi.nssmdns = true;
-  services.pipewire = {
-    enable = true;
-    alsa.enable = true;
-    alsa.support32Bit = true;
-    pulse.enable = true;
-    jack.enable = true;
-  };
 
   # Security
   services.gnome.gnome-keyring.enable = true;
@@ -57,6 +62,13 @@ in
   # Sound
   sound.enable = false;
   hardware.pulseaudio.enable = false;
+  services.pipewire = {
+    enable = true;
+    alsa.enable = true;
+    alsa.support32Bit = true;
+    pulse.enable = true;
+    jack.enable = true;
+  };
 
   # Network Configuration
   security.rtkit.enable = true;
@@ -86,6 +98,7 @@ in
   xdg = {
     portal = {
       enable = true;
+      wlr.enable = true;
       extraPortals = with pkgs; [
         xdg-desktop-portal-kde
         xdg-desktop-portal-gtk
@@ -94,17 +107,35 @@ in
     };
   };
 
-  programns.adb.enable = true;
+  programs.adb.enable = true;
 
   environment.variables.EDITOR = "nvim";
   environment.systemPackages = with pkgs; [
+    alacritty
     neofetch
     git
     neovim
     lm_sensors
     fwupd-efi
-    docker-compose
+    wayland
+    nwg-drawer
+    eww-wayland
+    wlr-randr
+    mako
+    wlogout
+    dbus-sway-environment
   ];
+
+  programs.sway = {
+    enable = true;
+    wrapperFeatures.gtk = true;
+    extraOptions = [ "--unsupported-gpu" ];
+    extraSessionCommands = ''
+      export WLR_NO_HARDWARE_CURSORS=1
+    '';
+  };
+
+  services.dbus.enable = true;
 
   # Users
   users.users.ross = {
@@ -112,5 +143,10 @@ in
     home = "/home/ross";
     description = "Tristan Ross";
     extraGroups = [ "wheel" "docker" "adbusers" ];
+  };
+
+  home-manager.users.ross = {
+    xdg.configFile."sway/config".source = ./config/sway/config;
+    home.file."Pictures/wallpaper.jpg".source = ./pictures/wallpaper.jpg;
   };
 }
