@@ -1,4 +1,5 @@
 set $menu nwg-drawer
+set $lock swaylock -i ~/Pictures/wallpaper.jpg --clock --effect-blur 5x5 --indicator --ring-color 1a1b26 --ring-wrong-color f7768e --text-color a9b1d6
 set $term alacritty
 
 gaps inner 10
@@ -14,6 +15,7 @@ output "*" bg ~/Pictures/wallpaper.jpg fill
 bindsym Mod4+q kill
 bindsym Mod4+d exec $menu
 bindsym Mod4+return exec $term
+bindsym Mod4+l exec $lock
 bindsym Mod1+Control+R reload
 bindsym Mod1+Control+Q exit
 
@@ -70,7 +72,8 @@ mode "resize" {
 bindsym Mod4+r mode "resize"
 
 exec dbus-sway-environment
-exec mako
 exec eww daemon
+exec mako
+exec fcitx5
 
 include ~/.config/sway/config.d/*
