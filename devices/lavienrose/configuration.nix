@@ -1,6 +1,9 @@
 { config, lib, pkgs, modulesPath, ... }:
 
 {
+  imports = [
+    ../../desktop.nix
+  ];
   # Bootloader
 
   boot.loader.efi.canTouchEfiVariables = true;
