@@ -23,9 +23,11 @@ in
 
   nixpkgs.overlays = [
     (self: super: {
-      eww = super.eww.overrideAttrs (old: {
-        name = "eww-0.3.0";
+      eww-wayland = super.eww-wayland.overrideAttrs (old: {
+        name = "eww-wayland-0.3.0";
         version = "0.3.0";
+	cargoSha256 = "sha256-3hGA730g8E4rwQ9V0wSLUcAEmockXi+spwp50cgf0Mw=";
+	cargoPatches = [ ./pkgs/applications/window-managers/eww/Cargo.lock.patch ];
         src = super.fetchFromGitHub rec {
           owner = "elkowar";
           repo = "eww";
