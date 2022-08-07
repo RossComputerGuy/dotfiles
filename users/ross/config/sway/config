@@ -51,6 +51,12 @@ bindsym Mod4+Shift+Down move down
 bindsym Mod4+Shift+Up move up
 bindsym Mod4+Shift+Right move right
 
+bindsym Mod4+b splith
+bindsym Mod4+v splitv
+bindsym Mod4+s layout stacking
+bindsym Mod4+w layout tabbed
+bindsym Mod4+e layout toggle split
+
 bindsym XF86AudioRaiseVolume exec pamixer -ui 2
 bindsym XF86AudioLowerVolume exec pamixer -ud 2
 bindsym XF86AudioMute exec pamixer --toggle-mute

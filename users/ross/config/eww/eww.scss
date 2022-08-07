@@ -2,16 +2,41 @@
   all: unset;
 }
 
-.panel, .calendar {
+.panel, .right-menu {
   background-color: #1a1b26;
   color: #a9b1d6;
   padding: 10px;
   border-radius: 12px;
 }
 
-.calendar {
+.right-menu {
   border-color: #24283b;
-  border-width: 12px;
+  border-style: solid;
+  border-width: 2px;
+}
+
+.mem-label, .cpu-label, .disk-label {
+  margin-bottom: 20px;
+}
+
+.mem, .cpu, .disk {
+  color: #9ece6a;
+  background-color: #414868;
+  border-radius: 20px;
+}
+
+.calendar {
+  border: none;
+}
+
+.calendar.header {
+  border: none;
+}
+
+.right-menu-actions {
+  background-color: #24283b;
+  border-radius: 6px;
+  color: #cfc9c2;
 }
 
 .sidestuff {

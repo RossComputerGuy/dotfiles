@@ -13,14 +13,14 @@
   :wm-ignore false
     (bar))
 
-(defwindow calendar
+(defwindow right-menu
   :monitor 2
   :geometry (geometry :x "1%"
       :y "5px"
-      :width "5%"
-      :height "10px"
+      :width "10%"
+      :height "300px"
       :anchor "top right"
     )
   :stacking "fg"
   :wm-ignore false
-    (cal))
+    (right-menu-box))

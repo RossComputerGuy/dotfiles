@@ -49,7 +49,7 @@
     (sidestuff)))
 
 (defwidget clock []
-  (eventbox :onhover "eww update reveal_time=true" :onhoverlost "eww update reveal_time=false" :onclick "[[ $(eww windows | grep '*calendar') == '*calendar' ]] && eww close calendar || eww open calendar"
+  (eventbox :onhover "eww update reveal_time=true" :onhoverlost "eww update reveal_time=false" :onclick "[[ $(eww windows | grep '*right-menu') == '*right-menu' ]] && eww close right-menu || eww open right-menu"
     (box :class "clock" :space-evenly false :orientation "h" :spacing 3
       (label :text clock_time)
       (revealer :transition "slideleft" :reveal reveal_time :duration "350ms"
@@ -103,5 +103,21 @@
     :halign "center"
     :text keyboard-layout))
 
-(defwidget cal []
-  (eventbox :onhoverlost "eww close calendar" (calendar :class "calendar")))
+(defwidget right-menu-box []
+  (eventbox :onhoverlost "eww close right-menu" (box :class "right-menu" :space-evenly false :orientation "v" :vexpand true :hexpand true
+    (box :class "right-menu-widgets" :space-evenly true :orientation "h" :vexpand true :hexpand true
+      (box :class "right-menu-cpu" :space-evenly false :orientation "v" :vexpand true :hexpand true
+        (label :class "cpu-label" :text "CPU")
+	(circular-progress :class "cpu" :thickness 4 :vexpand true :hexpand true :value {EWW_CPU.avg}))
+      (box :class "right-menu-mem" :space-evenly false :orientation "v" :vexpand true :hexpand true
+        (label :class "mem-label" :text "MEM")
+	(circular-progress :class "mem" :thickness 4 :vexpand true :hexpand true :value {EWW_RAM.used_mem_perc}))
+      (box :class "right-menu-disk" :space-evenly false :orientation "v" :vexpand true :hexpand true
+        (label :class "disk-label" :text "DISK")
+	(circular-progress :class "disk" :thickness 4 :vexpand true :hexpand true :value {round((1 - (EWW_DISK["/"].free / EWW_DISK["/"].total)) * 100, 0)})))
+    (calendar :class "calendar" :hexpand true :vexpand true :valign "end")
+    (box :class "right-menu-actions" :space-evenly true :orientation "h" :vexpand true :hexpand true
+      (button :class "action-logout" :onclick "swaymsg exit" "Logout")
+      (button :class "action-lock" :onclick "swaymsg exec '$lock'" "Lock")
+      (button :class "action-shutdown" :onclick "swaymsg exec systemctl shutdown" "Shutdown")
+      (button :class "action-reboot" :onclick "swaymsg exec systemctl reboot" "Reboot")))))
