@@ -87,6 +87,7 @@ in
   # Security
   services.gnome.gnome-keyring.enable = true;
   services.udev.packages = [ pkgs.yubikey-personalization ];
+  programs.ssh.askPassword = lib.mkForce "";
   environment.shellInit = ''
     export GPG_TTY="$(tty)"
     gpg-connect-agent /bye
