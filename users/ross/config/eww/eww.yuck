@@ -1,40 +1,34 @@
-(defwidget bar []
-  (centerbox :orientation "h"
-    (workspaces)
-    (music)
-    (sidestuff)))
+(include "./device.yuck")
 
-(defwidget sidestuff []
-  (box :class "sidestuff" :orientation "h" :space-evenly false :halign "end"
-    (metric :label "🔊"
-      :value volume
-      :onclick "pamixer -t"
-      :onchange "pamixer --set-volume $(echo {} | sed 's/\\..*//g')")
-    time))
+;; Variables
+(defvar reveal_vol false)
+(defvar reveal_time false)
+(deflisten music :initial ""
+  "playerctl --follow metadata --format '{{ artist }} - {{ title }}' || true")
 
-(defwidget workspaces []
-  (box :class "workspaces"
-      :orientation "h"
-      :space-evenly true
-      :halign "start"
-      :spacing 10
-    (button :onclick "swaymsg workspace 1" 1)
-    (button :onclick "swaymsg workspace 2" 2)
-    (button :onclick "swaymsg workspace 3" 3)
-    (button :onclick "swaymsg workspace 4" 4)
-    (button :onclick "swaymsg workspace 5" 5)
-    (button :onclick "swaymsg workspace 6" 6)
-    (button :onclick "swaymsg workspace 7" 7)
-    (button :onclick "swaymsg workspace 8" 8)
-    (button :onclick "swaymsg workspace 9" 9)
-    (button :onclick "swaymsg workspace 0" 0)))
+(defpoll keyboard-layout :interval "5s"
+  "dbus-send --print-reply --type=method_call --session --dest=org.fcitx.Fcitx5 /controller org.fcitx.Fcitx.Controller1.CurrentInputMethod | tail -n1 | xargs | cut -f2 -d ' '")
 
-(defwidget music []
-  (box :class "music"
-      :orientation "h"
-      :space-evenly false
-      :halign "center"
-    {music != "" ? "🎵${music}" : ""}))
+(defpoll volume :interval "1s"
+  "pamixer --get-volume")
+
+(defpoll active-workspace :interval "1s"
+  "swaymsg -t get_workspaces -r | jq '.[] | select(.focused) | .name' | xargs")
+
+(defpoll urgent-workspace :interval "5s"
+  "swaymsg -t get_workspaces -r | jq '.[] | select(.urgent) | .name' | xargs")
+
+(defpoll clock_time :interval "10s"
+  "date '+%H:%M'")
+
+(defpoll clock_date :interval "60s"
+  "date '+%Y-%m-%d'")
+
+;; Helpers
+(defwidget workspace [name]
+  (button :class {active-workspace == name ? "active-workspace" : urgent-workspace == name ? "urgent-workspace" : "inactive-workspace"}
+    :onclick "swaymsg workspace '${name}'"
+    name))
 
 (defwidget metric [label value onchange onclick]
   (box :orientation "h"
@@ -47,13 +41,67 @@
         :value value
         :onchange onchange)))
 
-(deflisten music :initial ""
-  "playerctl --follow metadata --format '{{ artist }} - {{ title }}' || true")
+;; Panel itself
+(defwidget bar []
+  (centerbox :orientation "h"
+    (workspaces)
+    (music)
+    (sidestuff)))
 
-(defpoll volume :interval "1s"
-  "pamixer --get-volume")
+(defwidget clock []
+  (eventbox :onhover "eww update reveal_time=true" :onhoverlost "eww update reveal_time=false" :onclick "[[ $(eww windows | grep '*calendar' >/dev/null) ]] && eww close calendar && eww open calendar"
+    (box :class "clock" :space-evenly false :orientation "h" :spacing 3
+      (label :text clock_time)
+      (revealer :transition "slideleft" :reveal reveal_time :duration "350ms"
+        (label :text clock_date)))))
 
-(defpoll time :interval "10s"
-  "date '+%H:%M %Y-%m-%d'")
+(defwidget volume []
+  (eventbox :onhover "eww update reveal_vol=true" :onhoverlost "eww update reveal_vol=false"
+    (box :class "volume" :space-evenly false :orientation "h" :spacing 3
+      (label :visible {reveal_vol ? false : true} :text "🔊")
+      (revealer :transition "slideleft" :reveal reveal_vol :duration "350ms"
+        (metric :label "🔊"
+          :value volume
+          :onclick "pamixer -t"
+          :onchange "pamixer --set-volume $(echo {} | sed 's/\\..*//g')")))))
 
-(include "./device.yuck")
+(defwidget sidestuff []
+  (box :class "sidestuff"
+      :orientation "h"
+      :space-evenly false
+      :halign "end"
+    (keyboard)
+    (volume)
+    (clock)))
+
+(defwidget workspaces []
+  (box :class "workspaces"
+      :orientation "h"
+      :space-evenly true
+      :halign "start"
+      :spacing 10
+    (workspace :name "1")
+    (workspace :name "2")
+    (workspace :name "3")
+    (workspace :name "4")
+    (workspace :name "5")
+    (workspace :name "6")
+    (workspace :name "7")
+    (workspace :name "8")
+    (workspace :name "9")
+    (workspace :name "0")))
+
+(defwidget music []
+  (box :class "music"
+      :orientation "h"
+      :space-evenly false
+      :halign "center"
+    {music != "" ? "🎵${music}" : ""}))
+
+(defwidget keyboard []
+  (label :class "keyboard"
+    :halign "center"
+    :text keyboard-layout))
+
+(defwidget cal []
+  (eventbox :onhoverlost "eww close calendar" (calendar :class "calendar")))

@@ -2,10 +2,16 @@
   all: unset;
 }
 
-.panel {
+.panel, .calendar {
   background-color: #1a1b26;
   color: #a9b1d6;
   padding: 10px;
+  border-radius: 12px;
+}
+
+.calendar {
+  border-color: #24283b;
+  border-width: 12px;
 }
 
 .sidestuff slider {
@@ -47,7 +53,22 @@
   margin-right: 20px;
 }
 
+.keyboard {
+  padding-right: 6px;
+}
+
+.volume {
+  padding-right: 6px;
+}
+
 .workspaces button:hover {
   color: #73daca;
 }
 
+.active-workspace {
+  color: #9ece6a;
+}
+
+.urgent-workspace {
+  color: #e0af68;
+}

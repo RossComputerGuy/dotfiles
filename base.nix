@@ -13,6 +13,28 @@ in
       (import ./users { inherit pkgs; inherit expr; inherit home-manager; })
     ];
   nixpkgs.config.allowUnfree = true;
+  nix.settings.auto-optimise-store = true;
+
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 30d";
+  };
+
+  nixpkgs.overlays = [
+    (self: super: {
+      eww = super.eww.overrideAttrs (old: {
+        name = "eww-0.3.0";
+        version = "0.3.0";
+        src = super.fetchFromGitHub rec {
+          owner = "elkowar";
+          repo = "eww";
+          rev = "v0.3.0";
+          sha256 = "055il2b3k8x6mrrjin6vkajpksc40phcp4j1iq0pi8v3j7zsfk1a";
+        };
+      });
+    })
+  ];
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
