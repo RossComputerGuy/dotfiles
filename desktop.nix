@@ -1,7 +1,6 @@
 { config, pkgs, home-manager, lib, nur, ... }:
 let
   home-manager = builtins.fetchTarball "https://github.com/nix-community/home-manager/archive/release-22.05.tar.gz";
-  expr = import ./pkgs { inherit pkgs; };
   dbus-sway-environment = pkgs.writeTextFile {
     name = "dbus-sway-environment";
     destination = "/bin/dbus-sway-environment";
@@ -22,9 +21,11 @@ let
 in
 {
   imports = [
-    (import ./users/desktop.nix { inherit pkgs; inherit expr; inherit home-manager; inherit dbus-sway-environment; inherit lib; })
+    ./users/desktop.nix
     nur.repos.ilya-fedin.modules.flatpak-fonts
   ];
+
+  lib.computer-guy.dbus-sway-environment = dbus-sway-environment;
 
   # Steam udev
   services.udev.extraRules = ''
