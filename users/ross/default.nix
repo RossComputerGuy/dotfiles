@@ -1,13 +1,13 @@
-{ home-manager, pkgs, expr, ... }:
+{ pkgs, ... }:
 {
-  useradd = {
+  users.users.ross = {
     isNormalUser = true;
     home = "/home/ross";
     description = "Tristan Ross";
     extraGroups = [ "wheel" "docker" "adbusers" "games" ];
   };
 
-  homeManager = {
+  home-manager.users.ross = {
     home.packages = with pkgs; [
       xdg-user-dirs
       jq

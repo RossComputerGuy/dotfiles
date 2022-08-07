@@ -1,4 +1,4 @@
-{ home-manager, pkgs, expr, dbus-sway-environment, lib, ... }:
+{ config, pkgs, lib, ... }:
 {
   home-manager.users.ross = {
     xdg.configFile."alacritty/alacritty.yml".source = ./config/alacritty/alacritty.yml;
@@ -20,7 +20,7 @@
       grim
       slurp
       wl-clipboard
-      dbus-sway-environment
+      config.lib.computer-guy.dbus-sway-environment
       swaylock-effects
       noto-fonts
       noto-fonts-cjk
@@ -43,7 +43,7 @@
 	name = "Papirus-Dark";
       };
       theme = {
-        package = expr.tokyonight-gtk-themes;
+        package = config.lib.computer-guy.tokyonight-gtk-themes;
 	name = "material-tokyo-night";
       };
       font = {

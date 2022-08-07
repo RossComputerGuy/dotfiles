@@ -3,14 +3,14 @@
 { config, pkgs, modulesPath, ... }:
 let
   home-manager = builtins.fetchTarball "https://github.com/nix-community/home-manager/archive/release-22.05.tar.gz";
-  expr = import ./pkgs { inherit pkgs; };
 in
 {
   imports =
     [
-      (modulesPath + "/installer/scan/not-detected.nix")
-      (import "${home-manager}/nixos")
-      (import ./users { inherit pkgs; inherit expr; inherit home-manager; })
+      "${modulesPath}/installer/scan/not-detected.nix"
+      "${home-manager}/nixos"
+      ./users
+      ./pkgs
     ];
   nixpkgs.config.allowUnfree = true;
 

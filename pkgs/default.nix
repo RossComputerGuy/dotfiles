@@ -1,5 +1,5 @@
-{ pkgs ? import <nixpkgs> {} }: with pkgs;
+{ pkgs, ... }:
 
-rec {
-  tokyonight-gtk-themes = callPackage ./data/themes/tokyonight {};
+{
+  lib.computer-guy.tokyonight-gtk-themes = pkgs.callPackage ./data/themes/tokyonight {};
 }
