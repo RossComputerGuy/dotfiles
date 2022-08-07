@@ -12,7 +12,7 @@
     fonts.fontconfig.enable = lib.mkForce true;
     home.packages = with pkgs; [
       nwg-drawer
-      eww-wayland
+      config.lib.computer-guy.eww-wayland
       mako
       wlogout
       playerctl

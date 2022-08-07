@@ -49,7 +49,7 @@
     (sidestuff)))
 
 (defwidget clock []
-  (eventbox :onhover "eww update reveal_time=true" :onhoverlost "eww update reveal_time=false" :onclick "[[ $(eww windows | grep '*calendar' >/dev/null) ]] && eww close calendar && eww open calendar"
+  (eventbox :onhover "eww update reveal_time=true" :onhoverlost "eww update reveal_time=false" :onclick "[[ $(eww windows | grep '*calendar') == '*calendar' ]] && eww close calendar || eww open calendar"
     (box :class "clock" :space-evenly false :orientation "h" :spacing 3
       (label :text clock_time)
       (revealer :transition "slideleft" :reveal reveal_time :duration "350ms"

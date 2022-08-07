@@ -1,6 +1,6 @@
 # Base Configuration for nixOS
 
-{ config, pkgs, modulesPath, ... }:
+{ config, pkgs, modulesPath, lib, ... }:
 let
   home-manager = builtins.fetchTarball "https://github.com/nix-community/home-manager/archive/release-22.05.tar.gz";
 in
@@ -21,30 +21,13 @@ in
     options = "--delete-older-than 30d";
   };
 
-  nixpkgs.overlays = [
-    (self: super: {
-      eww-wayland = super.eww-wayland.overrideAttrs (old: {
-        name = "eww-wayland-0.3.0";
-        version = "0.3.0";
-	cargoSha256 = "sha256-3hGA730g8E4rwQ9V0wSLUcAEmockXi+spwp50cgf0Mw=";
-	cargoPatches = [ ./pkgs/applications/window-managers/eww/Cargo.lock.patch ];
-        src = super.fetchFromGitHub rec {
-          owner = "elkowar";
-          repo = "eww";
-          rev = "v0.3.0";
-          sha256 = "055il2b3k8x6mrrjin6vkajpksc40phcp4j1iq0pi8v3j7zsfk1a";
-        };
-      });
-    })
-  ];
-
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
   # on your system were taken. It‘s perfectly fine and recommended to leave
   # this value at the release version of the first install of this system.
   # Before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
-  system.stateVersion = "21.11"; # Did you read the comment?
+  system.stateVersion = "22.05"; # Did you read the comment?
 
   # "Other" System Configuration
   time.timeZone = "America/Los_Angeles";
