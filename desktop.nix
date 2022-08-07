@@ -1,4 +1,4 @@
-{ config, pkgs, home-manager, lib, ... }:
+{ config, pkgs, home-manager, lib, nur, ... }:
 let
   home-manager = builtins.fetchTarball "https://github.com/nix-community/home-manager/archive/release-22.05.tar.gz";
   expr = import ./pkgs { inherit pkgs; };
@@ -13,10 +13,17 @@ let
       systemctl --user start pipewire pipewire-media-session xdg-desktop-portal xdg-desktop-portal-wlr
     '';
   };
+  nur = import (builtins.fetchTarball {
+    url = https://github.com/nix-community/NUR/archive/6600601c83e9404c2dc5a848c4eb65b0beb9f298.zip;
+    sha256 = "1xa7cfzjph965a6jlla5s61srflijpz48lzq27m7x0qym5xq9r6q";
+  }) {
+    inherit pkgs;
+  };
 in
 {
   imports = [
     (import ./users/desktop.nix { inherit pkgs; inherit expr; inherit home-manager; inherit dbus-sway-environment; inherit lib; })
+    nur.repos.ilya-fedin.modules.flatpak-fonts
   ];
 
   # Steam udev
