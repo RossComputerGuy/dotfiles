@@ -1,5 +1,24 @@
-{ config, pkgs, ... }:
+{ config, pkgs, home-manager, lib, ... }:
+let
+  home-manager = builtins.fetchTarball "https://github.com/nix-community/home-manager/archive/release-22.05.tar.gz";
+  expr = import ./pkgs { inherit pkgs; };
+  dbus-sway-environment = pkgs.writeTextFile {
+    name = "dbus-sway-environment";
+    destination = "/bin/dbus-sway-environment";
+    executable = true;
+
+    text = ''
+      dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=sway
+      systemctl --user stop pipewire pipewire-media-session xdg-desktop-portal xdg-desktop-portal-wlr
+      systemctl --user start pipewire pipewire-media-session xdg-desktop-portal xdg-desktop-portal-wlr
+    '';
+  };
+in
 {
+  imports = [
+    (import ./users/desktop.nix { inherit pkgs; inherit expr; inherit home-manager; inherit dbus-sway-environment; inherit lib; })
+  ];
+
   # Steam udev
   services.udev.extraRules = ''
     # This rule is needed for basic functionality of the controller in Steam and keyboard/mouse emulation
@@ -76,6 +95,11 @@
   services.xserver.enable = true;
   hardware.opengl.driSupport32Bit = true;
   hardware.opengl.enable = true;
+  fonts.fontDir.enable = true;
+
+  # Display manager
+  services.xserver.displayManager.gdm.enable = true;
+  services.xserver.displayManager.defaultSession = "sway";
 
   # Applications & Services
   services.fwupd.enable = true;

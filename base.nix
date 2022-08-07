@@ -4,25 +4,13 @@
 let
   home-manager = builtins.fetchTarball "https://github.com/nix-community/home-manager/archive/release-22.05.tar.gz";
   expr = import ./pkgs { inherit pkgs; };
-
-  dbus-sway-environment = pkgs.writeTextFile {
-    name = "dbus-sway-environment";
-    destination = "/bin/dbus-sway-environment";
-    executable = true;
-
-    text = ''
-      dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=sway
-      systemctl --user stop pipewire pipewire-media-session xdg-desktop-portal xdg-desktop-portal-wlr
-      systemctl --user start pipewire pipewire-media-session xdg-desktop-portal xdg-desktop-portal-wlr
-    '';
-  };
 in
 {
   imports =
     [
       (modulesPath + "/installer/scan/not-detected.nix")
       (import "${home-manager}/nixos")
-      (import ./users/ross { inherit pkgs; inherit expr; inherit home-manager; inherit dbus-sway-environment; })
+      (import ./users { inherit pkgs; inherit expr; inherit home-manager; })
     ];
   nixpkgs.config.allowUnfree = true;
 
