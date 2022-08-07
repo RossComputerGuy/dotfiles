@@ -3,6 +3,7 @@
   home-manager.users.ross = {
     xdg.configFile."alacritty/alacritty.yml".source = ./config/alacritty/alacritty.yml;
     xdg.configFile."sway/config".source = ./config/sway/config;
+    xdg.configFile."swayidle/config".source = ./config/swayidle/config;
     xdg.configFile."eww/eww.yuck".source = ./config/eww/eww.yuck;
     xdg.configFile."eww/eww.scss".source = ./config/eww/eww.scss;
     xdg.configFile."electron-flags.conf".source = ./config/electron-flags.conf;

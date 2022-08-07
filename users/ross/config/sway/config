@@ -75,5 +75,6 @@ exec dbus-sway-environment
 exec eww daemon
 exec mako
 exec fcitx5
+exec swayidle -C ~/.config/swayidle.conf
 
 include ~/.config/sway/config.d/*
