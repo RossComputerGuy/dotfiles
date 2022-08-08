@@ -2,10 +2,11 @@
 {
   home-manager.users.ross = {
     xdg.configFile."alacritty/alacritty.yml".source = ./config/alacritty/alacritty.yml;
-    xdg.configFile."sway/config".source = ./config/sway/config;
-    xdg.configFile."swayidle/config".source = ./config/swayidle/config;
     xdg.configFile."eww/eww.yuck".source = ./config/eww/eww.yuck;
     xdg.configFile."eww/eww.scss".source = ./config/eww/eww.scss;
+    xdg.configFile."nwg-drawer/drawer.css".source = ./config/nwg-drawer/drawer.css;
+    xdg.configFile."sway/config".source = ./config/sway/config;
+    xdg.configFile."swayidle/config".source = ./config/swayidle/config;
     xdg.configFile."electron-flags.conf".source = ./config/electron-flags.conf;
     xdg.configFile."mimeapps.list".source = ./config/mimeapps.list;
     home.file."Pictures/wallpaper.jpg".source = ./pictures/wallpaper.jpg;

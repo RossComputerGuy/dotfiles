@@ -2,8 +2,11 @@ set $menu nwg-drawer
 set $lock swaylock -i ~/Pictures/wallpaper.jpg --clock --effect-blur 5x5 --indicator --ring-color 1a1b26 --ring-wrong-color f7768e --text-color a9b1d6
 set $term alacritty
 
-gaps inner 10
-gaps outer 5
+include ~/.config/sway/config.d/*
+
+gaps inner 5
+gaps horizontal 10
+gaps vertical 4
 
 default_border none
 default_floating_border none
@@ -82,5 +85,3 @@ exec eww daemon
 exec mako
 exec fcitx5
 exec swayidle -C ~/.config/swayidle.conf
-
-include ~/.config/sway/config.d/*
