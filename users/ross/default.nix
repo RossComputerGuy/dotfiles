@@ -12,7 +12,13 @@
     home.packages = with pkgs; [
       xdg-user-dirs
       jq
+      nvimpager
     ];
+    home.sessionVariables = {
+      EDITOR = "nvim";
+      MANPAGER = "nvimpager";
+      PAGER = "nvimpager";
+    };
     programs.neovim = {
       enable = true;
       withNodeJs = true;
@@ -39,6 +45,9 @@
       enable = true;
       userEmail = "tristan.ross@midstall.com";
       userName = "Tristan Ross";
+      extraConfig = {
+        core.pager = "nvimpager";
+      };
     };
   };
 }
