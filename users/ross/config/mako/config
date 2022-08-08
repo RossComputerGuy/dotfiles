@@ -1,0 +1,8 @@
+background-color=#1a1b26
+border-color=#24283b
+border-size=2
+border-radius=3
+text-color=#a9b1d6
+progress-color=over #2ac3deff
+margin=10,15
+default-timeout=600

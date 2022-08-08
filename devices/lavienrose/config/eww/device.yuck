@@ -2,7 +2,7 @@
   :monitor 2
   :geometry (geometry :x "0%"
       :y "5px"
-      :width "98%"
+      :width "99%"
       :height "30px"
       :anchor "top center"
     )
@@ -15,9 +15,9 @@
 
 (defwindow right-menu
   :monitor 2
-  :geometry (geometry :x "1%"
+  :geometry (geometry :x "13px"
       :y "5px"
-      :width "10%"
+      :width "300px"
       :height "300px"
       :anchor "top right"
     )
