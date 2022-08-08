@@ -133,8 +133,6 @@ in
   environment.systemPackages = with pkgs; [
     alacritty
     neofetch
-    git
-    neovim
     lm_sensors
     fwupd-efi
     wayland
