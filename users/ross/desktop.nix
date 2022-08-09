@@ -13,6 +13,7 @@
     home.file."Pictures/wallpaper.jpg".source = ./pictures/wallpaper.jpg;
     fonts.fontconfig.enable = lib.mkForce true;
     home.packages = with pkgs; [
+      alacritty
       nwg-drawer
       config.lib.computer-guy.eww-wayland
       mako

@@ -129,14 +129,6 @@ in
 
   programs.adb.enable = true;
 
-  environment.systemPackages = with pkgs; [
-    alacritty
-    neofetch
-    lm_sensors
-    fwupd-efi
-    wayland
-  ];
-
   programs.sway = {
     enable = true;
     wrapperFeatures.gtk = true;

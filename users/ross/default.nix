@@ -26,12 +26,17 @@
       withPython3 = true;
       plugins = with pkgs.vimPlugins; [
         colorizer
+        cmp-nvim-lua
+        cmp-nvim-lsp
         editorconfig-nvim
         fcitx-vim
         gitsigns-nvim
+        nvim-lspconfig
         nerdtree
         nerdtree-git-plugin
+        nvim-cmp
         tokyonight-nvim
+        vim-vsnip
 	vim-nix
         vim-cursorword
         winshift-nvim
@@ -52,6 +57,7 @@
         noremap <leader>s :w<CR>
         noremap <leader>w :wq<CR>
 
+        set completeopt=menu,menuone,noselect
         lua require("init")
       '';
     };
@@ -59,7 +65,6 @@
       enable = true;
     };
     programs.git = {
-      enable = true;
       userEmail = "tristan.ross@midstall.com";
       userName = "Tristan Ross";
       extraConfig = {
