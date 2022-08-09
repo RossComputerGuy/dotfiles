@@ -129,7 +129,6 @@ in
 
   programs.adb.enable = true;
 
-  environment.variables.EDITOR = "nvim";
   environment.systemPackages = with pkgs; [
     alacritty
     neofetch

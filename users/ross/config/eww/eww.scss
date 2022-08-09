@@ -2,7 +2,8 @@
   all: unset;
 }
 
-.panel, .right-menu {
+.panel, .right-menu, window {
+  font-family: "Migu 1P";
   background-color: #1a1b26;
   color: #a9b1d6;
   padding: 10px;

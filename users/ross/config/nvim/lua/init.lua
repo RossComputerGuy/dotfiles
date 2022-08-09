@@ -1,5 +1,3 @@
-vim.cmd[[colorscheme tokyonight]]
-
 require('gitsigns').setup {
   current_line_blame = true,
   current_line_blame_opts = {

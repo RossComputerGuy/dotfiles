@@ -16,7 +16,6 @@
       nwg-drawer
       config.lib.computer-guy.eww-wayland
       mako
-      wlogout
       playerctl
       pamixer
       grim
@@ -25,18 +24,9 @@
       config.lib.computer-guy.dbus-sway-environment
       swaylock-effects
       noto-fonts
-      noto-fonts-cjk
-      noto-fonts-cjk-sans
-      noto-fonts-cjk-serif
       noto-fonts-emoji
-      ipaexfont
-      hanazono
-      migu
       dejavu_fonts
-      freefont_ttf
-      gyre-fonts
-      liberation_ttf
-      unifont
+      migu
     ];
     gtk = {
       enable = true;
@@ -50,7 +40,7 @@
       };
       font = {
         package = pkgs.dejavu_fonts;
-	name = "DejaVu Sans";
+	name = "Migu 1P Regular";
       };
     };
   };
