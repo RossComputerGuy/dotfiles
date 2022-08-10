@@ -1,5 +1,26 @@
 local cmp = require('cmp')
 local lspconfig = require('lspconfig')
+local neogit = require('neogit')
+local saga = require('lspsaga')
+
+saga.init_lsp_saga()
+
+require('dressing').setup({
+  input = {
+    enabled = true,
+  },
+  select = {
+    enabled = true,
+  },
+})
+
+neogit.setup {
+  kind = "tab",
+  auto_refresh = true,
+  integrations = {
+    diffview = true,
+  },
+}
 
 local capabilities = vim.lsp.protocol.make_client_capabilities()
 capabilities = require('cmp_nvim_lsp').update_capabilities(capabilities)

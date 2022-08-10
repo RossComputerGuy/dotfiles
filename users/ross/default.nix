@@ -28,13 +28,16 @@
         colorizer
         cmp-nvim-lua
         cmp-nvim-lsp
+        diffview-nvim
+        dressing-nvim
         editorconfig-nvim
         fcitx-vim
         gitsigns-nvim
+        lspsaga-nvim
+        neogit
         nvim-lspconfig
-        nerdtree
-        nerdtree-git-plugin
         nvim-cmp
+        telescope-nvim
         tokyonight-nvim
         vim-vsnip
 	vim-nix
@@ -45,17 +48,16 @@
         set number
         colorscheme tokyonight
 
-        autocmd StdinReadPre * let s:std_in=1
-        autocmd VimEnter * if argc() == 0 && !exists("s:std_in") && v:this_session == "" | NERDTree | endif
-        autocmd BufEnter * if winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree() | quit | endif
-        autocmd BufEnter * if bufname("#") =~ "NERD_tree_\d\+" && bufname("%") !~ "NERD_tree_\d\+" && winnr("$") > 1 |
-          \ let buf=bufnr() | buffer# | execute "normal! \<C-W>w" | execute "buffer".buf | endif
-
-        noremap <leader>f :NERDTreeFocus<CR>
         noremap <leader>m :WinShift<CR>
         noremap <leader>q :exit<CR>
         noremap <leader>s :w<CR>
         noremap <leader>w :wq<CR>
+        noremap <leader>g :Neogit<CR>
+
+        nnoremap <leader>ff <cmd>Telescope find_files<cr>
+        nnoremap <leader>fg <cmd>Telescope live_grep<cr>
+        nnoremap <leader>fb <cmd>Telescope buffers<cr>
+        nnoremap <leader>fh <cmd>Telescope help_tags<cr>
 
         set completeopt=menu,menuone,noselect
         lua require("init")
