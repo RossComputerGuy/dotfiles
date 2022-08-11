@@ -63,6 +63,7 @@ in
   programs.git.enable = true;
 
   environment.systemPackages = with pkgs; [
+    rnix-lsp
     lm_sensors
     fwupd-efi
   ];

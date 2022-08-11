@@ -1,4 +1,12 @@
 { pkgs, ... }:
+let
+  nur = import (builtins.fetchTarball {
+    url = https://github.com/nix-community/NUR/archive/6600601c83e9404c2dc5a848c4eb65b0beb9f298.zip;
+    sha256 = "1xa7cfzjph965a6jlla5s61srflijpz48lzq27m7x0qym5xq9r6q";
+  }) {
+    inherit pkgs;
+  };
+in
 {
   users.users.ross = {
     isNormalUser = true;
@@ -25,6 +33,7 @@
       withNodeJs = true;
       withPython3 = true;
       plugins = with pkgs.vimPlugins; [
+        nur.repos.m15a.vimExtraPlugins.mason-nvim
         colorizer
         cmp-nvim-lua
         cmp-nvim-lsp
@@ -40,26 +49,11 @@
         telescope-nvim
         tokyonight-nvim
         vim-vsnip
-	vim-nix
+        vim-nix
         vim-cursorword
         winshift-nvim
       ];
       extraConfig = ''
-        set number
-        colorscheme tokyonight
-
-        noremap <leader>m :WinShift<CR>
-        noremap <leader>q :exit<CR>
-        noremap <leader>s :w<CR>
-        noremap <leader>w :wq<CR>
-        noremap <leader>g :Neogit<CR>
-
-        nnoremap <leader>ff <cmd>Telescope find_files<cr>
-        nnoremap <leader>fg <cmd>Telescope live_grep<cr>
-        nnoremap <leader>fb <cmd>Telescope buffers<cr>
-        nnoremap <leader>fh <cmd>Telescope help_tags<cr>
-
-        set completeopt=menu,menuone,noselect
         lua require("init")
       '';
     };
