@@ -1,5 +1,8 @@
 vim.opt.number = true
 vim.opt.completeopt = { 'menu', 'menuone', 'noselect' }
+vim.opt.tabstop = 2
+vim.opt.shiftwidth = 2
+vim.opt.expandtab = true
 
 vim.cmd [[packadd packer.nvim]]
 
@@ -76,7 +79,7 @@ return require('packer').startup(function(use)
         vim.keymap.set('n', '<space>f', vim.lsp.buf.formatting, bufopts)
       end
 
-      local servers = { 'clangd', 'pyright', 'tsserver', 'rnix', 'tailwindcss', 'sumneko_lua' }
+      local servers = { 'clangd', 'pyright', 'tsserver', 'rnix', 'tailwindcss', 'sumneko_lua', 'eslint', 'dockerls', 'cssls', 'html', 'jsonls' }
       mlsp.setup_handlers({
         function(name)
           if vim.tbl_contains(servers, name) then
