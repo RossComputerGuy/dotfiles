@@ -64,6 +64,8 @@ in
 
   environment.systemPackages = with pkgs; [
     rnix-lsp
+    fd
+    ripgrep
     lm_sensors
     fwupd-efi
   ];

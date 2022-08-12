@@ -29,7 +29,8 @@ ships and mobile suits. This desktop machine is my main workhorse for gaming, pr
   - Connection: 3.5mm audio jack to 1/4" audio jack into `Focusrite Scarlett Solo`'s `monitor` port
 - Displays
   - Primary: `LG Ultragear 27GL850-8`
-  - Secondary (*left of primary*): `Samsung LS27AG32x`
+  - Secondary (*right of primary*, *vertical*): `Samsung LS27AG32x`
+  - Thirdary (*left of primary*): `BenQ GW2480`
   - TV (*above primary*): 
     - Connection: `Onkyo TX-SR393`
 - Speakers:
