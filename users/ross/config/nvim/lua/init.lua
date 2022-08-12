@@ -28,26 +28,28 @@ return require('packer').startup(function(use)
     config = function()
       require('nvim-treesitter.configs').setup({
         ensure_installed = { 'c', 'css', 'javascript', 'http', 'markdown', 'nix', 'scss', 'sql', 'vim', 'vue' },
-	sync_install = false,
-	auto_install = true,
-	highlight = {
+        sync_install = false,
+        auto_install = true,
+        highlight = {
           enable = true,
-	  additional_vim_regex_highlighting = true,
-	},
+          additional_vim_regex_highlighting = true,
+        },
       })
     end,
   }
 
   use {
-    'williamboman/mason.nvim',
-    'williamboman/mason-lspconfig.nvim',
     'neovim/nvim-lspconfig',
-    'hrsh7th/nvim-cmp',
-    'hrsh7th/cmp-buffer',
-    'hrsh7th/cmp-path',
-    'hrsh7th/cmp-cmdline',
-    'hrsh7th/cmp-nvim-lsp',
-    'hrsh7th/cmp-nvim-lua',
+    requires = {
+      'hrsh7th/nvim-cmp',
+      'hrsh7th/cmp-buffer',
+      'hrsh7th/cmp-path',
+      'hrsh7th/cmp-cmdline',
+      'hrsh7th/cmp-nvim-lsp',
+      'hrsh7th/cmp-nvim-lua',
+      'williamboman/mason.nvim',
+      'williamboman/mason-lspconfig.nvim',
+    },
     config = function()
       local lspconfig = require('lspconfig')
       local mlsp = require('mason-lspconfig')
