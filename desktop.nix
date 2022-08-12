@@ -23,6 +23,7 @@ in
   imports = [
     ./users/desktop.nix
     nur.repos.ilya-fedin.modules.flatpak-fonts
+    nur.repos.ilya-fedin.modules.flatpak-icons
   ];
 
   lib.computer-guy.dbus-sway-environment = dbus-sway-environment;
