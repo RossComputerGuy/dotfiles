@@ -63,6 +63,10 @@ in
   programs.git.enable = true;
 
   environment.systemPackages = with pkgs; [
+    sumneko-lua-language-server
+    clang-tools
+    tree-sitter
+    gcc
     rnix-lsp
     fd
     ripgrep

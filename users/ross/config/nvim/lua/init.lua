@@ -20,6 +20,22 @@ return require('packer').startup(function(use)
   }
 
   use {
+    'nvim-treesitter/nvim-treesitter',
+    run = ':TSUpdate',
+    config = function()
+      require('nvim-treesitter.configs').setup({
+        ensure_installed = { 'c', 'css', 'javascript', 'http', 'markdown', 'nix', 'scss', 'sql', 'vim', 'vue' },
+	sync_install = false,
+	auto_install = true,
+	highlight = {
+          enable = true,
+	  additional_vim_regex_highlighting = true,
+	},
+      })
+    end,
+  }
+
+  use {
     'williamboman/mason.nvim',
     'williamboman/mason-lspconfig.nvim',
     'neovim/nvim-lspconfig',
@@ -60,7 +76,7 @@ return require('packer').startup(function(use)
         vim.keymap.set('n', '<space>f', vim.lsp.buf.formatting, bufopts)
       end
 
-      local servers = { 'clangd', 'pyright', 'tsserver', 'rnix' }
+      local servers = { 'clangd', 'pyright', 'tsserver', 'rnix', 'tailwindcss', 'sumneko_lua' }
       mlsp.setup_handlers({
         function(name)
           if vim.tbl_contains(servers, name) then
