@@ -1,3 +1,7 @@
+local runtime_path = vim.split(package.path, ';')
+table.insert(runtime_path, 'lua/?.lua')
+table.insert(runtime_path, 'lua/?/init.lua')
+
 vim.opt.number = true
 vim.opt.completeopt = { 'menu', 'menuone', 'noselect' }
 vim.opt.tabstop = 2
@@ -13,8 +17,14 @@ vim.api.nvim_set_keymap('n', '<leader>w', ':wq<CR>', { noremap = true })
 return require('packer').startup(function(use)
   use {
     'nvim-telescope/telescope.nvim',
+    requires = {
+      'nvim-telescope/telescope-media-files.nvim',
+      'nvim-lua/popup.nvim',
+    },
     tag = '0.1.0',
     config = function()
+      require('telescope').load_extension('media_files')
+
       vim.api.nvim_set_keymap('n', '<leader>ff', '<cmd>Telescope find_files<CR>', { noremap = true })
       vim.api.nvim_set_keymap('n', '<leader>fg', '<cmd>Telescope live_grep<CR>', { noremap = true })
       vim.api.nvim_set_keymap('n', '<leader>fb', '<cmd>Telescope buffers<CR>', { noremap = true })
@@ -36,6 +46,56 @@ return require('packer').startup(function(use)
         },
       })
     end,
+  }
+
+  use 'mfussenegger/nvim-dap'
+
+  use {
+    'stevearc/overseer.nvim',
+    config = function()
+      require('overseer').setup()
+
+      vim.api.nvim_set_keymap('n', '<leader>ob', ':OverseerBuild<CR>', { noremap = true })
+      vim.api.nvim_set_keymap('n', '<leader>or', ':OverseerRun<CR>', { noremap = true })
+      vim.api.nvim_set_keymap('n', '<leader>oo', ':OverseerOpen<CR>', { noremap = true })
+    end,
+  }
+
+  use {
+    'jose-elias-alvarez/null-ls.nvim',
+    config = function() require('null-ls').setup({
+      on_attach = function(client, bufnr)
+        if client.server_capabilities.documentFormattingProvider then
+          vim.cmd [[nnoremap <silent><buffer> <leader>f :lua vim.lsp.buf.formatting()<CR>]]
+          vim.cmd [[autocmd BufWritePost <buffer> lua vim.lsp.buf.formatting()]]
+        end
+
+        if client.server_capabilities.documentRangeFormattingProvider then
+          vim.cmd [[xnoremap <silent><buffer> <Leader>f :lua vim.lsp.buf.range_formatting({})<CR>]]
+        end
+      end
+    }) end,
+  }
+
+  use {
+    'MunifTanjim/prettier.nvim',
+    config = function() require('prettier').setup({
+      bin = 'prettier',
+      filetypes = {
+        'css',
+        'graphql',
+        'html',
+        'javascript',
+        'javascriptreaact',
+        'json',
+        'less',
+        'scss',
+        'markdown',
+        'typescript',
+        'typescriptreact',
+        'yaml'
+      },
+    }) end,
   }
 
   use {
@@ -81,21 +141,47 @@ return require('packer').startup(function(use)
         vim.keymap.set('n', '<space>f', vim.lsp.buf.formatting, bufopts)
       end
 
-      local servers = { 'clangd', 'pyright', 'tsserver', 'rnix', 'tailwindcss', 'sumneko_lua', 'eslint', 'dockerls', 'cssls', 'html', 'jsonls' }
+      local servers = {
+        clangd = {},
+        pyright = {},
+        tsserver = {},
+        rnix = {},
+        tailwindcss = {},
+        sumneko_lua = {
+          settings = {
+            Lua = {
+              runtime = {
+                version = 'LuaJIT',
+                path = runtime_path,
+              },
+              diagnostics = {
+                globals = { 'vim' },
+              },
+              workspace = { library = vim.api.nvim_get_runtime_file('', true) },
+              telemetry = { enable = false, },
+            }
+          }
+        },
+        eslint = {},
+        dockerls = {},
+        cssls = {},
+        html = {},
+        jsonls = {}
+      }
       mlsp.setup_handlers({
         function(name)
-          if vim.tbl_contains(servers, name) then
-           lspconfig[name].setup({
+          if servers[name] then
+           lspconfig[name].setup(vim.tbl_extend('force', {
               capabilities = capabilities,
-	      on_attach = on_attach,
-	    })
+              on_attach = on_attach,
+            }, servers[name]))
           end
-	end,
+        end,
       })
 
       mlsp.setup({
         automatic_install = true,
-	ensure_installed = servers,
+        ensure_installed = vim.tbl_keys(servers),
       })
 
       mason.setup()
