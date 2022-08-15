@@ -3,6 +3,7 @@ table.insert(runtime_path, 'lua/?.lua')
 table.insert(runtime_path, 'lua/?/init.lua')
 
 vim.opt.number = true
+vim.opt.termguicolors = true
 vim.opt.completeopt = { 'menu', 'menuone', 'noselect' }
 vim.opt.tabstop = 2
 vim.opt.shiftwidth = 2
@@ -37,7 +38,7 @@ return require('packer').startup(function(use)
     run = ':TSUpdate',
     config = function()
       require('nvim-treesitter.configs').setup({
-        ensure_installed = { 'c', 'css', 'javascript', 'http', 'markdown', 'nix', 'scss', 'sql', 'vim', 'vue' },
+        ensure_installed = { 'c', 'css', 'javascript', 'http', 'markdown', 'nix', 'scss', 'sql', 'vim', 'vue', 'vala' },
         sync_install = false,
         auto_install = true,
         highlight = {
@@ -49,6 +50,7 @@ return require('packer').startup(function(use)
   }
 
   use 'mfussenegger/nvim-dap'
+  use 'arrufat/vala.vim'
 
   use {
     'stevearc/overseer.nvim',
@@ -166,7 +168,9 @@ return require('packer').startup(function(use)
         dockerls = {},
         cssls = {},
         html = {},
-        jsonls = {}
+        jsonls = {},
+        tilt_ls = {},
+        vala_ls = {},
       }
       mlsp.setup_handlers({
         function(name)
@@ -280,7 +284,11 @@ return require('packer').startup(function(use)
     config = function() vim.cmd [[colorscheme tokyonight]] end,
   }
 
-  use { 'norcalli/nvim-colorizer.lua' }
+  use {
+    'norcalli/nvim-colorizer.lua',
+    config = function() require('colorizer').setup() end,
+  }
+
   use { 'gpanders/editorconfig.nvim' }
   use { 'xiyaowong/nvim-cursorword' }
   use { 'LnL7/vim-nix' }

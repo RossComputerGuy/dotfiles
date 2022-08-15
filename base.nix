@@ -42,16 +42,18 @@ in
 
   networking.nameservers = [ "127.0.0.1" "::1" ];
 
-  services.dnscrypt-proxy2 = {
-    enable = true;
-  };
+  services.dnscrypt-proxy2.enable = true;
+  services.dnscrypt-proxy2.settings.listen_addresses = [ "127.0.0.1:8053" ];
 
   systemd.services.dnscrypt-proxy2.serviceConfig = {
     StateDirectory = "dnscrypt-proxy";
   };
 
+  services.dnsmasq.enable = true;
+  services.dnsmasq.servers = [ "127.0.0.1#8053" ];
+
   networking.networkmanager.enable = true;
-  networking.networkmanager.dns = "none";
+  networking.networkmanager.dns = "dnsmasq";
 
   # Keyboard & Input
 
@@ -64,6 +66,7 @@ in
 
   environment.systemPackages = with pkgs; [
     sumneko-lua-language-server
+    vala-language-server
     clang-tools
     tree-sitter
     gcc

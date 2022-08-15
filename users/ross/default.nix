@@ -4,7 +4,7 @@
     isNormalUser = true;
     home = "/home/ross";
     description = "Tristan Ross";
-    extraGroups = [ "wheel" "docker" "adbusers" "games" ];
+    extraGroups = [ "wheel" "docker" "adbusers" "games" "input" ];
   };
 
   home-manager.users.ross = {

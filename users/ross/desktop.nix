@@ -14,6 +14,7 @@
     fonts.fontconfig.enable = lib.mkForce true;
     home.packages = with pkgs; [
       alacritty
+      solaar
       nwg-drawer
       config.lib.computer-guy.eww-wayland
       mako
@@ -33,15 +34,15 @@
       enable = true;
       iconTheme = {
         package = pkgs.papirus-icon-theme;
-	name = "Papirus-Dark";
+        name = "Papirus-Dark";
       };
       theme = {
         package = config.lib.computer-guy.tokyonight-gtk-themes;
-	name = "material-tokyo-night";
+        name = "material-tokyo-night";
       };
       font = {
         package = pkgs.dejavu_fonts;
-	name = "Migu 1P Regular";
+        name = "Migu 1P Regular";
       };
     };
   };
