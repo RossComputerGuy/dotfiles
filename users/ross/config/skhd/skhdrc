@@ -1,5 +1,6 @@
 # CMD is Super
 
+cmd - s: screencapture -c
 cmd - return : /Applications/Alacritty.app/Contents/MacOS/alacritty --working-directory ~
 
 cmd - left : yabai -m window --focus west
@@ -33,3 +34,5 @@ cmd + shift - 7 : yabai -m window --display 7; yabai -m display --focus 7
 cmd + shift - 8 : yabai -m window --display 8; yabai -m display --focus 8
 cmd + shift - 9 : yabai -m window --display 9; yabai -m display --focus 9
 cmd + shift - 0 : yabai -m window --display 10; yabai -m display --focus 10
+
+cmd + alt - 1: displayplacer "id:4FA81399-C168-BDED-6B38-53851AC566CD res:1920x1080 hz:60 color_depth:8 scaling:off origin:(0,0) degree:0" "id:E355FDB7-6122-50FF-7C47-22E7B65AC275 res:1920x1080 hz:60 color_depth:8 scaling:off origin:(0,-1080) degree:0" "id:FAC09570-592F-CA89-4057-4825CF51B3D1 res:1920x1080 hz:60 color_depth:8 scaling:off origin:(-1920,-1080) degree:0" "id:5ADCF2B5-AB50-2DB4-3A7D-14FE55D14FE8 res:1920x1080 hz:60 color_depth:8 scaling:off origin:(-1920,0) degree:0"
