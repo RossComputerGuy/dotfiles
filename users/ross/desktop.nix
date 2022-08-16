@@ -2,6 +2,7 @@
 {
   home-manager.users.ross = {
     xdg.configFile."alacritty/alacritty.yml".source = ./config/alacritty/alacritty.yml;
+    xdg.configFile."alacritty/alacritty-device.yml".source = ./config/alacritty/alacritty-linux.yml;
     xdg.configFile."eww/eww.yuck".source = ./config/eww/eww.yuck;
     xdg.configFile."eww/eww.scss".source = ./config/eww/eww.scss;
     xdg.configFile."mako/config".source = ./config/mako/config;

@@ -1,5 +1,9 @@
 { config, pkgs, ... }:
 {
+  imports = [
+    ./home.nix
+  ];
+
   xdg.configFile."nvim/lua/init.lua".source = ./config/nvim/lua/init.lua;
   home.packages += with pkgs; [
     nvimpager

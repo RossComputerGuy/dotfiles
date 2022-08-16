@@ -1,0 +1,16 @@
+window:
+  decorations: none
+
+font:
+  normal:
+    family: Liberation Mono
+    style: Refular
+  bold:
+    family: Liberation Mono
+    style: Bold
+  italic:
+    family: Liberation Mono
+    style: Italic
+  bold_italic:
+    family: Liberation Mono
+    style: Bold Italic

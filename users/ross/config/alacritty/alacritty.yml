@@ -1,3 +1,6 @@
+import:
+  - ~/.config/alacritty/alacritty-device.yml
+
 colors:
   # Default colors
   primary:
@@ -32,22 +35,9 @@ colors:
 
 window:
   dynamic_padding: true
-  decorations: none
   padding:
     x: 5
     y: 5
 
 font:
-  normal:
-    family: Liberation Mono
-    style: Refular
-  bold:
-    family: Liberation Mono
-    style: Bold
-  italic:
-    family: Liberation Mono
-    style: Italic
-  bold_italic:
-    family: Liberation Mono
-    style: Bold Italic
   size: 10.0
