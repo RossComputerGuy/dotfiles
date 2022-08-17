@@ -29,7 +29,7 @@ do
   did=$(($i+1))
   sketchybar --add item display.$did left \
     --set display.$did label="${DISPLAY_ICONS[$i]}" \
-      script="$PLUGIN_DIR/display.sh $did" \
+      script="$PLUGIN_DIR/display.sh $i" \
       click_script="yabai -m display --focus $did" \
     --subscribe display.$did display_change
 done
