@@ -1,0 +1,48 @@
+PLUGIN_DIR="$HOME/.config/sketchybar/plugins"
+
+sketchybar --bar height=30 \
+  blur_radius=50 \
+  position=top \
+  padding_left=10 \
+  padding_right=10 \
+  display=main \
+  margin=13 \
+  y_offset=5 \
+  corner_radius=12 \
+  color=0xff1a1b26
+
+sketchybar --default updates=when_shown \
+  drawing=on \
+  icon.font="Noto Emoji:Regular:12.0"  \
+  icon.color=0xffb4f9f8 \
+  label.font="DejaVu Sans:Regular:12.0" \
+  label.color=0xffa9b1d6 \
+  label.padding_left=1 \
+  label.padding_right=1 \
+  icon.padding_left=6 \
+  icon.padding_right=6
+
+DISPLAY_ICONS=("1" "2" "3" "4" "5" "6" "7" "8" "9" "0")
+
+for i in "${!DISPLAY_ICONS[@]}"
+do
+  did=$(($i+1))
+  sketchybar --add item display.$did left \
+    --set display.$did label="${DISPLAY_ICONS[$i]}" \
+      script="$PLUGIN_DIR/display.sh $did" \
+      click_script="yabai -m display --focus $did" \
+    --subscribe display.$did display_change
+done
+
+sketchybar --add item clock right \
+  --set clock update_freq=10 \
+    script="$PLUGIN_DIR/clock.sh"
+
+sketchybar --add item battery right \
+  --set battery script="$PLUGIN_DIR/battery.sh" \
+    update_freq=10 \
+  --subscribe battery system_woke
+
+sketchybar --update
+
+echo "sketchybar configuration loaded.."

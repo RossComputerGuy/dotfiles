@@ -2,9 +2,9 @@
 
 brew install koekeishiya/formulae/yabai
 brew install koekeishiya/formulae/skhd
-brew install cmacrae/formulae/spacebar
+brew install FelixKratz/formulae/sketchybar
 
-brew services start spacebar
+brew services start sketchybar
 brew services start skhd
 brew services start yabai
 
