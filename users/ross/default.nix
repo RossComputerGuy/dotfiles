@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 {
   users.users.ross = {
     isNormalUser = true;
@@ -7,5 +7,5 @@
     extraGroups = [ "wheel" "docker" "adbusers" "games" "input" ];
   };
 
-  home-manager.users.ross = import ./home-linux.nix {};
+  home-manager.users.ross = import ./home-linux.nix { inherit pkgs; inherit config; };
 }
