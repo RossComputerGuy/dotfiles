@@ -2,6 +2,7 @@
 
 set -e
 mon=$(yabai -m query --displays | jq ".[$1]")
+export NAME=display.$(($i + 1))
 
 function reset_color {
   sketchybar --set $NAME label.color=0xffa9b1d6
