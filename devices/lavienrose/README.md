@@ -24,8 +24,8 @@ ships and mobile suits. This desktop machine is my main workhorse for gaming, pr
 - Bluetooth Adapter: `TP-Link USB Bluetooth Audio Adapter for PC (Bluetooth 4.0)`
 - Microphone: `Blue Yetti`
 - Keyboard: `Ducky One 2 Skyline Double Shot PBT`
-- Mouse: `Logitech M570`
-- Headset: `Sony WH-1000XM4`
+- Mouse: `Logitech MX Ergo`
+- Headset: `Sennheiser HD600`
   - Connection: 3.5mm audio jack to 1/4" audio jack into `Focusrite Scarlett Solo`'s `monitor` port
 - Displays
   - Primary: `LG Ultragear 27GL850-8`
