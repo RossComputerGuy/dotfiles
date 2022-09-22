@@ -9,6 +9,7 @@
     xdg.configFile."nwg-drawer/drawer.css".source = ./config/nwg-drawer/drawer.css;
     xdg.configFile."sway/config".source = ./config/sway/config;
     xdg.configFile."swayidle/config".source = ./config/swayidle/config;
+    xdg.configFile."i3/config".source = ./config/i3/config;
     xdg.configFile."electron-flags.conf".source = ./config/electron-flags.conf;
     xdg.configFile."mimeapps.list".source = ./config/mimeapps.list;
     home.file."Pictures/wallpaper.jpg".source = ./pictures/wallpaper.jpg;
@@ -19,6 +20,7 @@
       nwg-drawer
       config.lib.computer-guy.eww-wayland
       mako
+      dunst
       playerctl
       pamixer
       grim
@@ -26,10 +28,15 @@
       wl-clipboard
       config.lib.computer-guy.dbus-sway-environment
       swaylock-effects
+      i3lock-fancy
       noto-fonts
       noto-fonts-emoji
       dejavu_fonts
       migu
+      xidlehook
+      maim
+      xclip
+      xorg.xrandr
     ];
     gtk = {
       enable = true;

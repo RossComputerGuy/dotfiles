@@ -139,6 +139,11 @@ in
   services.xserver.displayManager.gdm.enable = true;
   services.xserver.displayManager.defaultSession = "sway";
 
+  services.xserver.windowManager.i3 = {
+    enable = true;
+    package = pkgs.i3-gaps;
+  };
+
   # Applications & Services
   services.fwupd.enable = true;
   services.flatpak.enable = true;

@@ -1,5 +1,14 @@
 { config, lib, pkgs, modulesPath, ... }:
+let
+  i3-randr-setup = pkgs.writeTextFile {
+    name = "i3-randr-setup";
+    destination = "/bin/i3-randr-setup";
+    executable = true;
 
+    text = ''
+    '';
+  };
+in
 {
   imports = [
     ../../desktop.nix
