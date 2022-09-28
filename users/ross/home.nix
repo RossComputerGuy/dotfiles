@@ -1,4 +1,9 @@
 { config, pkgs, ... }:
+let
+  shellAliases =  {
+    ls = "ls --color";
+  };
+in
 {
   home.packages = with pkgs; [
     jq
@@ -20,6 +25,9 @@
   };
   programs.bash = {
     enable = true;
+    enableCompletion = true;
+    enableVteIntegration = true;
+    inherit shellAliases;
   };
   programs.git = {
     userEmail = "tristan.ross@midstall.com";
@@ -38,5 +46,6 @@
       enable = true;
       theme = "tjkirch";
     };
+    inherit shellAliases;
   };
 }

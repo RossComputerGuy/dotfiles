@@ -171,6 +171,7 @@ return require('packer').startup(function(use)
         jsonls = {},
         tilt_ls = {},
         vala_ls = {},
+        terraformls = {},
       }
       mlsp.setup_handlers({
         function(name)

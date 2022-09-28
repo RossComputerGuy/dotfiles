@@ -15,10 +15,14 @@
   home.file.".config/yabai/yabairc".source = ./config/yabai/yabairc;
   home.file."Pictures/wallpaper.jpg".source = ./pictures/wallpaper.jpg;
 
+  home.sessionVariables.CPLUS_INCLUDE_PATH = "/usr/local/include/c++/v1:/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/:/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1";
+
   home.packages = with pkgs; [
     noto-fonts
     noto-fonts-emoji
     dejavu_fonts
     migu
+    git
+    coreutils
   ];
 }
