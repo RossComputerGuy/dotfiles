@@ -1,7 +1,7 @@
 { config, pkgs, ... }:
 let
   shellAliases =  {
-    ls = "ls --color";
+    ls = "lsd";
   };
 in
 {
@@ -11,6 +11,14 @@ in
     neofetch
   ];
   home.sessionVariables.EDITOR = "nvim";
+  programs.lsd = {
+    enable = true;
+    settings = {
+      icons = {
+        when = "never";
+      };
+    };
+  };
   programs.neovim = {
     enable = true;
     withNodeJs = true;
