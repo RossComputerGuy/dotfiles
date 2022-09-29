@@ -25,4 +25,6 @@
     git
     coreutils
   ];
+
+  programs.bash.enableCompletion = true;
 }

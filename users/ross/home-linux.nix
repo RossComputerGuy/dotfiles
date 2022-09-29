@@ -11,4 +11,5 @@
   ];
   home.sessionVariables.MANPAGER = "nvimpager";
   home.sessionVariables.PAGER = "nvimpager";
+  home.sessionVariables.XDG_DATA_DIRS = "${config.environment.sessionVariables.XDG_DATA_DIRS}:/var/lib/flatpak/exports/share";
 }

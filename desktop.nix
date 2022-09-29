@@ -126,6 +126,8 @@ in
     export SSH_AUTH_SOCKET="/run/user/$UID/gnupg/S.gpg-agent.ssh"
   '';
 
+  environment.sessionVariables.XDG_DATA_DIRS = ["/var/lib/flatpak/exports/share"];
+
   programs.gnupg.agent = {
     enable = true;
     enableSSHSupport = true;
