@@ -57,7 +57,7 @@ in
 
   programs.sway.extraOptions = [ "--unsupported-gpu" ];
   programs.sway.extraSessionCommands = ''
-    export WLR_DRM_DEVICES=/dev/dri/card1:/dev/dri/card0
+    export WLR_DRM_DEVICES=/dev/dri/card0
   '';
 
   # Services
