@@ -49,6 +49,7 @@ in
   systemd.services.dnscrypt-proxy2.serviceConfig = {
     StateDirectory = "dnscrypt-proxy";
   };
+  systemd.services.dnsmasq.requires = [ "dnscrypt-proxy2.service" ];
 
   services.dnsmasq.enable = true;
   services.dnsmasq.servers = [ "127.0.0.1#8053" ];
