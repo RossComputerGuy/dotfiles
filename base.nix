@@ -41,21 +41,9 @@ in
   # Network Configuration
   security.rtkit.enable = true;
 
-  networking.nameservers = [ "127.0.0.1" "::1" ];
-
-  services.dnscrypt-proxy2.enable = true;
-  services.dnscrypt-proxy2.settings.listen_addresses = [ "127.0.0.1:8053" ];
-
-  systemd.services.dnscrypt-proxy2.serviceConfig = {
-    StateDirectory = "dnscrypt-proxy";
-  };
-  systemd.services.dnsmasq.requires = [ "dnscrypt-proxy2.service" ];
-
-  services.dnsmasq.enable = true;
-  services.dnsmasq.servers = [ "127.0.0.1#8053" ];
-
+  services.resolved.enable = true;
   networking.networkmanager.enable = true;
-  networking.networkmanager.dns = "dnsmasq";
+  networking.networkmanager.dns = "systemd-resolved";
 
   # Keyboard & Input
 
