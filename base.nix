@@ -45,6 +45,14 @@ in
   networking.networkmanager.enable = true;
   networking.networkmanager.dns = "systemd-resolved";
 
+  services.resolved.extraConfig = ''
+    DNS=192.168.0.189
+    DNS=100.82.207.123
+    DNS=8.8.8.8
+    DNS=8.8.4.4
+    DNSOverTLS=yes
+  '';
+
   # Keyboard & Input
 
   i18n.defaultLocale = "ja_JP.UTF-8";
