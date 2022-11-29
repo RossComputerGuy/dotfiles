@@ -46,7 +46,7 @@ in
   networking.networkmanager.dns = "systemd-resolved";
 
   services.resolved.extraConfig = ''
-    DNS=192.168.0.189
+    DNS=192.168.1.41
     DNS=100.82.207.123
     DNS=8.8.8.8
     DNS=8.8.4.4
