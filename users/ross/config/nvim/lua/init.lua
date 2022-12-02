@@ -169,7 +169,6 @@ return require('packer').startup(function(use)
         cssls = {},
         html = {},
         jsonls = {},
-        tilt_ls = {},
         vala_ls = {},
         terraformls = {},
       }
