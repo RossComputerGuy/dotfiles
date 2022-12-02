@@ -120,7 +120,7 @@ return require('packer').startup(function(use)
       local cmp = require('cmp')
 
       local capabilities = vim.lsp.protocol.make_client_capabilities()
-      capabilities = cmp_lsp.update_capabilities(capabilities)
+      capabilities = cmp_lsp.default_capabilities(capabilities)
 
       local on_attach = function(client, bufnr)
         vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')

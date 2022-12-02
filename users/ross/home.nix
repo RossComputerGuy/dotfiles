@@ -9,6 +9,7 @@ in
     jq
     btop
     neofetch
+    tree-sitter
   ];
   home.sessionVariables.EDITOR = "nvim";
   programs.lsd = {
