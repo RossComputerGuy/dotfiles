@@ -12,6 +12,7 @@ in
       ./users
       ./pkgs
     ];
+
   nixpkgs.config.allowUnfree = true;
   nix.settings.auto-optimise-store = true;
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
@@ -21,6 +22,8 @@ in
     dates = "weekly";
     options = "--delete-older-than 30d";
   };
+
+  nix.trustedUsers = [ "root" "ross" ];
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
@@ -73,5 +76,6 @@ in
     ripgrep
     lm_sensors
     fwupd-efi
+    cachix
   ];
 }
