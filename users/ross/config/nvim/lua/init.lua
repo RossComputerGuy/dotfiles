@@ -38,7 +38,7 @@ return require('packer').startup(function(use)
     run = ':TSUpdate',
     config = function()
       require('nvim-treesitter.configs').setup({
-        ensure_installed = { 'c', 'css', 'javascript', 'http', 'markdown', 'nix', 'scss', 'sql', 'vim', 'vue', 'vala' },
+        ensure_installed = { 'c', 'css', 'javascript', 'go', 'http', 'markdown', 'nix', 'scss', 'sql', 'vim', 'vue', 'vala' },
         sync_install = false,
         auto_install = true,
         highlight = {
