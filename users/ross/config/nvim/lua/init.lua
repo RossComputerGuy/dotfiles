@@ -90,6 +90,7 @@ return require('packer').startup(function(use)
         'javascript',
         'javascriptreaact',
         'json',
+        'go',
         'less',
         'scss',
         'markdown',
@@ -171,6 +172,7 @@ return require('packer').startup(function(use)
         jsonls = {},
         vala_ls = {},
         terraformls = {},
+        golangci_lint_ls = {},
       }
       mlsp.setup_handlers({
         function(name)
