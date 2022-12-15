@@ -8,5 +8,7 @@
     shell = pkgs.zsh;
   };
 
+  home-manager.useGlobalPkgs = true;
+  home-manager.useUserPackages = true;
   home-manager.users.ross = import ./home-linux.nix { inherit pkgs; inherit config; };
 }

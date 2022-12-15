@@ -11,6 +11,7 @@ in
     neofetch
     tree-sitter
   ];
+  home.stateVersion = "22.11";
   home.sessionVariables.EDITOR = "nvim";
   programs.lsd = {
     enable = true;

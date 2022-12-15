@@ -2,7 +2,7 @@
 
 { config, pkgs, modulesPath, lib, ... }:
 let
-  home-manager = builtins.fetchTarball "https://github.com/nix-community/home-manager/archive/release-22.05.tar.gz";
+  home-manager = builtins.fetchTarball "https://github.com/nix-community/home-manager/archive/release-22.11.tar.gz";
 in
 {
   imports =
@@ -12,6 +12,21 @@ in
       ./users
       ./pkgs
     ];
+
+  nixpkgs.overlays = [
+    (self: super: {
+      nwg-drawer = super.nwg-drawer.overrideAttrs (prev: rec {
+        version = "0.3.6";
+
+        src = super.fetchFromGitHub {
+          owner = "nwg-piotr";
+          repo = "nwg-drawer";
+          rev = "v0.3.6";
+          sha256 = "sha256-o69ZCtIT0jh4QnlspiAh58aA61aFkkKu0FdmscHLMIk=";
+        };
+      });
+    })
+  ];
 
   nixpkgs.config.allowUnfree = true;
   nix.settings.auto-optimise-store = true;
