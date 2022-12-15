@@ -44,7 +44,13 @@
       };
 
       nixpkgsFor = genAttrs [ "x86_64-darwin" "x86_64-linux" ] (system:
-        expidus-sdk.legacyPackages.${system}.appendOverlays (builtins.attrValues overlays));
+        import expidus-sdk.outPath {
+          inherit system;
+          overlays = (builtins.attrValues overlays);
+          config = {
+            allowUnfree = true;
+          };
+        });
 
       # TODO: add "zeta-gundam" once "networking.hostId" and extra filesystems are added in
       machines = [ "lavienrose" ];
