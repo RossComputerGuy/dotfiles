@@ -63,6 +63,7 @@ in
 
   # Packages
   services.fwupd.enable = true;
+  services.udisks2.enable = true;
   programs.git.enable = true;
 
   environment.systemPackages = with pkgs; [
