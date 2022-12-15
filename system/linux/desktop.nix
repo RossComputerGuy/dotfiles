@@ -9,7 +9,7 @@ let
   };
 in
 {
-  inputs = [
+  imports = [
     nur.repos.ilya-fedin.modules.flatpak-fonts
     nur.repos.ilya-fedin.modules.flatpak-icons
   ];
