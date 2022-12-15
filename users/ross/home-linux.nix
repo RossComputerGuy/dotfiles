@@ -13,19 +13,10 @@ let
       systemctl --user start pipewire pipewire-media-session xdg-desktop-portal xdg-desktop-portal-wlr
     '';
   };
-
-  nur = import (builtins.fetchTarball {
-    url = https://github.com/nix-community/NUR/archive/6600601c83e9404c2dc5a848c4eb65b0beb9f298.zip;
-    sha256 = "1xa7cfzjph965a6jlla5s61srflijpz48lzq27m7x0qym5xq9r6q";
-  }) {
-    inherit pkgs;
-  };
 in
 {
   imports = [
     ./home.nix
-    nur.repos.ilya-fedin.modules.flatpak-fonts
-    nur.repos.ilya-fedin.modules.flatpak-icons
   ];
 
   xdg.configFile."alacritty/alacritty.yml".source = ./config/alacritty/alacritty.yml;
