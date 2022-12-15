@@ -2,6 +2,7 @@
   description = "A Flake of my NixOS machines";
 
   inputs.expidus-sdk.url = github:ExpidusOS/sdk;
+  inputs.nur.url = github:nix-community/NUR;
   inputs.utils.url = "github:numtide/flake-utils";
 
   inputs.darwin = {
@@ -9,7 +10,7 @@
     inputs.nixpkgs.follows = "expidus-sdk";
   };
 
-  outputs = { self, expidus-sdk, utils, darwin }:
+  outputs = { self, expidus-sdk, nur, utils, darwin }:
     with expidus-sdk.lib;
     let
       home-manager = import "${expidus.channels.home-manager}/flake.nix" {
@@ -19,6 +20,7 @@
       };
 
       overlays = {
+        nur = nur.overlay;
         default = (final: prev: {
           alacritty = prev.alacritty.overrideAttrs (prev:
             let commit = "2291610f72d5fabbdd60ca080cc305301f0306f9";
@@ -95,10 +97,17 @@
           system = "x86_64-linux";
           inherit (expidus-sdk) lib;
           pkgs = nixpkgsFor.${system};
-          modules = [
+          modules = let
+            nur-modules = import nur.outPath {
+              pkgs = nixpkgsFor.${system};
+              nurpkgs = nixpkgsFor.${system};
+            };
+          in [
             ./system/base.nix
             ./system/linux/default.nix
             ./devices/${machine}/default.nix
+            nur-modules.repos.ilya-fedin.modules.flatpak-fonts
+            nur-modules.repos.ilya-fedin.modules.flatpak-icons
           ];
         }));
     };

@@ -1,18 +1,5 @@
 { config, lib, pkgs, ... }:
-let
-  nur = import (builtins.fetchTarball {
-    url = https://github.com/nix-community/NUR/archive/e0207b4a83dc4f1af9a92a4ed371aab7bb4374e5.zip;
-    sha256 = "0s28kpfjzbgbhczygmal4vm5scl4krgnh2cga3v3p74azsxzgr3h";
-  }) {
-    nurpkgs = pkgs;
-  };
-in
 {
-  imports = [
-    nur.repos.ilya-fedin.modules.flatpak-fonts
-    nur.repos.ilya-fedin.modules.flatpak-icons
-  ];
-
   /*services.udev.extraRules = ''
     ## Steam
     # This rule is needed for basic functionality of the controller in Steam and keyboard/mouse emulation
