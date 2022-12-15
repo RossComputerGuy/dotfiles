@@ -5,7 +5,6 @@ let
     sha256 = "0s28kpfjzbgbhczygmal4vm5scl4krgnh2cga3v3p74azsxzgr3h";
   }) {
     nurpkgs = pkgs;
-    inherit pkgs;
   };
 in
 {
