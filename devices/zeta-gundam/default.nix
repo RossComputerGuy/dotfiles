@@ -19,7 +19,7 @@ let
 in
 {
   imports = [
-    ../../desktop.nix
+    ../../system/linux/desktop.nix
   ];
 
   environment.systemPackages = [ nvidia-offload ];

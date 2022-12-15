@@ -1,4 +1,4 @@
-{ config, lib, pkgs, modulesPath, ... }:
+{ config, pkgs, lib, ... }:
 let
   i3-randr-setup = pkgs.writeTextFile {
     name = "i3-randr-setup";
@@ -11,10 +11,10 @@ let
 in
 {
   imports = [
-    ../../desktop.nix
+    ../../system/linux/desktop.nix
   ];
-  # Bootloader
 
+  # Bootloader
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.systemd-boot.enable = true;
   boot.supportedFilesystems = [ "zfs" ];
@@ -40,6 +40,7 @@ in
 
   # Networking
   networking.hostName = "lavienrose";
+  networking.hostId = "04052e62";
   networking.interfaces.enp34s0.useDHCP = true;
 
   # Graphics
@@ -81,6 +82,11 @@ in
       options = [ "zfsutil" ];
     };
 
+  fileSystems."/boot" =
+    { device = "/dev/disk/by-uuid/AE42-EF0B";
+      fsType = "vfat";
+    };
+
   fileSystems."/backup" =
     { device = "rpool/backup";
       fsType = "zfs";
@@ -109,6 +115,11 @@ in
     { device = "rpool/userdata/home/ross";
       fsType = "zfs";
       options = [ "zfsutil" ];
+    };
+
+  fileSystems."/mnt/games" =
+    { device = "/dev/disk/by-uuid/38022704-1140-4687-b1b0-d31bd490d17d";
+      fsType = "ext4";
     };
 
   # Users
