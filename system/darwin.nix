@@ -1,18 +1,17 @@
 { config, lib, pkgs, ... }:
 {
   imports = [
-    "${lib.expidus.channels.home-manager}/nixos"
+    "${lib.expidus.channels.home-manager}/nix-darwin"
   ];
 
   system.defaults.NSGlobalDomain.AppleShowAllExtensions = true;
   system.defaults.NSGlobalDomain._HIHideMenuBar = true;
-  system.defaults.NSGlobalDomain.com.apple.swipescrolldirection = false;
+  system.defaults.NSGlobalDomain."com.apple.swipescrolldirection" = false;
 
   system.defaults.dock.autohide = true;
   system.defaults.dock.mru-spaces = false;
 
   system.defaults.finder.ShowStatusBar = false;
-  system.defaults.finder.ShowExternalHardDrivesOnDesktop = false;
 
   system.defaults.screencapture.disable-shadow = true;
   system.defaults.screencapture.location = "$HOME/Pictures";
@@ -26,7 +25,7 @@
   services.yabai = {
     enable = true;
     package = pkgs.yabai;
-    enableScriptionAddition = true;
+    enableScriptingAddition = true;
     config = {
       external_bar = "main:32:0";
 
