@@ -1,4 +1,5 @@
 { config, lib, pkgs, ... }:
+with lib;
 let
   dbus-sway-environment = pkgs.writeTextFile {
     name = "dbus-sway-environment";
@@ -34,6 +35,7 @@ in
   fonts.fontconfig.enable = lib.mkForce true;
   home.file."Pictures/wallpaper.jpg".source = ./pictures/wallpaper.jpg;
   home.username = "ross";
+  home.homeDirectory = mkForce "/home/ross";
   home.packages = with pkgs; [
     eww-wayland
     nvimpager

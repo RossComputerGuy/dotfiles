@@ -1,4 +1,5 @@
-{ config, pkgs, ... }:
+{ config, lib, pkgs, ... }:
+with lib;
 {
   home.file.".config/alacritty/alacritty.yml".source = ./config/alacritty/alacritty.yml;
   home.file.".config/alacritty/alacritty-device.yml".source = ./config/alacritty/alacritty-darwin.yml;
@@ -12,4 +13,5 @@
 
   home.sessionVariables.CPLUS_INCLUDE_PATH = "/usr/local/include/c++/v1:/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/:/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1";
   home.username = "tristan";
+  home.homeDirectory = mkForce "/Users/tristan";
 }

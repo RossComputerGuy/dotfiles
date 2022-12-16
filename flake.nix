@@ -13,7 +13,7 @@
   outputs = { self, expidus-sdk, nur, utils, darwin }:
     with expidus-sdk.lib;
     let
-      home-manager = import "${expidus.channels.home-manager}/flake.nix" {
+      home-manager = (import "${expidus.channels.home-manager}/flake.nix").outputs {
         self = home-manager;
         nixpkgs = expidus-sdk;
         inherit utils;
@@ -67,30 +67,31 @@
       inherit overlays;
       legacyPackages = nixpkgsFor;
 
-      darwinConfigurations = forAllDarwinMachines (machine:
-        darwin.lib.darwinSystem {
-          system = "x86_64-darwin";
-          inputs = {
-            inherit darwin;
-            nixpkgs = expidus-sdk;
-          };
-          modules = [
-            ./system/default.nix
-            ./system/darwin.nix
-            ./devices/${machine}/default.nix
-          ];
-        });
-
-      homeConfigurations = forAllUsers (user:
-        home-manager.lib.homeManagerConfiguration {
-          pkgs = nixpkgsFor.${expidus.system.current};
-          inherit (expidus-sdk) lib;
-          username = user;
-          system = expidus.system.current;
-          modules = [
-            ./users/${user}/home.nix
-          ];
-        });
+      packages = builtins.mapAttrs (system: pkgs: {
+        homeConfigurations = forAllUsers (user:
+          home-manager.lib.homeManagerConfiguration {
+            inherit pkgs;
+            inherit (expidus-sdk) lib;
+            modules = [
+              ./users/${user}/home.nix
+              ./users/${user}/home-${pkgs.targetPlatform.parsed.kernel.name}.nix
+            ];
+          });
+        } // (optionalAttrs pkgs.targetPlatform.isDarwin {
+          darwinConfigurations = forAllDarwinMachines (machine:
+            darwin.lib.darwinSystem {
+              inherit system;
+              inputs = {
+                inherit darwin;
+                nixpkgs = expidus-sdk;
+              };
+              modules = [
+                ./system/default.nix
+                ./system/darwin.nix
+                ./devices/${machine}/default.nix
+              ];
+            });
+        })) nixpkgsFor;
 
       nixosConfigurations = forAllMachines (machine:
         import "${expidus-sdk.outPath}/nixos/lib/eval-config.nix" (rec {
