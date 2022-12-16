@@ -1,7 +1,7 @@
 { config, pkgs, ... }@args:
 {
   imports = [
-    ../users/home.nix
+    ../users/default.nix
   ];
 
   nixpkgs.config.allowUnfree = true;
@@ -11,7 +11,6 @@
 
   nix.gc = {
     automatic = true;
-    dates = "weekly";
     options = "--delete-older-than 30d";
   };
 
@@ -19,7 +18,6 @@
 
   environment.systemPackages = with pkgs; [
     sumneko-lua-language-server
-    vala-language-server
     rnix-lsp
     fd
     ripgrep

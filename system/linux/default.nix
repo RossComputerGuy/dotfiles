@@ -1,9 +1,5 @@
 { config, pkgs, ... }:
 {
-  imports = [
-    ../../users/default.nix
-  ];
-
   security.expidus.enable = false;
 
   time.timeZone = "America/Los_Angeles";
@@ -40,6 +36,7 @@
   programs.git.enable = true;
 
   environment.systemPackages = with pkgs; [
+    vala-language-server
     lm_sensors
     fwupd-efi
   ];

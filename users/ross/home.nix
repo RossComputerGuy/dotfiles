@@ -11,8 +11,6 @@ in
     neofetch
     tree-sitter
   ];
-  home.username = if pkgs.targetPlatform.isDarwin then "tristan" else "ross";
-  home.homeDirectory = if pkgs.targetPlatform.isDarwin then "/Users/tristan" else "/home/ross";
   home.stateVersion = "22.11";
   home.sessionVariables.EDITOR = "nvim";
   programs.lsd = {

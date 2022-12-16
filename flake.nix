@@ -75,7 +75,7 @@
             nixpkgs = expidus-sdk;
           };
           modules = [
-            ./system/base.nix
+            ./system/default.nix
             ./system/darwin.nix
             ./devices/${machine}/default.nix
           ];
@@ -103,7 +103,7 @@
               nurpkgs = nixpkgsFor.${system};
             };
           in [
-            ./system/base.nix
+            ./system/default.nix
             ./system/linux/default.nix
             ./devices/${machine}/default.nix
             nur-modules.repos.ilya-fedin.modules.flatpak-fonts

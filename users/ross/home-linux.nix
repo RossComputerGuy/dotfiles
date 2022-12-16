@@ -33,6 +33,7 @@ in
   xdg.configFile."nvim/lua/init.lua".source = ./config/nvim/lua/init.lua;
   fonts.fontconfig.enable = lib.mkForce true;
   home.file."Pictures/wallpaper.jpg".source = ./pictures/wallpaper.jpg;
+  home.username = "ross";
   home.packages = with pkgs; [
     eww-wayland
     nvimpager

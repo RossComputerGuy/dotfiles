@@ -1,7 +1,6 @@
 { config, lib, pkgs, ... }@args:
 with lib;
+with import ./common.nix args;
 {
-  home-manager.users = lib.genAttrs [ "ross" ] (user:
-    mergeAttrs (import ./${user}/home.nix args)
-      (import ./${user}/home-${pkgs.targetPlatform.parsed.kernel.name}.nix args));
+  home-manager.users = homes;
 }
