@@ -57,6 +57,9 @@ in
     maim
     xclip
     xorg.xrandr
+    papirus-icon-theme
+    libtokyo
+    dejavu_fonts
   ];
 
   home.sessionVariables.MANPAGER = "nvimpager";
