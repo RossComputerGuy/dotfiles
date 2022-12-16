@@ -34,6 +34,7 @@ in
   fonts.fontconfig.enable = lib.mkForce true;
   home.file."Pictures/wallpaper.jpg".source = ./pictures/wallpaper.jpg;
   home.packages = with pkgs; [
+    eww-wayland
     nvimpager
     xdg-user-dirs
     alacritty
