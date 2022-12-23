@@ -2,6 +2,7 @@
 {
   time.timeZone = "America/Los_Angeles";
   systemd.enableUnifiedCgroupHierarchy = true;
+  hardware.enableRedistributableFirmware = true;
 
   # Virtualization
   virtualisation.docker.enable = true;
