@@ -1,7 +1,5 @@
 { config, pkgs, ... }:
 {
-  security.expidus.enable = false;
-
   time.timeZone = "America/Los_Angeles";
   systemd.enableUnifiedCgroupHierarchy = true;
 

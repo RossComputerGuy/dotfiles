@@ -7,11 +7,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1671020882,
-        "narHash": "sha256-nilsez0cjzvWUZzcWI+ZK3gY/wT3RvkQA9qw8GYJmEU=",
+        "lastModified": 1671196037,
+        "narHash": "sha256-2+J98SeczFWonbqFLMEAQC7vZEe6I2gM17XYvEmG52I=",
         "owner": "lnl7",
         "repo": "nix-darwin",
-        "rev": "2795e05cca69bddad989186888175548f4fca33d",
+        "rev": "adb8ac0453c8b2c40f5bffb578453dbaee838952",
         "type": "github"
       },
       "original": {
@@ -23,11 +23,11 @@
     },
     "expidus-sdk": {
       "locked": {
-        "lastModified": 1671155469,
-        "narHash": "sha256-w2tcGCaMG26ZWeKSNdJpF4qGEp42AErv8d+9JTbUH2M=",
+        "lastModified": 1671390206,
+        "narHash": "sha256-tEd4DME4MyC5I8xV12RkRkzL6cc4feAfiz1OcNqnY+E=",
         "owner": "ExpidusOS",
         "repo": "sdk",
-        "rev": "af20f7e82e9fdebbe30494ef53a99f6765973922",
+        "rev": "3564bd08ed191a68fd4234d707424c0634bec20f",
         "type": "github"
       },
       "original": {
@@ -38,11 +38,11 @@
     },
     "nur": {
       "locked": {
-        "lastModified": 1671078687,
-        "narHash": "sha256-cOT3u/6KnDv2UI8JaF+ehDJd6iZU1ec/g+utL92dSGg=",
+        "lastModified": 1671761139,
+        "narHash": "sha256-uJoQx7x6O5hi4A2hIJ37hjt13vWuO+tm1arJjv0s/bc=",
         "owner": "nix-community",
         "repo": "NUR",
-        "rev": "e0207b4a83dc4f1af9a92a4ed371aab7bb4374e5",
+        "rev": "1a858b7a17de0a45d25c749fb8e222b1e7ce1225",
         "type": "github"
       },
       "original": {

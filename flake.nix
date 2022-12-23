@@ -54,7 +54,6 @@
           };
         });
 
-      # TODO: add "zeta-gundam" once "networking.hostId" and extra filesystems are added in
       machines = [ "lavienrose" "zeta-gundam" ];
       forAllMachines = genAttrs machines;
 
