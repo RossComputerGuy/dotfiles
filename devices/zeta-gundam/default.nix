@@ -8,50 +8,57 @@ let
     text = ''
     '';
   };
+
+  nvidia-offload = pkgs.writeShellScriptBin "nvidia-offload" ''
+    export __NV_PRIME_RENDER_OFFLOAD=1
+    export __NV_PRIME_RENDER_OFFLOAD_PROVIDER=NVIDIA-G0
+    export __GLX_VENDOR_LIBRARY_NAME=nvidia
+    export __VK_LAYER_NV_optimus=NVIDIA_only
+    exec "$@"
+  '';
 in
 {
   imports = [
-    ../../desktop.nix
+    ../../system/linux/desktop.nix
   ];
-  # Bootloader
 
+  environment.systemPackages = [ nvidia-offload ];
+
+  # Bootloader
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.systemd-boot.enable = true;
   boot.supportedFilesystems = [ "zfs" ];
   boot.zfs.devNodes = "/dev/";
 
   # Initrd
-  boot.initrd.availableKernelModules = [ "nvme" "xhci_pci" "ahci" "usbhid" "uas" "usb_storage" "sd_mod" ];
+  boot.initrd.availableKernelModules = [ "nvme" "xhci_pci" "ahci" "usbhid" "uas" "usb_storage" "sd_mod" "amdgpu" ];
 
   # Kernel
-  boot.kernelModules = [ "kvm-amd" "overlay" "nct6775" ];
-  boot.extraModprobeConfig = ''
-    options kvm_intel nested=1
-  '';
+  boot.kernelModules = [ "kvm-amd" "overlay" ];
 
   # Hardware
   hardware.bluetooth.enable = true;
   hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
   virtualisation.docker.enableNvidia = true;
 
-  environment.etc."sysconfig/lm_sensors".text = ''
-    HWMON_MODULES="nct6775"
-  '';
-
   # Networking
-  networking.hostName = "lavienrose";
+  networking.hostName = "zeta-gundam";
+  networking.hostId = "2b3e303e";
   networking.interfaces.enp34s0.useDHCP = true;
 
   # Graphics
-  services.xserver.videoDrivers = [ "nvidia" ];
+  services.xserver.videoDrivers = [ "nvidia" "amdgpu" ];
   hardware.nvidia.modesetting.enable = true;
   hardware.nvidia.package = config.boot.kernelPackages.nvidiaPackages.stable;
+  hardware.nvidia.prime = {
+    offload.enable = true;
+    amdgpuBusId = "PCI:5:0:0";
+    nvidiaBusId = "PCI:1:0:0";
+  };
 
   programs.sway.extraOptions = [ "--unsupported-gpu" ];
   programs.sway.extraSessionCommands = ''
-    export WLR_NO_HARDWARE_CURSORS=1
-    export GBM_BACKEND=nvidia-drm
-    export __GLX_VENDOR_LIBRARY_NAME=nvidia
+    export WLR_DRM_DEVICES=/dev/dri/card0
   '';
 
   # Services
@@ -109,6 +116,11 @@ in
     { device = "rpool/userdata/home/ross";
       fsType = "zfs";
       options = [ "zfsutil" ];
+    };
+
+  fileSystems."/boot" =
+    { device = "/dev/disk/by-uuid/1D84-4A97";
+      fsType = "vfat";
     };
 
   # Users

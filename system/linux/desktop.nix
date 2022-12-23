@@ -1,98 +1,48 @@
-{ config, pkgs, home-manager, lib, nur, ... }:
-let
-  home-manager = builtins.fetchTarball "https://github.com/nix-community/home-manager/archive/release-22.05.tar.gz";
-  dbus-sway-environment = pkgs.writeTextFile {
-    name = "dbus-sway-environment";
-    destination = "/bin/dbus-sway-environment";
-    executable = true;
-
-    text = ''
-      export XDG_DATA_DIRS=$XDG_DATA_DIRS:/var/lib/flatpak/exports/share
-      dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=sway
-      systemctl --user import-environment XDG_DATA_DIRS=$XDG_DATA_DIRS
-      systemctl --user stop pipewire pipewire-media-session xdg-desktop-portal xdg-desktop-portal-wlr
-      systemctl --user start pipewire pipewire-media-session xdg-desktop-portal xdg-desktop-portal-wlr
-    '';
-  };
-  nur = import (builtins.fetchTarball {
-    url = https://github.com/nix-community/NUR/archive/6600601c83e9404c2dc5a848c4eb65b0beb9f298.zip;
-    sha256 = "1xa7cfzjph965a6jlla5s61srflijpz48lzq27m7x0qym5xq9r6q";
-  }) {
-    inherit pkgs;
-  };
-in
+{ config, lib, pkgs, ... }:
 {
-  imports = [
-    ./users/desktop.nix
-    nur.repos.ilya-fedin.modules.flatpak-fonts
-    nur.repos.ilya-fedin.modules.flatpak-icons
-  ];
-
-  lib.computer-guy.dbus-sway-environment = dbus-sway-environment;
-
-  # Steam and Solaar udev
-  services.udev.extraRules = ''
+  /*services.udev.extraRules = ''
     ## Steam
     # This rule is needed for basic functionality of the controller in Steam and keyboard/mouse emulation
     SUBSYSTEM=="usb", ATTRS{idVendor}=="28de", MODE="0666"
-
     # This rule is necessary for gamepad emulation; make sure you replace 'pgriffais' with a group that the user that runs Steam belongs to
     KERNEL=="uinput", MODE="0660", GROUP="games", OPTIONS+="static_node=uinput"
-
     # Valve HID devices over USB hidraw
     KERNEL=="hidraw*", ATTRS{idVendor}=="28de", MODE="0666"
-
     # Valve HID devices over bluetooth hidraw
     KERNEL=="hidraw*", KERNELS=="*28DE:*", MODE="0666"
-
     # DualShock 4 over USB hidraw
     KERNEL=="hidraw*", ATTRS{idVendor}=="054c", ATTRS{idProduct}=="05c4", MODE="0666"
-
     # DualShock 4 wireless adapter over USB hidraw
     KERNEL=="hidraw*", ATTRS{idVendor}=="054c", ATTRS{idProduct}=="0ba0", MODE="0666"
-
     # DualShock 4 Slim over USB hidraw
     KERNEL=="hidraw*", ATTRS{idVendor}=="054c", ATTRS{idProduct}=="09cc", MODE="0666"
-
     # DualShock 4 over bluetooth hidraw
     KERNEL=="hidraw*", KERNELS=="*054C:05C4*", MODE="0666"
-
     # DualShock 4 Slim over bluetooth hidraw
     KERNEL=="hidraw*", KERNELS=="*054C:09CC*", MODE="0666"
-
     # Nintendo Switch Pro Controller over USB hidraw
     KERNEL=="hidraw*", ATTRS{idVendor}=="057e", ATTRS{idProduct}=="2009", MODE="0666"
-
     # Nintendo Switch Pro Controller over bluetooth hidraw
     KERNEL=="hidraw*", KERNELS=="*057E:2009*", MODE="0666"
-
     ## Solaar
     ACTION != "add", GOTO="solaar_end"
     SUBSYSTEM != "hidraw", GOTO="solaar_end"
-
     # USB-connected Logitech receivers and devices
     ATTRS{idVendor}=="046d", GOTO="solaar_apply"
-
     # Lenovo nano receiver
     ATTRS{idVendor}=="17ef", ATTRS{idProduct}=="6042", GOTO="solaar_apply"
-
     # Bluetooth-connected Logitech devices
     KERNELS == "0005:046D:*", GOTO="solaar_apply"
-
     GOTO="solaar_end"
-
     LABEL="solaar_apply"
-
     # Allow any seated user to access the receiver.
     # uaccess: modern ACL-enabled udev
     # udev-acl: for Ubuntu 12.10 and older
     TAG+="uaccess", TAG+="udev-acl"
-
     # Grant members of the "plugdev" group access to receiver (useful for SSH users)
     MODE="0660", GROUP="input"
-
     LABEL="solaar_end"
-  '';
+  '';*/
 
   # Sound
   sound.enable = false;
@@ -117,7 +67,6 @@ in
   services.avahi.nssmdns = true;
 
   # Security
-  services.tailscale.enable = true;
   services.gnome.gnome-keyring.enable = true;
   services.udev.packages = [ pkgs.yubikey-personalization ];
   programs.ssh.askPassword = lib.mkForce "";
@@ -150,7 +99,6 @@ in
   };
 
   # Applications & Services
-  services.fwupd.enable = true;
   services.flatpak.enable = true;
   services.upower.enable = true;
   programs.dconf.enable = true;
@@ -163,7 +111,6 @@ in
         xdg-desktop-portal-kde
         xdg-desktop-portal-gtk
       ];
-      gtkUsePortal = true;
     };
   };
 

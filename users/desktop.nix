@@ -1,5 +1,0 @@
-{
-  imports = [
-    ./ross/desktop.nix
-  ];
-}

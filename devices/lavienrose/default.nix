@@ -1,4 +1,4 @@
-{ config, lib, pkgs, modulesPath, ... }:
+{ config, pkgs, lib, ... }:
 let
   i3-randr-setup = pkgs.writeTextFile {
     name = "i3-randr-setup";
@@ -8,21 +8,11 @@ let
     text = ''
     '';
   };
-
-  nvidia-offload = pkgs.writeShellScriptBin "nvidia-offload" ''
-    export __NV_PRIME_RENDER_OFFLOAD=1
-    export __NV_PRIME_RENDER_OFFLOAD_PROVIDER=NVIDIA-G0
-    export __GLX_VENDOR_LIBRARY_NAME=nvidia
-    export __VK_LAYER_NV_optimus=NVIDIA_only
-    exec "$@"
-  '';
 in
 {
   imports = [
-    ../../desktop.nix
+    ../../system/linux/desktop.nix
   ];
-
-  environment.systemPackages = [ nvidia-offload ];
 
   # Bootloader
   boot.loader.efi.canTouchEfiVariables = true;
@@ -31,33 +21,38 @@ in
   boot.zfs.devNodes = "/dev/";
 
   # Initrd
-  boot.initrd.availableKernelModules = [ "nvme" "xhci_pci" "ahci" "usbhid" "uas" "usb_storage" "sd_mod" "amdgpu" ];
+  boot.initrd.availableKernelModules = [ "nvme" "xhci_pci" "ahci" "usbhid" "uas" "usb_storage" "sd_mod" ];
 
   # Kernel
-  boot.kernelModules = [ "kvm-amd" "overlay" ];
+  boot.kernelModules = [ "kvm-amd" "overlay" "nct6775" ];
+  boot.extraModprobeConfig = ''
+    options kvm_intel nested=1
+  '';
 
   # Hardware
   hardware.bluetooth.enable = true;
   hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
   virtualisation.docker.enableNvidia = true;
 
+  environment.etc."sysconfig/lm_sensors".text = ''
+    HWMON_MODULES="nct6775"
+  '';
+
   # Networking
-  networking.hostName = "zeta-gundam";
+  networking.hostName = "lavienrose";
+  networking.hostId = "04052e62";
   networking.interfaces.enp34s0.useDHCP = true;
 
   # Graphics
-  services.xserver.videoDrivers = [ "nvidia" "amdgpu" ];
+  services.xserver.videoDrivers = [ "nvidia" ];
   hardware.nvidia.modesetting.enable = true;
   hardware.nvidia.package = config.boot.kernelPackages.nvidiaPackages.stable;
-  hardware.nvidia.prime = {
-    offload.enable = true;
-    amdgpuBusId = "PCI:5:0:0";
-    nvidiaBusId = "PCI:1:0:0";
-  };
 
   programs.sway.extraOptions = [ "--unsupported-gpu" ];
   programs.sway.extraSessionCommands = ''
-    export WLR_DRM_DEVICES=/dev/dri/card0
+    export WLR_NO_HARDWARE_CURSORS=1
+    export GBM_BACKEND=nvidia-drm
+    export __GLX_VENDOR_LIBRARY_NAME=nvidia
   '';
 
   # Services
@@ -85,6 +80,11 @@ in
     { device = "rpool/nixos";
       fsType = "zfs";
       options = [ "zfsutil" ];
+    };
+
+  fileSystems."/boot" =
+    { device = "/dev/disk/by-uuid/AE42-EF0B";
+      fsType = "vfat";
     };
 
   fileSystems."/backup" =
@@ -115,6 +115,11 @@ in
     { device = "rpool/userdata/home/ross";
       fsType = "zfs";
       options = [ "zfsutil" ];
+    };
+
+  fileSystems."/mnt/games" =
+    { device = "/dev/disk/by-uuid/38022704-1140-4687-b1b0-d31bd490d17d";
+      fsType = "ext4";
     };
 
   # Users

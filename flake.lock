@@ -1,0 +1,80 @@
+{
+  "nodes": {
+    "darwin": {
+      "inputs": {
+        "nixpkgs": [
+          "expidus-sdk"
+        ]
+      },
+      "locked": {
+        "lastModified": 1671020882,
+        "narHash": "sha256-nilsez0cjzvWUZzcWI+ZK3gY/wT3RvkQA9qw8GYJmEU=",
+        "owner": "lnl7",
+        "repo": "nix-darwin",
+        "rev": "2795e05cca69bddad989186888175548f4fca33d",
+        "type": "github"
+      },
+      "original": {
+        "owner": "lnl7",
+        "ref": "master",
+        "repo": "nix-darwin",
+        "type": "github"
+      }
+    },
+    "expidus-sdk": {
+      "locked": {
+        "lastModified": 1671155469,
+        "narHash": "sha256-w2tcGCaMG26ZWeKSNdJpF4qGEp42AErv8d+9JTbUH2M=",
+        "owner": "ExpidusOS",
+        "repo": "sdk",
+        "rev": "af20f7e82e9fdebbe30494ef53a99f6765973922",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ExpidusOS",
+        "repo": "sdk",
+        "type": "github"
+      }
+    },
+    "nur": {
+      "locked": {
+        "lastModified": 1671078687,
+        "narHash": "sha256-cOT3u/6KnDv2UI8JaF+ehDJd6iZU1ec/g+utL92dSGg=",
+        "owner": "nix-community",
+        "repo": "NUR",
+        "rev": "e0207b4a83dc4f1af9a92a4ed371aab7bb4374e5",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "NUR",
+        "type": "github"
+      }
+    },
+    "root": {
+      "inputs": {
+        "darwin": "darwin",
+        "expidus-sdk": "expidus-sdk",
+        "nur": "nur",
+        "utils": "utils"
+      }
+    },
+    "utils": {
+      "locked": {
+        "lastModified": 1667395993,
+        "narHash": "sha256-nuEHfE/LcWyuSWnS8t12N1wc105Qtau+/OdUAjtQ0rA=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "5aed5285a952e0b949eb3ba02c12fa4fcfef535f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}

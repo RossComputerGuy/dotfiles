@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 let
   shellAliases =  {
     ls = "lsd";
@@ -13,6 +13,7 @@ in
   ];
   home.stateVersion = "22.11";
   home.sessionVariables.EDITOR = "nvim";
+  programs.home-manager.enable = true;
   programs.lsd = {
     enable = true;
     settings = {
