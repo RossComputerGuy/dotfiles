@@ -43,6 +43,7 @@ in
 
   # Networking
   networking.hostName = "zeta-gundam";
+  networking.hostId = "2b3e303e";
   networking.interfaces.enp34s0.useDHCP = true;
 
   # Graphics
@@ -115,6 +116,11 @@ in
     { device = "rpool/userdata/home/ross";
       fsType = "zfs";
       options = [ "zfsutil" ];
+    };
+
+  fileSystems."/boot" =
+    { device = "/dev/disk/by-uuid/1D84-4A97";
+      fsType = "vfat";
     };
 
   # Users
