@@ -6,6 +6,10 @@ let
     executable = true;
 
     text = ''
+      xrandr --output DP-1 --mode 1920x1080 --pos 1920x0
+      xrandr --output DP-3 --mode 1920x1080 --pos 0x1080
+      xrandr --output HDMI-0 --mode 1920x1080 --pos 4480x1080 --rotate right
+      xrandr --output DP-4 --mode 2560x1440 --pos 1920x1080 --rotate normal
     '';
   };
 in
