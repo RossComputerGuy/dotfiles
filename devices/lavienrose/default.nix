@@ -18,6 +18,8 @@ in
     ../../system/linux/desktop.nix
   ];
 
+  environment.systemPackages = [ i3-randr-setup ];
+
   # Bootloader
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.systemd-boot.enable = true;
