@@ -54,7 +54,7 @@ bindsym Mod4+Shift+Down move down
 bindsym Mod4+Shift+Up move up
 bindsym Mod4+Shift+Right move right
 
-bindsym Mod4+b splith
+bindsym Mod4+h splith
 bindsym Mod4+v splitv
 bindsym Mod4+s layout stacking
 bindsym Mod4+w layout tabbed
