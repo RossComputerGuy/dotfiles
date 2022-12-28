@@ -7,11 +7,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1671196037,
-        "narHash": "sha256-2+J98SeczFWonbqFLMEAQC7vZEe6I2gM17XYvEmG52I=",
+        "lastModified": 1671891118,
+        "narHash": "sha256-+GJYiT7QbfA306ex4sGMlFB8Ts297pn3OdQ9kTd4aDw=",
         "owner": "lnl7",
         "repo": "nix-darwin",
-        "rev": "adb8ac0453c8b2c40f5bffb578453dbaee838952",
+        "rev": "267040e7a2b8644f1fdfcf57b7e808c286dbdc7b",
         "type": "github"
       },
       "original": {
@@ -22,12 +22,18 @@
       }
     },
     "expidus-sdk": {
+      "inputs": {
+        "home-manager": "home-manager",
+        "mobile-nixos": "mobile-nixos",
+        "nixpkgs": "nixpkgs",
+        "utils": "utils"
+      },
       "locked": {
-        "lastModified": 1671774006,
-        "narHash": "sha256-QtOYpQRA9crZF9M8pQfc8KgDx4p/OKQ2kigzrANPc2M=",
+        "lastModified": 1672257142,
+        "narHash": "sha256-eeGCWbMb/AXJtmqIDZfTfb9Pt8Mxwek2fJsFmTE1N94=",
         "owner": "ExpidusOS",
         "repo": "sdk",
-        "rev": "b39926ed8f49ddf2878efcd313614d06b34215d8",
+        "rev": "849463200e119b7efa418a2aae4d884cf6370722",
         "type": "github"
       },
       "original": {
@@ -36,13 +42,71 @@
         "type": "github"
       }
     },
+    "home-manager": {
+      "inputs": {
+        "nixpkgs": [
+          "expidus-sdk",
+          "nixpkgs"
+        ],
+        "utils": [
+          "expidus-sdk",
+          "utils"
+        ]
+      },
+      "locked": {
+        "lastModified": 1672244468,
+        "narHash": "sha256-xaZb8AZqoXRCSqPusCk4ouf+fUNP8UJdafmMTF1Ltlw=",
+        "owner": "nix-community",
+        "repo": "home-manager",
+        "rev": "89a8ba0b5b43b3350ff2e3ef37b66736b2ef8706",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "ref": "release-22.11",
+        "repo": "home-manager",
+        "type": "github"
+      }
+    },
+    "mobile-nixos": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1670131242,
+        "narHash": "sha256-T/o1/3gffr010fsqgNshs1NJJjsnUYvQnUZgm6hilsY=",
+        "owner": "NixOS",
+        "repo": "mobile-nixos",
+        "rev": "5ee45cc1f8e43f4af14ee17ccef9156b0db8cd77",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "repo": "mobile-nixos",
+        "type": "github"
+      }
+    },
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1671883564,
+        "narHash": "sha256-C15oAtyupmLB3coZY7qzEHXjhtUx/+77olVdqVMruAg=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "dac57a4eccf1442e8bf4030df6fcbb55883cb682",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-22.11",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "nur": {
       "locked": {
-        "lastModified": 1671770953,
-        "narHash": "sha256-PbrqebO/RUT/C2YbWs2g4dcJUx/Y+znSwdwKyOAzZPo=",
+        "lastModified": 1672256670,
+        "narHash": "sha256-u7ZctqcECYtIYurTy3uZA7C0a2Ff5PprzGIvvlnf2/g=",
         "owner": "nix-community",
         "repo": "NUR",
-        "rev": "3a5f3717d0b71ecdda7658e3bd54bc9ebeb408d5",
+        "rev": "43ffdfdcbce29d08bc599b6ceafd39fdc8475685",
         "type": "github"
       },
       "original": {
@@ -55,8 +119,7 @@
       "inputs": {
         "darwin": "darwin",
         "expidus-sdk": "expidus-sdk",
-        "nur": "nur",
-        "utils": "utils"
+        "nur": "nur"
       }
     },
     "utils": {

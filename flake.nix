@@ -3,22 +3,15 @@
 
   inputs.expidus-sdk.url = github:ExpidusOS/sdk;
   inputs.nur.url = github:nix-community/NUR;
-  inputs.utils.url = "github:numtide/flake-utils";
 
   inputs.darwin = {
     url = github:lnl7/nix-darwin/master;
     inputs.nixpkgs.follows = "expidus-sdk";
   };
 
-  outputs = { self, expidus-sdk, nur, utils, darwin }:
+  outputs = { self, expidus-sdk, nur, darwin }:
     with expidus-sdk.lib;
     let
-      home-manager = (import "${expidus.channels.home-manager}/flake.nix").outputs {
-        self = home-manager;
-        nixpkgs = expidus-sdk;
-        inherit utils;
-      };
-
       overlays = {
         nur = nur.overlay;
         default = (final: prev: {
@@ -68,7 +61,7 @@
 
       packages = builtins.mapAttrs (system: pkgs: {
         homeConfigurations = forAllUsers (user:
-          home-manager.lib.homeManagerConfiguration {
+          expidus-sdk.lib.homeManagerConfiguration {
             inherit pkgs;
             inherit (expidus-sdk) lib;
             modules = [
