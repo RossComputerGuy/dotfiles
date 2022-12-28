@@ -29,11 +29,11 @@
         "utils": "utils"
       },
       "locked": {
-        "lastModified": 1672266862,
-        "narHash": "sha256-HnlhOom4xnDeDL+0Uwr4SOVNHqQsPU37hFwtYA/R7ts=",
+        "lastModified": 1672270547,
+        "narHash": "sha256-7V3BZWgWjPlEq5DbCAtNKGhxQitHwNLlwoVKxTgbt/I=",
         "owner": "ExpidusOS",
         "repo": "sdk",
-        "rev": "3d964191cd241d057b0e66dc90253eea714bf72a",
+        "rev": "8de218665b53d3d3bea97428c227a856632a4b99",
         "type": "github"
       },
       "original": {
@@ -43,16 +43,7 @@
       }
     },
     "home-manager": {
-      "inputs": {
-        "nixpkgs": [
-          "expidus-sdk",
-          "nixpkgs"
-        ],
-        "utils": [
-          "expidus-sdk",
-          "utils"
-        ]
-      },
+      "flake": false,
       "locked": {
         "lastModified": 1672244468,
         "narHash": "sha256-xaZb8AZqoXRCSqPusCk4ouf+fUNP8UJdafmMTF1Ltlw=",
@@ -85,6 +76,7 @@
       }
     },
     "nixpkgs": {
+      "flake": false,
       "locked": {
         "lastModified": 1671883564,
         "narHash": "sha256-C15oAtyupmLB3coZY7qzEHXjhtUx/+77olVdqVMruAg=",
