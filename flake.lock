@@ -24,16 +24,15 @@
     "disko": {
       "flake": false,
       "locked": {
-        "lastModified": 1672774957,
-        "narHash": "sha256-/R12pgiPd06G4RPjkyi2LfQmwAM4OJCGZqFLTe69Xxg=",
-        "owner": "RossComputerGuy",
+        "lastModified": 1672841174,
+        "narHash": "sha256-E4t0BnQdbvfbpd9uJnQen5Gsu3LreHoZff7c9Z0wr+Y=",
+        "owner": "nix-community",
         "repo": "disko",
-        "rev": "ab33709297267ff18502f7fd3de3bccb807cc43a",
+        "rev": "dd025155fb0f5d36afd6719e358e7cf99a47644e",
         "type": "github"
       },
       "original": {
-        "owner": "RossComputerGuy",
-        "ref": "fix/option-descriptions",
+        "owner": "nix-community",
         "repo": "disko",
         "type": "github"
       }
@@ -47,11 +46,11 @@
         "utils": "utils"
       },
       "locked": {
-        "lastModified": 1672781528,
-        "narHash": "sha256-mvu5cwHWl/+OAWpnz0gLlTK7WiCvDsC3B0pPBku+PiI=",
+        "lastModified": 1672864280,
+        "narHash": "sha256-U/O6FtrEI4tWmsbY1T7J9UQx13LDa0l9hluUd1RF3ao=",
         "owner": "ExpidusOS",
         "repo": "sdk",
-        "rev": "39c4fc7c14ea8270f037f0ea0a2847d0771e2119",
+        "rev": "b9fde18b8ed4cdf4486f181fa35e0ab1a6c36288",
         "type": "github"
       },
       "original": {
@@ -112,11 +111,11 @@
     },
     "nur": {
       "locked": {
-        "lastModified": 1672778726,
-        "narHash": "sha256-kKeVLCGwebbbAX9RYST95c7+OPPs2ph9nfon7sXaY5Y=",
+        "lastModified": 1672948017,
+        "narHash": "sha256-XXk4IXKi1PjsofYCj39jKkTDEoMISucfcMzjHlo8Zu8=",
         "owner": "nix-community",
         "repo": "NUR",
-        "rev": "c0e86b84e3118edb48ace8fbef71d04ee3f0538a",
+        "rev": "4763cf4f0ea23a5fc03af912268caa58a9c7ace2",
         "type": "github"
       },
       "original": {
