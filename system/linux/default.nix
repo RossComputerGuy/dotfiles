@@ -17,7 +17,7 @@
   networking.firewall.checkReversePath = "loose";
 
   services.resolved.extraConfig = ''
-    DNS=192.168.1.41
+    DNS=192.168.1.163
     DNS=100.82.207.123
     DNS=8.8.8.8
     DNS=8.8.4.4
