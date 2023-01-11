@@ -10,6 +10,7 @@ in
     btop
     neofetch
     tree-sitter
+    nodePackages.dockerfile-language-server-nodejs
   ];
   home.stateVersion = "22.11";
   home.sessionVariables.EDITOR = "nvim";
