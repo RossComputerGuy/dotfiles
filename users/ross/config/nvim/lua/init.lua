@@ -10,6 +10,7 @@ vim.opt.shiftwidth = 2
 vim.opt.expandtab = true
 
 vim.cmd [[packadd packer.nvim]]
+vim.cmd [[autocmd FileType go setlocal ts=4 sw=4 noexpandtab]]
 
 vim.api.nvim_set_keymap('n', '<leader>q', ':exit<CR>', { noremap = true })
 vim.api.nvim_set_keymap('n', '<leader>s', ':w<CR>', { noremap = true })
