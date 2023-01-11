@@ -10,6 +10,7 @@ in
     btop
     neofetch
     tree-sitter
+    gcc
     nodePackages.dockerfile-language-server-nodejs
   ];
   home.stateVersion = "22.11";
