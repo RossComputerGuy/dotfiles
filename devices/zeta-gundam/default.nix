@@ -1,4 +1,5 @@
 { config, lib, pkgs, modulesPath, ... }:
+with lib;
 let
   i3-randr-setup = pkgs.writeTextFile {
     name = "i3-randr-setup";
