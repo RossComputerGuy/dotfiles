@@ -24,6 +24,13 @@ in
 
   environment.systemPackages = [ nvidia-offload ];
 
+  virtualisation.virtualbox.host = {
+    enable = true;
+    enableExtensionPack = true;
+  };
+
+  users.users.ross.extraGroups = mkAfter [ "vboxusers" ];
+
   # Bootloader
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.systemd-boot.enable = true;
