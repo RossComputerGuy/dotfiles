@@ -12,7 +12,7 @@ ships and mobile suits. This desktop machine is my main workhorse for gaming, pr
 - CPU: `AMD Ryzen 5 3600`
 - Motherboard: `MSI X470 Gaming Plux Max`
 - Memory: `48GB`
-- Graphics Card: `MSI NVIDIA GeForce RTX 2060`
+- Graphics Card: `PowerColor Fighter AMD Radeon RX 6800`
 - Power Supply: `EVGA 850 BQ`
 - Case: `NZXT H510`
 - Cooler: `CoolerMaster MasterLiquid LC240E RGB AIO (240mm)`

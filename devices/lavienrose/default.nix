@@ -27,7 +27,7 @@ in
   boot.zfs.devNodes = "/dev/";
 
   # Initrd
-  boot.initrd.availableKernelModules = [ "nvme" "xhci_pci" "ahci" "usbhid" "uas" "usb_storage" "sd_mod" ];
+  boot.initrd.availableKernelModules = [ "nvme" "xhci_pci" "ahci" "usbhid" "uas" "usb_storage" "sd_mod" "amdgpu" ];
 
   # Kernel
   boot.kernelModules = [ "kvm-amd" "overlay" "nct6775" ];
@@ -50,16 +50,25 @@ in
   networking.interfaces.enp34s0.useDHCP = true;
 
   # Graphics
-  services.xserver.videoDrivers = [ "nvidia" ];
-  hardware.nvidia.modesetting.enable = true;
-  hardware.nvidia.package = config.boot.kernelPackages.nvidiaPackages.stable;
+  services.xserver.enable = true;
+  services.xserver.videoDrivers = [ "amdgpu" ];
 
-  programs.sway.extraOptions = [ "--unsupported-gpu" ];
-  programs.sway.extraSessionCommands = ''
-    export WLR_NO_HARDWARE_CURSORS=1
-    export GBM_BACKEND=nvidia-drm
-    export __GLX_VENDOR_LIBRARY_NAME=nvidia
-  '';
+  systemd.tmpfiles.rules = [
+    "L+    /opt/rocm/hip   -    -    -     -    ${pkgs.hip}"
+  ];
+
+  hardware.opengl.driSupport = true;
+  hardware.opengl.driSupport32Bit = true;
+
+  hardware.opengl.extraPackages = with pkgs; [
+    amdvlk
+    rocm-opencl-icd
+    rocm-opencl-runtime
+  ];
+
+  hardware.opengl.extraPackages32 = with pkgs; [
+    driversi686Linux.amdvlk
+  ];
 
   # Services
   services.irqbalance.enable = true;
