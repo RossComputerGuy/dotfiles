@@ -1,5 +1,5 @@
 (defwindow panel
-  :monitor 3
+  :monitor 0
   :geometry (geometry :x "0%"
       :y "5px"
       :width "99%"
@@ -14,7 +14,7 @@
     (bar))
 
 (defwindow right-menu
-  :monitor 3
+  :monitor 0
   :geometry (geometry :x "13px"
       :y "5px"
       :width "300px"
