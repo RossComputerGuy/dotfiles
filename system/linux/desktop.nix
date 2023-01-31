@@ -1,6 +1,6 @@
 { config, lib, pkgs, ... }:
 {
-  /*services.udev.extraRules = ''
+  services.udev.extraRules = ''
     ## Steam
     # This rule is needed for basic functionality of the controller in Steam and keyboard/mouse emulation
     SUBSYSTEM=="usb", ATTRS{idVendor}=="28de", MODE="0666"
@@ -42,7 +42,7 @@
     # Grant members of the "plugdev" group access to receiver (useful for SSH users)
     MODE="0660", GROUP="input"
     LABEL="solaar_end"
-  '';*/
+  '';
 
   # Sound
   sound.enable = false;
@@ -62,9 +62,15 @@
   };
 
   # Enable CUPS
-  services.printing.enable = true;
-  services.avahi.enable = true;
-  services.avahi.nssmdns = true;
+  services.printing = {
+    enable = true;
+    drivers = with pkgs; [ hplipWithPlugin ];
+  };
+  services.avahi = {
+    enable = true;
+    nssmdns = true;
+    openFirewall = true;
+  };
 
   # Security
   services.gnome.gnome-keyring.enable = true;
