@@ -46,11 +46,11 @@
         "utils": "utils"
       },
       "locked": {
-        "lastModified": 1675483636,
-        "narHash": "sha256-5Q++1oKkIy5xeGvMC3ReGV2tEadXdImFckc0kM3/prc=",
+        "lastModified": 1675492967,
+        "narHash": "sha256-fhGCEsRbFOcE7sT77Hi72L93n5IlptZxmPulvch8bH0=",
         "owner": "ExpidusOS",
         "repo": "sdk",
-        "rev": "38987f773a1af00b27ac7cadf566bc47e9f4ceea",
+        "rev": "7ca8f52923100f416d082d9ec3ce55527fe9e0f2",
         "type": "github"
       },
       "original": {
@@ -111,11 +111,11 @@
     },
     "nur": {
       "locked": {
-        "lastModified": 1675482369,
-        "narHash": "sha256-TXrKBR7u16iB6Q4FpOO462iMWRZjgrOzF4ld6xbuLAU=",
+        "lastModified": 1675483842,
+        "narHash": "sha256-I1Jg4dfseNEaw1WI4hx8VMWmO+BQl0sfT590ycpcjTI=",
         "owner": "nix-community",
         "repo": "NUR",
-        "rev": "0e6c0e60700fcf4260b8d6d63c925a97172672c1",
+        "rev": "af1326b975e5f8a7e3f77aba3faaa3023895f03f",
         "type": "github"
       },
       "original": {
