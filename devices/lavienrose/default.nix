@@ -142,6 +142,8 @@ in
   home-manager.users.ross.xdg.configFile."sway/config.d/device.conf".source = ./config/sway/config.d/device.conf;
 
   # Steam
+  hardware.steam-hardware.enable = true;
+
   programs.steam = {
     enable = true;
     remotePlay.openFirewall = true;
