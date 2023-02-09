@@ -116,8 +116,7 @@
       wlr.enable = true;
       extraPortals = with pkgs; [
         xdg-desktop-portal-kde
-        xdg-desktop-portal-gtk
-      ];
+      ] ++ lib.optional (!config.services.xserver.desktopManager.gnome.enable) xdg-desktop-portal-gtk;
     };
   };
 
