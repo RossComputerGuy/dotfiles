@@ -37,6 +37,7 @@ in
   home.username = "ross";
   home.homeDirectory = mkForce "/home/ross";
   home.packages = with pkgs; [
+    prismlauncher
     dbus-sway-environment
     eww-wayland
     nvimpager
