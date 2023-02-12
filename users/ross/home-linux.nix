@@ -54,6 +54,7 @@ in
     wl-clipboard
     swaylock-effects
     i3lock-fancy
+    corefonts
     noto-fonts
     noto-fonts-emoji
     dejavu_fonts
