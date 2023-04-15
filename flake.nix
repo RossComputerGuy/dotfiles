@@ -103,7 +103,7 @@
               nurpkgs = nixpkgsFor.${system};
             };
           in [
-            "${expidus-sdk.lib.expidus.channels.home-manager}/nixos"
+            "${expidus-sdk.inputs.home-manager.outPath}/nixos"
             ./system/default.nix
             ./system/linux/default.nix
             ./devices/${machine}/default.nix
