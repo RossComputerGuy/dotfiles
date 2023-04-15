@@ -3,6 +3,7 @@
 
   inputs.expidus-sdk.url = github:ExpidusOS/sdk;
   inputs.nur.url = github:nix-community/NUR;
+  inputs.nixos-unstable.url = github:NixOS/nixpkgs/nixos-unstable;
 
   inputs.darwin = {
     url = github:lnl7/nix-darwin/master;
@@ -16,12 +17,13 @@
     fallback = true;
   };
 
-  outputs = { self, expidus-sdk, nur, darwin }@inputs:
+  outputs = { self, expidus-sdk, nur, nixos-unstable, darwin }@inputs:
     with expidus-sdk.lib;
     let
       overlays = {
         nur = nur.overlay;
         default = (final: prev: {
+          inherit (nixos-unstable.legacyPackages.${prev.system}) mesa nwg-drawer;
         });
       };
 
