@@ -93,7 +93,7 @@
         })) nixpkgsFor;
 
       nixosConfigurations = forAllMachines (machine:
-        import "${expidus-sdk.outPath}/nixos/lib/eval-config.nix" (rec {
+        import "${expidus-sdk.lib.expidus.channels.nixpkgs}/nixos/lib/eval-config.nix" (rec {
           system = "x86_64-linux";
           inherit (expidus-sdk) lib;
           pkgs = nixpkgsFor.${system};
@@ -103,6 +103,7 @@
               nurpkgs = nixpkgsFor.${system};
             };
           in [
+            "${expidus-sdk.lib.expidus.channels.home-manager}/nixos"
             ./system/default.nix
             ./system/linux/default.nix
             ./devices/${machine}/default.nix

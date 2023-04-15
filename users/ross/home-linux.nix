@@ -64,7 +64,6 @@ in
     xclip
     xorg.xrandr
     papirus-icon-theme
-    libtokyo
     dejavu_fonts
   ];
 
@@ -76,10 +75,6 @@ in
     iconTheme = {
       package = pkgs.papirus-icon-theme;
       name = "Papirus-Dark";
-    };
-    theme = {
-      package = pkgs.libtokyo;
-      name = "Tokyo-Night";
     };
     font = {
       package = pkgs.dejavu_fonts;
