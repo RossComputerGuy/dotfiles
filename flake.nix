@@ -16,7 +16,7 @@
     fallback = true;
   };
 
-  outputs = { self, expidus-sdk, nur, darwin }:
+  outputs = { self, expidus-sdk, nur, darwin }@inputs:
     with expidus-sdk.lib;
     let
       overlays = {
@@ -93,17 +93,20 @@
         })) nixpkgsFor;
 
       nixosConfigurations = forAllMachines (machine:
-        import "${expidus-sdk.lib.expidus.channels.nixpkgs}/nixos/lib/eval-config.nix" (rec {
+        import "${expidus.channels.nixpkgs}/nixos/lib/eval-config.nix" (rec {
           system = "x86_64-linux";
           inherit (expidus-sdk) lib;
-          pkgs = nixpkgsFor.${system};
+          pkgs = nixpkgsFor.${system}.appendOverlays [(f: p: {
+            path = expidus.channels.nixpkgs;
+          })];
           modules = let
             nur-modules = import nur.outPath {
               pkgs = nixpkgsFor.${system};
               nurpkgs = nixpkgsFor.${system};
             };
           in [
-            "${expidus-sdk.inputs.home-manager.outPath}/nixos"
+            { documentation.nixos.enable = false; }
+            "${expidus.channels.home-manager}/nixos"
             ./system/default.nix
             ./system/linux/default.nix
             ./devices/${machine}/default.nix

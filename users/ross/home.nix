@@ -60,4 +60,5 @@ in
     };
     inherit shellAliases;
   };
+  manual.manpages.enable = false;
 }
