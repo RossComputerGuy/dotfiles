@@ -22,26 +22,6 @@
       overlays = {
         nur = nur.overlay;
         default = (final: prev: {
-          alacritty = prev.alacritty.overrideAttrs (prev:
-            let commit = "79860622a7beb8bbff0602e56977be6018f3aa39";
-            in rec {
-              version = "0.11.1-${commit}";
-
-              src = final.fetchFromGitHub {
-                owner = "alacritty";
-                repo = "alacritty";
-                rev = commit;
-                sha256 = "sha256-BdSlAsOZZ+A4IO6HzfRz/1CKmPX3l/+KP15/FFsKUjY=";
-              };
-
-              cargoSha256 = "sha256-IWCMtJZEADFebqQYe3f9pWoJvhDCpdBuRW6bB7R9K8Y=";
-
-              cargoDeps = prev.cargoDeps.overrideAttrs (final.lib.const {
-                name = "alacritty-${version}-vendor.tar.gz";
-                inherit src;
-                outputHash = cargoSha256;
-              });
-           });
         });
       };
 
