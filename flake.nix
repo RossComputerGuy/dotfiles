@@ -23,7 +23,9 @@
       overlays = {
         nur = nur.overlay;
         default = (final: prev: {
-          inherit (nixos-unstable.legacyPackages.${prev.system}) mesa nwg-drawer;
+          path = expidus.channels.nixpkgs;
+
+          inherit (nixos-unstable.legacyPackages.${prev.system}) nwg-drawer;
         });
       };
 
@@ -78,16 +80,17 @@
         import "${expidus.channels.nixpkgs}/nixos/lib/eval-config.nix" (rec {
           system = "x86_64-linux";
           inherit (expidus-sdk) lib;
-          pkgs = nixpkgsFor.${system}.appendOverlays [(f: p: {
-            path = expidus.channels.nixpkgs;
-          })];
+          pkgs = nixpkgsFor.${system};
           modules = let
             nur-modules = import nur.outPath {
               pkgs = nixpkgsFor.${system};
               nurpkgs = nixpkgsFor.${system};
             };
           in [
-            { documentation.nixos.enable = false; }
+            {
+              documentation.nixos.enable = false;
+              hardware.opengl.package = nixos-unstable.legacyPackages.x86_64-linux.mesa;
+            }
             "${expidus.channels.home-manager}/nixos"
             ./system/default.nix
             ./system/linux/default.nix

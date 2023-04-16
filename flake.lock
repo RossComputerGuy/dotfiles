@@ -107,6 +107,22 @@
         "type": "github"
       }
     },
+    "nixos-unstable": {
+      "locked": {
+        "lastModified": 1681465517,
+        "narHash": "sha256-EasJh15/jcJNAHtq2SGbiADRXteURAnQbj1NqBoKkzU=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "abe7316dd51a313ce528972b104f4f04f56eefc4",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
       "flake": false,
       "locked": {
@@ -143,6 +159,7 @@
       "inputs": {
         "darwin": "darwin",
         "expidus-sdk": "expidus-sdk",
+        "nixos-unstable": "nixos-unstable",
         "nur": "nur"
       }
     }
