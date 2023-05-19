@@ -89,7 +89,6 @@
           in [
             {
               documentation.nixos.enable = false;
-              hardware.opengl.package = nixos-unstable.legacyPackages.x86_64-linux.mesa;
             }
             "${expidus.channels.home-manager}/nixos"
             ./system/default.nix
