@@ -42,7 +42,7 @@
           path = nixpkgs;
 
           rtl8723bs-firmware = prev.runCommand "rtl8723bs-firmware" {} ''
-            mkdir -p $out
+            mkdir -p $out/lib/firmware
           '';
         });
       };
