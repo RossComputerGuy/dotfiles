@@ -45,8 +45,6 @@
           rtl8723bs-firmware = prev.runCommand "rtl8723bs-firmware" {} ''
             mkdir -p $out
           '';
-
-          inherit (nixos-unstable.legacyPackages.${prev.system}) nwg-drawer;
         });
       };
 
