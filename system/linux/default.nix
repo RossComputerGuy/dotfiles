@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 {
   time.timeZone = "America/Los_Angeles";
   systemd.enableUnifiedCgroupHierarchy = true;
@@ -32,10 +32,13 @@
   services.fwupd.enable = true;
   services.udisks2.enable = true;
   programs.git.enable = true;
+  programs.zsh.enable = true;
 
   environment.systemPackages = with pkgs; [
     vala-language-server
     lm_sensors
     fwupd-efi
   ];
+
+  system.stateVersion = "23.05";
 }

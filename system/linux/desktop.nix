@@ -90,7 +90,7 @@
   };
 
   # Graphics
-  services.gnome3.at-spi2-core.enable = true;
+  services.gnome.at-spi2-core.enable = true;
   services.xserver.enable = true;
   hardware.opengl.driSupport32Bit = true;
   hardware.opengl.enable = true;

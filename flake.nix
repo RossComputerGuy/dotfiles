@@ -1,9 +1,26 @@
 {
   description = "A Flake of my NixOS machines";
 
-  inputs.expidus-sdk.url = github:ExpidusOS/sdk;
+  inputs.expidus-sdk = {
+    url = github:ExpidusOS/sdk;
+    inputs = {
+      nixpkgs.follows = "nixpkgs";
+      home-manager.follows = "home-manager";
+    };
+  };
+
   inputs.nur.url = github:nix-community/NUR;
   inputs.nixos-unstable.url = github:NixOS/nixpkgs/nixos-unstable;
+
+  inputs.nixpkgs = {
+    url = github:NixOS/nixpkgs/nixos-23.05;
+    flake = false;
+  };
+
+  inputs.home-manager = {
+    url = github:nix-community/home-manager/release-23.05;
+    flake = false;
+  };
 
   inputs.darwin = {
     url = github:lnl7/nix-darwin/master;
@@ -17,13 +34,17 @@
     fallback = true;
   };
 
-  outputs = { self, expidus-sdk, nur, nixos-unstable, darwin }@inputs:
+  outputs = { self, expidus-sdk, nur, nixos-unstable, home-manager, nixpkgs, darwin }@inputs:
     with expidus-sdk.lib;
     let
       overlays = {
         nur = nur.overlay;
         default = (final: prev: {
           path = expidus.channels.nixpkgs;
+
+          rtl8723bs-firmware = prev.runCommand "rtl8723bs-firmware" {} ''
+            mkdir -p $out
+          '';
 
           inherit (nixos-unstable.legacyPackages.${prev.system}) nwg-drawer;
         });
