@@ -10,7 +10,6 @@
   };
 
   inputs.nur.url = github:nix-community/NUR;
-  inputs.nixos-unstable.url = github:NixOS/nixpkgs/nixos-unstable;
 
   inputs.nixpkgs = {
     url = github:NixOS/nixpkgs/nixos-23.05;
@@ -34,13 +33,13 @@
     fallback = true;
   };
 
-  outputs = { self, expidus-sdk, nur, nixos-unstable, home-manager, nixpkgs, darwin }@inputs:
+  outputs = { self, expidus-sdk, nur, home-manager, nixpkgs, darwin }@inputs:
     with expidus-sdk.lib;
     let
       overlays = {
         nur = nur.overlay;
         default = (final: prev: {
-          path = expidus.channels.nixpkgs;
+          path = nixpkgs;
 
           rtl8723bs-firmware = prev.runCommand "rtl8723bs-firmware" {} ''
             mkdir -p $out
