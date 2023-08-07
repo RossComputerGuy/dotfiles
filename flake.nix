@@ -81,10 +81,13 @@
         } // (optionalAttrs pkgs.targetPlatform.isDarwin {
           darwinConfigurations = forAllDarwinMachines (machine:
             darwin.lib.darwinSystem {
-              inherit system;
+              inherit system pkgs;
               inputs = {
                 inherit darwin;
-                nixpkgs = expidus-sdk;
+                nixpkgs = expidus-sdk // {
+                  legacyPackages = nixpkgsFor;
+                  inherit (nixpkgs) outPath;
+                };
               };
               modules = [
                 ./system/default.nix
