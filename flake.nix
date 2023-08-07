@@ -48,7 +48,7 @@
         });
       };
 
-      nixpkgsFor = genAttrs [ "x86_64-darwin" "x86_64-linux" ] (system:
+      nixpkgsFor = genAttrs [ "aarch64-darwin" "x86_64-darwin" "x86_64-linux" ] (system:
         import expidus-sdk.outPath {
           inherit system;
           overlays = (builtins.attrValues overlays);
