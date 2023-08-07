@@ -11,6 +11,8 @@
 
   inputs.nur.url = github:nix-community/NUR;
 
+  inputs.nixos-apple-silicon.url = github:tpwrules/nixos-apple-silicon;
+
   inputs.nixpkgs = {
     url = github:NixOS/nixpkgs/nixos-23.05;
     flake = false;
@@ -33,11 +35,12 @@
     fallback = true;
   };
 
-  outputs = { self, expidus-sdk, nur, home-manager, nixpkgs, darwin }@inputs:
+  outputs = { self, expidus-sdk, nur, home-manager, nixpkgs, darwin, nixos-apple-silicon }@inputs:
     with expidus-sdk.lib;
     let
       overlays = {
         nur = nur.overlay;
+        apple-silicon = nixos-apple-silicon.overlays.default;
         default = (final: prev: {
           path = nixpkgs;
 
