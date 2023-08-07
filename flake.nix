@@ -65,7 +65,7 @@
       users = [ "ross" ];
       forAllUsers = genAttrs users;
 
-      darwinMachines = [];
+      darwinMachines = [ "Hizack" ];
       forAllDarwinMachines = genAttrs darwinMachines;
     in {
       inherit overlays;

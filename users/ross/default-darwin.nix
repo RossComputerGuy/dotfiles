@@ -1,5 +1,5 @@
 { ... }:
 {
-  name = "tristan";
-  home = "/Users/tristan";
+  name = "ross";
+  home = "/Users/ross";
 }
