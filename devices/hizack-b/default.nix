@@ -10,7 +10,6 @@
   hardware.bluetooth.enable = true;
 
   hardware.asahi.extractPeripheralFirmware = false;
-  hardware.asahi.use4KPages = true;
 
   boot.extraModprobeConfig = ''
     options hid_apple iso_layout=0
