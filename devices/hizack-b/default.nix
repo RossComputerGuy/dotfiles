@@ -8,16 +8,15 @@
   boot.loader.efi.canTouchEfiVariables = false;
 
   hardware.bluetooth.enable = true;
-  hardware.enableAllFirmeware = true;
   networking = {
     hostName = "hizack-b";
     wireless = {
       enable = false;
-      iwd.enable = false;
+      iwd.enable = true;
     };
     networkmanager.wifi.backend = "iwd";
   };
-  hardware.asahi.extractPeripheralFirmware = false;
+  hardware.asahi.extractPeripheralFirmware = true;
 
   boot.extraModprobeConfig = ''
     options hid_apple iso_layout=0
