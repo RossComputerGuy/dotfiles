@@ -48,6 +48,7 @@ in
   hardware.bluetooth.enable = true;
   hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
   virtualisation.docker.enableNvidia = true;
+  hardware.opengl.driSupport32Bit = true;
 
   # Networking
   networking.hostName = "zeta-gundam";

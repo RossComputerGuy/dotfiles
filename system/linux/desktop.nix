@@ -92,7 +92,6 @@
   # Graphics
   services.gnome.at-spi2-core.enable = true;
   services.xserver.enable = true;
-  hardware.opengl.driSupport32Bit = true;
   hardware.opengl.enable = true;
   fonts.fontDir.enable = true;
 
