@@ -1,32 +1,13 @@
 {
   description = "A Flake of my NixOS machines";
 
-  inputs.expidus-sdk = {
-    url = github:ExpidusOS/sdk;
-    inputs = {
-      nixpkgs.follows = "nixpkgs";
-      home-manager.follows = "home-manager";
-    };
-  };
+  inputs.expidus-sdk.url = github:ExpidusOS/sdk;
 
+  inputs.nixpkgs.url = github:NixOS/nixpkgs/nixos-23.05;
   inputs.nur.url = github:nix-community/NUR;
-
   inputs.nixos-apple-silicon.url = github:tpwrules/nixos-apple-silicon;
-
-  inputs.nixpkgs = {
-    url = github:NixOS/nixpkgs/nixos-23.05;
-    flake = false;
-  };
-
-  inputs.home-manager = {
-    url = github:nix-community/home-manager/9f82227b64245c273d98dd02dedd44fc7576041e;
-    flake = false;
-  };
-
-  inputs.darwin = {
-    url = github:lnl7/nix-darwin/master;
-    inputs.nixpkgs.follows = "expidus-sdk";
-  };
+  inputs.home-manager.url = github:nix-community/home-manager/release-23.05;
+  inputs.darwin.url = github:lnl7/nix-darwin/master;
 
   nixConfig = rec {
     trusted-public-keys = [ "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=" "cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g=" ];
@@ -38,6 +19,8 @@
   outputs = { self, expidus-sdk, nur, home-manager, nixpkgs, darwin, nixos-apple-silicon }@inputs:
     with expidus-sdk.lib;
     let
+      inherit (home-manager.lib) hm homeConfiguration;
+
       overlays = {
         nur = nur.overlay;
         apple-silicon = nixos-apple-silicon.overlays.default;
@@ -51,7 +34,7 @@
       };
 
       nixpkgsFor = genAttrs [ "aarch64-darwin" "x86_64-darwin" "aarch64-linux" "x86_64-linux" ] (system:
-        import expidus-sdk.outPath {
+        import nixpkgs.outPath {
           inherit system;
           overlays = (builtins.attrValues overlays);
           config = {
@@ -73,7 +56,7 @@
 
       packages = builtins.mapAttrs (system: pkgs: {
         homeConfigurations = forAllUsers (user:
-          expidus-sdk.lib.homeManagerConfiguration {
+          homeManagerConfiguration {
             inherit pkgs;
             inherit (expidus-sdk) lib;
             modules = [
@@ -101,7 +84,7 @@
         })) nixpkgsFor;
 
       nixosConfigurations = forAllMachines (machine:
-        import "${expidus.channels.nixpkgs}/nixos/lib/eval-config.nix" (rec {
+        import "${nixpkgs}/nixos/lib/eval-config.nix" (rec {
           system = "x86_64-linux";
           inherit (expidus-sdk) lib;
           pkgs = nixpkgsFor.${system};
@@ -114,7 +97,7 @@
             {
               documentation.nixos.enable = false;
             }
-            "${expidus.channels.home-manager}/nixos"
+            home-manager.nixosModules.default
             ./system/default.nix
             ./system/linux/default.nix
             ./devices/${machine}/default.nix
@@ -122,7 +105,7 @@
             nur-modules.repos.ilya-fedin.modules.flatpak-icons
           ];
         })) // {
-          "hizack-b" = import "${expidus.channels/nixpkgs}/nixos/lib/eval-config.nix" (rec {
+          "hizack-b" = import "${nixpkgs}/nixos/lib/eval-config.nix" (rec {
             system = "aarch64-linux";
             inherit (expidus-sdk) lib;
             pkgs = nixpkgsFor.${system};
@@ -136,7 +119,7 @@
               {
                 documentation.nixos.enable = false;
               }
-              "${expidus.channels.home-manager}/nixos"
+              home-manager.nixosModules.default
               ./system/default.nix
               ./system/linux/default.nix
               ./devices/${machine}/default.nix
