@@ -7,6 +7,8 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = false;
 
+  programs.firefox.enable = true;
+
   hardware.bluetooth.enable = true;
   networking = {
     hostName = "hizack-b";
@@ -16,7 +18,11 @@
     };
     networkmanager.wifi.backend = "iwd";
   };
-  hardware.asahi.extractPeripheralFirmware = true;
+
+  hardware.asahi = {
+    extractPeripheralFirmware = true;
+    peripheralFirmwareDirectory = ./firmware;
+  };
 
   boot.extraModprobeConfig = ''
     options hid_apple iso_layout=0
