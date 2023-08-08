@@ -50,7 +50,7 @@
         });
       };
 
-      nixpkgsFor = genAttrs [ "aarch64-darwin" "x86_64-darwin" "x86_64-linux" ] (system:
+      nixpkgsFor = genAttrs [ "aarch64-darwin" "x86_64-darwin" "aarch64-linux" "x86_64-linux" ] (system:
         import expidus-sdk.outPath {
           inherit system;
           overlays = (builtins.attrValues overlays);
@@ -121,6 +121,30 @@
             nur-modules.repos.ilya-fedin.modules.flatpak-fonts
             nur-modules.repos.ilya-fedin.modules.flatpak-icons
           ];
-        }));
+        })) // {
+          "hizack-b" = import "${expidus.channels/nixpkgs}/nixos/lib/eval-config.nix" (rec {
+            system = "aarch64-linux";
+            inherit (expidus-sdk) lib;
+            pkgs = nixpkgsFor.${system};
+            modules = let
+              machine = "hizack-b";
+              nur-modules = import nur.outPath {
+                pkgs = nixpkgsFor.${system};
+                nurpkgs = nixpkgsFor.${system};
+              };
+            in [
+              {
+                documentation.nixos.enable = false;
+              }
+              "${expidus.channels.home-manager}/nixos"
+              ./system/default.nix
+              ./system/linux/default.nix
+              ./devices/${machine}/default.nix
+              nur-modules.repos.ilya-fedin.modules.flatpak-fonts
+              nur-modules.repos.ilya-fedin.modules.flatpak-icons
+              nixos-apple-silicon.nixosModules.default
+            ];
+          });
+        };
     };
 }
