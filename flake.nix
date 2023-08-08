@@ -76,6 +76,7 @@
                 };
               };
               modules = [
+                home-manager.darwinModules.default
                 ./system/default.nix
                 ./system/darwin.nix
                 ./devices/${machine}/default.nix
