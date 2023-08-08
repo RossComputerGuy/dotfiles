@@ -9,6 +9,7 @@
 
   hardware.bluetooth.enable = true;
 
+  hardware.asahi.extractPeripheralFirmware = false;
   hardware.asahi.use4KPages = true;
 
   boot.extraModprobeConfig = ''
