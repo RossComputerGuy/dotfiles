@@ -1,9 +1,5 @@
 { config, lib, pkgs, ... }:
 {
-  imports = [
-    "${lib.expidus.channels.home-manager}/nix-darwin"
-  ];
-
   system.defaults.NSGlobalDomain.AppleShowAllExtensions = true;
   system.defaults.NSGlobalDomain._HIHideMenuBar = true;
   system.defaults.NSGlobalDomain."com.apple.swipescrolldirection" = false;
