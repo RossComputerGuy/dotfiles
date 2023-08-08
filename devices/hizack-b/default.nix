@@ -8,7 +8,15 @@
   boot.loader.efi.canTouchEfiVariables = false;
 
   hardware.bluetooth.enable = true;
-
+  hardware.enableAllFirmeware = true;
+  networking = {
+    hostName = "hizack-b";
+    wireless = {
+      enable = false;
+      iwd.enable = false;
+    };
+    networkmanager.wifi.backend = "iwd";
+  };
   hardware.asahi.extractPeripheralFirmware = false;
 
   boot.extraModprobeConfig = ''
