@@ -23,6 +23,7 @@
     extractPeripheralFirmware = true;
     peripheralFirmwareDirectory = ./firmware;
     useExperimentalGPUDriver = true;
+    addEdgeKernelConfig = true;
   };
 
   boot.extraModprobeConfig = ''
