@@ -22,6 +22,7 @@
   hardware.asahi = {
     extractPeripheralFirmware = true;
     peripheralFirmwareDirectory = ./firmware;
+    useExperimentalGPUDriver = true;
   };
 
   boot.extraModprobeConfig = ''
