@@ -30,6 +30,8 @@ in
     enableExtensionPack = true;
   };
 
+  virtualisation.waydroid.enable = true;
+
   users.users.ross.extraGroups = mkAfter [ "vboxusers" ];
 
   # Bootloader
