@@ -4,6 +4,7 @@
   inputs.expidus-sdk.url = github:ExpidusOS/sdk;
 
   inputs.nixpkgs.url = github:NixOS/nixpkgs/nixos-23.05;
+  inputs.nixpkgs-unstable.url = github:NixOS/nixpkgs/nixos-unstable;
   inputs.nur.url = github:nix-community/NUR;
   inputs.nixos-apple-silicon.url = github:tpwrules/nixos-apple-silicon;
   inputs.home-manager.url = github:nix-community/home-manager/release-23.05;
@@ -16,7 +17,7 @@
     fallback = true;
   };
 
-  outputs = { self, expidus-sdk, nur, home-manager, nixpkgs, darwin, nixos-apple-silicon }@inputs:
+  outputs = { self, expidus-sdk, nur, home-manager, nixpkgs, nixpkgs-unstable, darwin, nixos-apple-silicon }@inputs:
     with expidus-sdk.lib;
     let
       inherit (home-manager.lib) hm homeConfiguration;
@@ -26,6 +27,14 @@
         apple-silicon = nixos-apple-silicon.overlays.default;
         default = (final: prev: {
           path = nixpkgs;
+
+          waydroid = prev.callPackage "${nixpkgs-unstable}/pkgs/os-specific/linux/waydroid/default.nix" {};
+
+          box64 = prev.box64.overrideAttrs (f: p: {
+            cmakeFlags = p.cmakeFlags ++ [
+              "-DPAGE16K=1"
+            ];
+          });
 
           rtl8723bs-firmware = prev.runCommand "rtl8723bs-firmware" {} ''
             mkdir -p $out/lib/firmware

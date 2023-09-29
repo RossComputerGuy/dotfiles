@@ -7,6 +7,28 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = false;
 
+  virtualisation.waydroid.enable = true;
+
+  boot.binfmt = {
+    emulatedSystems = [
+      "x86_64-linux"
+      "i386-linux"
+    ];
+  };
+
+  boot.kernelPatches = [{
+    name = "waydroid";
+    patch = null;
+    extraConfig = ''
+      ANDROID_BINDER_IPC y
+      ANDROID_BINDERFS y
+      ANDROID_BINDER_DEVICES binder,hwbinder,vndbinder
+      CONFIG_ASHMEM y
+      CONFIG_ANDROID_BINDERFS y
+      CONFIG_ANDROID_BINDER_IPC y
+    '';
+  }];
+
   programs.firefox.enable = true;
 
   hardware.bluetooth.enable = true;
