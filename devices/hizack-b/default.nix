@@ -135,7 +135,6 @@
     peripheralFirmwareDirectory = ./firmware;
     useExperimentalGPUDriver = true;
     addEdgeKernelConfig = true;
-    setupAlsaUcm = true;
   };
 
   boot.extraModprobeConfig = ''
