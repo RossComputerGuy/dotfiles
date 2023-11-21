@@ -31,6 +31,17 @@
           waydroid = prev.callPackage "${nixpkgs-unstable}/pkgs/os-specific/linux/waydroid/default.nix" {};
           inherit (nixpkgs-unstable.legacyPackages.${final.system}) qemu;
 
+          "pipewire-0.3.84" = nixpkgs-unstable.legacyPackages.${final.system}.pipewire;
+          wireplumber = nixpkgs-unstable.legacyPackages.${final.system}.wireplumber;
+
+			    alsa-ucm-conf-asahi = prev.callPackage ./devices/hizack-b/alsa-ucm-conf-asahi.nix {
+				    inherit (final) alsa-ucm-conf;
+			    };
+
+			    alsa-lib-asahi = prev.alsa-lib.override {
+				    alsa-ucm-conf = final.alsa-ucm-conf-asahi;
+			    };
+
           box64 = prev.box64.overrideAttrs (f: p: {
             cmakeFlags = p.cmakeFlags ++ [
               "-DPAGE16K=1"
@@ -129,6 +140,14 @@
             in [
               {
                 documentation.nixos.enable = false;
+
+                disabledModules = [
+                  "services/desktops/pipewire/pipewire.nix"
+                ];
+
+                imports = [
+                  "${nixpkgs-unstable}/nixos/modules/services/desktops/pipewire/pipewire.nix"
+                ];
               }
               home-manager.nixosModules.default
               ./system/default.nix
