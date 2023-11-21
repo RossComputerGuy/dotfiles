@@ -29,6 +29,7 @@
           path = nixpkgs;
 
           waydroid = prev.callPackage "${nixpkgs-unstable}/pkgs/os-specific/linux/waydroid/default.nix" {};
+          inherit (nixpkgs-unstable.legacyPackages.${final.system}) qemu;
 
           box64 = prev.box64.overrideAttrs (f: p: {
             cmakeFlags = p.cmakeFlags ++ [

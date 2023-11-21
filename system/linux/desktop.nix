@@ -61,6 +61,15 @@
     fcitx5.addons = with pkgs; [ fcitx5-mozc ];
   };
 
+  environment.variables.GTK_IM_MODULE = "fcitx";
+  environment.variables.QT_IM_MODULE = "fcitx";
+  environment.variables.XMODIFIERS = "@im=fcitx";
+  environment.variables.INPUT_METHOD = "fcitx";
+  environment.variables.XIM = "fcitx";
+  environment.variables.XIM_PROGRAM = "fcitx";
+  environment.variables.SDL_IM_MODULE = "fcitx";
+  environment.variables.GLFW_IM_MODULE = "ibus";
+
   # Enable CUPS
   services.printing = {
     enable = true;
