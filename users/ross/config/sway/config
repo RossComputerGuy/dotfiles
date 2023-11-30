@@ -4,6 +4,10 @@ set $term alacritty
 
 include ~/.config/sway/config.d/*
 
+input type:touchpad {
+  natural_scroll disabled
+}
+
 gaps inner 5
 gaps horizontal 10
 gaps vertical 4

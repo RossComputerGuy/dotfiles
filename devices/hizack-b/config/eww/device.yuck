@@ -9,7 +9,7 @@
   :stacking "fg"
   :windowtype "dock"
   :exclusive true
-  :reserve (strust :side "top" :distance "4%")
+  :reserve (struts :side "top" :distance "4%")
   :wm-ignore false
     (bar))
 

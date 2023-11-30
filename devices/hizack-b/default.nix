@@ -10,10 +10,28 @@
 
   virtualisation.waydroid.enable = true;
 
-  nixpkgs.overlays = [
-		(self: super: {
-		})
-	];
+  boot.kernelPackages =
+    let
+			kernelPackages = pkgs.linux-asahi.override {
+				_kernelPatches = config.boot.kernelPatches;
+				_4KBuild = config.hardware.asahi.use4KPages;
+				withRust = config.hardware.asahi.withRust;
+			};
+			kernel = kernelPackages.kernel.overrideAttrs (old: {
+        src = pkgs.fetchFromGitHub {
+          owner = "AsahiLinux";
+          repo = "linux";
+          rev = "asahi-6.5-27";
+          hash = "sha256-6ApeS1Pp8L+bZ0BusJ5j97awV4HF9g4CXZJKe1/lZLE=";
+        };
+				version = "asahi-6-latest";
+				unpackPhase = ''
+					cp -r $(realpath $src)/. .
+					chmod -R u+w .
+				'';
+			});
+		in
+			lib.mkForce (pkgs.linuxPackagesFor kernel);
 
   services.speakersafetyd = {
     enable = true;
@@ -42,7 +60,7 @@
 		{
 			package =
 				let
-					pipewire = pkgs."pipewire-0.3.84";
+					pipewire = pkgs.pipewire;
 				in
 					assert lib.assertMsg
 						(lib.versionAtLeast pipewire.version "0.3.84")
@@ -54,11 +72,6 @@
 					(lib.versionAtLeast pkgs.wireplumber.version "0.4.15")
 					("Wireplumber version is too old, need at least 0.4.15, got ${pkgs.wireplumber.version}");
 				withPlugins "wireplumber" (pkgs.wireplumber.overrideAttrs (old: {
-					patches = [
-						# policy-dsp: add ability to hide parent nodes 
-						# https://gitlab.freedesktop.org/pipewire/wireplumber/-/merge_requests/558
-						(builtins.fetchurl "https://gitlab.freedesktop.org/pipewire/wireplumber/-/merge_requests/558.patch")
-					];
 				}));
 		};
 
@@ -89,8 +102,10 @@
 
 	system.replaceRuntimeDependencies = [
 		{
-			original = pkgs.alsa-ucm-conf;
-			replacement = pkgs.alsa-ucm-conf-asahi;
+      original = pkgs.alsa-ucm-conf;
+      replacement = pkgs.callPackage ./alsa-ucm-conf-asahi.nix {
+        inherit (pkgs) alsa-ucm-conf;
+      };
 		}
 		{
 			original = pkgs.alsa-lib;

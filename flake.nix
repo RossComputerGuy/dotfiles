@@ -1,13 +1,21 @@
 {
   description = "A Flake of my NixOS machines";
 
-  inputs.expidus-sdk.url = github:ExpidusOS/sdk;
+  inputs.expidus-sdk = {
+    url = github:ExpidusOS/sdk;
+    inputs.nixpkgs.follows = "nixpkgs";
+  };
 
-  inputs.nixpkgs.url = github:NixOS/nixpkgs/nixos-23.05;
+  inputs.nixpkgs.url = github:NixOS/nixpkgs/nixos-23.11;
   inputs.nixpkgs-unstable.url = github:NixOS/nixpkgs/nixos-unstable;
   inputs.nur.url = github:nix-community/NUR;
-  inputs.nixos-apple-silicon.url = github:tpwrules/nixos-apple-silicon;
-  inputs.home-manager.url = github:nix-community/home-manager/release-23.05;
+
+  inputs.nixos-apple-silicon = {
+    url = github:tpwrules/nixos-apple-silicon;
+    inputs.nixpkgs.follows = "nixpkgs";
+  };
+
+  inputs.home-manager.url = github:nix-community/home-manager/release-23.11;
   inputs.darwin.url = github:lnl7/nix-darwin/master;
 
   nixConfig = rec {
@@ -31,12 +39,9 @@
           waydroid = prev.callPackage "${nixpkgs-unstable}/pkgs/os-specific/linux/waydroid/default.nix" {};
           inherit (nixpkgs-unstable.legacyPackages.${final.system}) qemu;
 
-          "pipewire-0.3.84" = nixpkgs-unstable.legacyPackages.${final.system}.pipewire;
-          wireplumber = nixpkgs-unstable.legacyPackages.${final.system}.wireplumber;
-
-			    alsa-ucm-conf-asahi = prev.callPackage ./devices/hizack-b/alsa-ucm-conf-asahi.nix {
-				    inherit (final) alsa-ucm-conf;
-			    };
+			    alsa-ucm-conf-asahi = (prev.callPackage ./devices/hizack-b/alsa-ucm-conf-asahi.nix {
+            inherit (final) alsa-ucm-conf;
+          });
 
 			    alsa-lib-asahi = prev.alsa-lib.override {
 				    alsa-ucm-conf = final.alsa-ucm-conf-asahi;
