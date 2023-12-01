@@ -64,7 +64,6 @@ in
     xclip
     xorg.xrandr
     papirus-icon-theme
-    dejavu_fonts
   ];
 
   home.sessionVariables.MANPAGER = "nvimpager";
@@ -79,6 +78,10 @@ in
     font = {
       package = pkgs.dejavu_fonts;
       name = "Migu 1P Regular";
+    };
+    theme = {
+      package = pkgs.tokyo-night-gtk;
+      name = "Tokyonight-Dark-BL";
     };
   };
 }

@@ -6,14 +6,18 @@ rustPlatform.buildRustPackage rec {
   src = fetchFromGitHub {
     owner = "AsahiLinux";
     repo = pname;
-    rev = "247713720aac48df07447c55f7a6e06592995546";
-    hash = "sha256-r0Tz2I7XyT9HCYeL7DQ4/G4ropc+2V6cfKXRggfRpNo=";
+    rev = "38e5b9f4c450e216e5ec24d66b1e61016f68b6b7";
+    hash = "sha256-D5zl6nrDecuX1fm/4AYc2RPhvmHuvhCRYkFpOv+XDDA=";
   };
 
-  cargoHash = "sha256-gQzsA61C84OwkTDLzOezeY0ylt54I+OhXFLPdpSBdPY=";
+  cargoHash = "sha256-hWMQGhcIM+SES2XWKvQvPYzoM1AEe2zvN3z2GXWihNs=";
 
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ alsa-lib ];
+
+	preBuild = ''
+		cargo update --offline
+	'';
 
   installPhase = ''
     export VARDIR=$TMPDIR/var # don't care

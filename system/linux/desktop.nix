@@ -118,6 +118,13 @@
   services.upower.enable = true;
   programs.dconf.enable = true;
 
+  fonts.packages = with pkgs; [
+    corefonts
+    noto-fonts
+    noto-fonts-emoji
+    dejavu_fonts
+  ];
+
   xdg = {
     portal = {
       enable = true;
@@ -126,6 +133,7 @@
         xdg-desktop-portal-kde
       ] ++ lib.optional (!config.services.xserver.desktopManager.gnome.enable) xdg-desktop-portal-gtk;
     };
+    icons.icons = with pkgs; [ papirus-icon-theme ];
   };
 
   systemd.user.services.polkit-gnome-authentication-agent-1 = {
