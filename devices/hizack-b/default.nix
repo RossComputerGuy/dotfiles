@@ -2,116 +2,12 @@
 {
   imports = [
     ../../system/linux/desktop.nix
-    ../../pkgs/speakersafetyd/module.nix
   ];
 
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = false;
 
   virtualisation.waydroid.enable = true;
-
-  boot.kernelPackages =
-    let
-			kernelPackages = pkgs.linux-asahi.override {
-				_kernelPatches = config.boot.kernelPatches;
-				_4KBuild = config.hardware.asahi.use4KPages;
-				withRust = config.hardware.asahi.withRust;
-			};
-			kernel = kernelPackages.kernel.overrideAttrs (old: {
-        src = pkgs.fetchFromGitHub {
-          owner = "AsahiLinux";
-          repo = "linux";
-          rev = "asahi-6.5-27";
-          hash = "sha256-6ApeS1Pp8L+bZ0BusJ5j97awV4HF9g4CXZJKe1/lZLE=";
-        };
-				version = "asahi-6-latest";
-				unpackPhase = ''
-					cp -r $(realpath $src)/. .
-					chmod -R u+w .
-				'';
-			});
-		in
-			lib.mkForce (pkgs.linuxPackagesFor kernel);
-
-  services.speakersafetyd = {
-    enable = true;
-    package = pkgs.callPackage ../../pkgs/speakersafetyd {};
-  };
-
-  services.pipewire =
-		let
-			bankstown = pkgs.callPackage ../../pkgs/lsp-plugins/bankstown.nix { };
-
-			lv2Plugins = with pkgs; [
-				lsp-plugins
-				bankstown
-			];
-
-			withPlugins = bin: pkg:
-				pkg.overrideAttrs (old: {
-					nativeBuildInputs = old.nativeBuildInputs ++ [ pkgs.makeWrapper ];
-					postInstall = ''
-						# Taken from pkgs/applications/audio/pulseeffects/default.nix.
-						wrapProgram $out/bin/${bin} \
-							--prefix LV2_PATH : ${lib.makeSearchPath "lib/lv2" lv2Plugins}
-					'';
-				});
-		in
-		{
-			package =
-				let
-					pipewire = pkgs.pipewire;
-				in
-					assert lib.assertMsg
-						(lib.versionAtLeast pipewire.version "0.3.84")
-						("Pipewire version is too old, need at least 0.3.84, got ${pipewire.version}");
-					pipewire;
-
-			wireplumber.package =
-				assert lib.assertMsg
-					(lib.versionAtLeast pkgs.wireplumber.version "0.4.15")
-					("Wireplumber version is too old, need at least 0.4.15, got ${pkgs.wireplumber.version}");
-				withPlugins "wireplumber" (pkgs.wireplumber.overrideAttrs (old: {
-				}));
-		};
-
-  environment.etc =
-		with lib;
-		with builtins;
-		let
-			asahi-audio = pkgs.callPackage ./asahi-audio.nix { };
-			paths = [
-				"pipewire/pipewire.conf.d/99-asahi.conf"
-				"pipewire/pipewire-pulse.conf.d/99-asahi.conf"
-				"wireplumber/main.lua.d/85-asahi.lua"
-				"wireplumber/policy.lua.d/85-asahi-policy.lua"
-				"wireplumber/scripts/policy-asahi.lua"
-			];
-		in
-			listToAttrs
-				(map
-					(path: {
-						name = "${path}";
-						value = {
-							source = "${asahi-audio}/share/${path}";
-							target = "${path}";
-							mode = "0444";
-						};
-					})
-					paths);
-
-	system.replaceRuntimeDependencies = [
-		{
-      original = pkgs.alsa-ucm-conf;
-      replacement = pkgs.callPackage ./alsa-ucm-conf-asahi.nix {
-        inherit (pkgs) alsa-ucm-conf;
-      };
-		}
-		{
-			original = pkgs.alsa-lib;
-			replacement = pkgs.alsa-lib-asahi;
-		}
-	];
 
   boot.binfmt = {
     emulatedSystems = [
@@ -150,6 +46,7 @@
     peripheralFirmwareDirectory = ./firmware;
     useExperimentalGPUDriver = true;
     addEdgeKernelConfig = true;
+    setupAsahiSound = true;
   };
 
   boot.extraModprobeConfig = ''

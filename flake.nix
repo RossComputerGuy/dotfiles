@@ -39,16 +39,7 @@
 
           waydroid = prev.callPackage "${nixpkgs-unstable}/pkgs/os-specific/linux/waydroid/default.nix" {};
           inherit (nixpkgs-unstable.legacyPackages.${final.system}) qemu;
-
-			    alsa-ucm-conf-asahi = (prev.callPackage ./devices/hizack-b/alsa-ucm-conf-asahi.nix {
-            inherit (final) alsa-ucm-conf;
-          });
-
           inherit (nixpkgs-firefox-119.legacyPackages.${final.system}) firefox;
-
-			    alsa-lib-asahi = prev.alsa-lib.override {
-				    alsa-ucm-conf = final.alsa-ucm-conf-asahi;
-			    };
 
           box64 = prev.box64.overrideAttrs (f: p: {
             cmakeFlags = p.cmakeFlags ++ [
