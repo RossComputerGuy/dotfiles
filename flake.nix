@@ -10,6 +10,9 @@
   inputs.nixpkgs-unstable.url = github:NixOS/nixpkgs/nixos-unstable;
   inputs.nixpkgs-firefox-119.url = github:NixOS/nixpkgs/7df1b3e9fa6ace9b2dff8f97952b12c17291cf1e;
   inputs.nur.url = github:nix-community/NUR;
+  inputs.hyprland.url = github:hyprwm/Hyprland;
+  inputs.ags.url = github:Aylur/ags;
+  inputs.hycov.url = github:DreamMaoMao/hycov;
 
   inputs.nixos-apple-silicon = {
     url = github:tpwrules/nixos-apple-silicon;
@@ -26,7 +29,7 @@
     fallback = true;
   };
 
-  outputs = { self, expidus-sdk, nur, home-manager, nixpkgs, nixpkgs-unstable, darwin, nixos-apple-silicon, nixpkgs-firefox-119 }@inputs:
+  outputs = { self, expidus-sdk, nur, home-manager, nixpkgs, nixpkgs-unstable, darwin, nixos-apple-silicon, nixpkgs-firefox-119, hyprland, ags, hycov }@inputs:
     with expidus-sdk.lib;
     let
       inherit (home-manager.lib) hm homeConfiguration;
@@ -34,8 +37,31 @@
       overlays = {
         nur = nur.overlay;
         apple-silicon = nixos-apple-silicon.overlays.default;
+        hyprland = hyprland.overlays.default;
         default = (final: prev: {
           path = nixpkgs;
+          inherit (nixpkgs-unstable.legacyPackages.${final.system}) wlroots libdrm ffmpeg-headless
+            ostree gnome fwupd fwup libsForQt5 qt5 libsForQt6 qt6 fcitx5 gcr openscad prismlauncher
+            pipewire wireplumber xdg-desktop-portal ffmpeg_4-full ffmpeg_4-headless ffmpeg_4 xorg
+            upower noto-fonts noto-fonts-color-emoji samba webkitgtk webkitgtk_4_1 webkitgtk_6_0
+            networkmanager networkmanager-vpnc networkmanager-sstp networkmanager-l2tp networkmanager-openconnect
+            mesa fcitx5-with-addons fcitx5-gtk fcitx5-mozc fcitx5-authy;
+
+          ibus = prev.ibus.override {
+            withWayland = true;
+          };
+
+          hyprland = prev.hyprland.override (f: p: {
+            inherit (nixpkgs-unstable.legacyPackages.${final.system}) libdrm;
+            wlroots = prev.wlroots-hyprland.override (f2: p2: {
+              inherit (nixpkgs-unstable.legacyPackages.${final.system}) wlroots;
+            });
+          });
+
+          hycov = prev.callPackage "${hycov}/default.nix" {
+            inherit (final) hyprland;
+            stdenv = prev.gcc13Stdenv;
+          };
 
           waydroid = prev.callPackage "${nixpkgs-unstable}/pkgs/os-specific/linux/waydroid/default.nix" {};
           inherit (nixpkgs-unstable.legacyPackages.${final.system}) qemu;
@@ -82,6 +108,8 @@
             modules = [
               ./users/${user}/home.nix
               ./users/${user}/home-${pkgs.targetPlatform.parsed.kernel.name}.nix
+              hyprland.homeManagerModules.default
+              ags.homeManagerModules.default
             ];
           });
         } // (optionalAttrs pkgs.targetPlatform.isDarwin {
@@ -117,6 +145,10 @@
           in [
             {
               documentation.nixos.enable = false;
+              home-manager.sharedModules = [
+                hyprland.homeManagerModules.default
+                ags.homeManagerModules.default
+              ];
             }
             home-manager.nixosModules.default
             ./system/default.nix
@@ -139,6 +171,10 @@
             in [
               {
                 documentation.nixos.enable = false;
+                home-manager.sharedModules = [
+                  hyprland.homeManagerModules.default
+                  ags.homeManagerModules.default
+                ];
 
                 disabledModules = [
                   "services/desktops/pipewire/pipewire.nix"

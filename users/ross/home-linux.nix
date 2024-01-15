@@ -22,13 +22,6 @@ in
 
   xdg.configFile."alacritty/alacritty.yml".source = ./config/alacritty/alacritty.yml;
   xdg.configFile."alacritty/alacritty-device.yml".source = ./config/alacritty/alacritty-linux.yml;
-  xdg.configFile."eww/eww.yuck".source = ./config/eww/eww.yuck;
-  xdg.configFile."eww/eww.scss".source = ./config/eww/eww.scss;
-  xdg.configFile."mako/config".source = ./config/mako/config;
-  xdg.configFile."nwg-drawer/drawer.css".source = ./config/nwg-drawer/drawer.css;
-  xdg.configFile."sway/config".source = ./config/sway/config;
-  xdg.configFile."swayidle/config".source = ./config/swayidle/config;
-  xdg.configFile."i3/config".source = ./config/i3/config;
   xdg.configFile."electron-flags.conf".source = ./config/electron-flags.conf;
   xdg.configFile."mimeapps.list".source = ./config/mimeapps.list;
   xdg.configFile."nvim/lua/init.lua".source = ./config/nvim/lua/init.lua;
@@ -38,21 +31,16 @@ in
   home.homeDirectory = mkForce "/home/ross";
   home.packages = with pkgs; [
     dbus-sway-environment
-    eww-wayland
     nvimpager
     xdg-user-dirs
     alacritty
     solaar
-    nwg-drawer
-    mako
     dunst
     playerctl
     pamixer
     grim
     slurp
     wl-clipboard
-    swaylock-effects
-    i3lock-fancy
     corefonts
     noto-fonts
     noto-fonts-emoji
@@ -63,6 +51,8 @@ in
     xclip
     xorg.xrandr
     papirus-icon-theme
+    swww
+    brightnessctl
     (prismlauncher.override {
       glfw = pkgs.glfw-wayland-minecraft;
     })
@@ -84,6 +74,113 @@ in
     theme = {
       package = pkgs.tokyo-night-gtk;
       name = "Tokyonight-Dark-BL";
+    };
+  };
+
+  programs.ags = {
+    enable = true;
+    configDir = ./config/ags;
+    extraPackages = with pkgs; [ accountsservice brightnessctl ];
+  };
+
+  programs.fuzzel = {
+    enable = true;
+    settings = {
+      main = {
+        icon-theme = "Papirus-Dark";
+        terminal = "${lib.getExe pkgs.alacritty} -e";
+      };
+      colors = {
+        background = "1a1b26ff";
+        text = "ffffffff";
+        border = "ffffff14";
+        selection = "c0caf5ff";
+      };
+    };
+  };
+
+  wayland.windowManager.hyprland = {
+    enable = true;
+    package = pkgs.hyprland.override {
+      legacyRenderer = true;
+    };
+    plugins = [
+      "${pkgs.hycov}/lib/libhycov.so"
+    ];
+    settings = {
+      "$mod" = "SUPER";
+      exec-once = [
+        "ags"
+        "swww init"
+        "swww img ~/Pictures/wallpaper.jpg"
+      ];
+      general = {
+        gaps_in = 4;
+        gaps_out = 4;
+        gaps_workspaces = 4;
+        resize_on_border = true;
+      };
+      gestures = {
+        workspace_swipe = true;
+        workspace_swipe_forever = true;
+        workspace_swipe_numbered = true;
+      };
+      decoration.rounding = 3;
+      bindm = [
+        "$mod,mouse:272,movewindow"
+      ];
+      bindle = [
+        ",XF86MonBrightnessUp,exec,brightnessctl s +10%"
+        ",XF86MonBrightnessDown,exec,brightnessctl s 10%-"
+        ",XF86AudioRaiseVolume,exec,pamixer -ui 2"
+        ",XF86AudioLowerVolume,exec,pamixer -ud 2"
+      ];
+      bindl = [
+        ",XF86AudioPlay,exec,playerctl play-pause"
+        ",XF86AudioStop,exec,playerctl stop"
+        ",XF86AudioPause,exec,playerctl play-pause"
+        ",XF86AudioPrev,exec,playerctl previous"
+        ",XF86AudioNext,exec,playerctl next"
+        ",XF86AudioMute,exec,pamixer --toggle-mute"
+      ];
+      bind = [
+        "$mod SHIFT, Q, exit"
+        "$mod SHIFT, R, exec, hyprctl reload"
+        "$mod, Q, killactive"
+        "$mod, Return, exec, alacritty"
+        "$mod, D, exec, fuzzel"
+
+        "$mod, left, movefocus, l"
+        "$mod, right, movefocus, r"
+        "$mod, up, movefocus, u"
+        "$mod, down, movefocus, d"
+
+        "$mod SHIFT, left, movewindow, l"
+        "$mod SHIFT, right, movewindow, r"
+        "$mod SHIFT, up, movewindow, u"
+        "$mod SHIFT, down, movewindow, d"
+
+        ",XF86LaunchA,hycov:toggleoverview"
+
+        "$mod, F, togglefloating"
+        "$mod SHIFT, F, pin"
+
+        ",Print,exec,grim - | wl-copy"
+        "SHIFT,Print,exec,slurp | grim -g - - | wl-copy"
+
+        "$mod,P,exec,grim - | wl-copy"
+        "$mod SHIFT, P,exec,slurp | grim -g - - | wl-copy"
+      ] ++ (
+        builtins.concatLists (builtins.genList (
+          x:
+            let
+              ws = let
+                c = (x + 1) / 10;
+              in builtins.toString (x + 1 - (c * 10));
+            in [
+              "$mod, ${ws}, workspace, ${toString (x + 1)}"
+              "$mod SHIFT, ${ws}, movetoworkspace, ${toString (x + 1)}"
+            ]) 10));
     };
   };
 }

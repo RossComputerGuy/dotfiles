@@ -57,18 +57,19 @@
 
   # i18n
   i18n.inputMethod = {
-    enabled = "fcitx5";
-    fcitx5.addons = with pkgs; [ fcitx5-mozc ];
+    enabled = "ibus";
+    ibus.engines = with pkgs.ibus-engines; [ mozc ];
   };
 
-  environment.variables.GTK_IM_MODULE = "fcitx";
-  environment.variables.QT_IM_MODULE = "fcitx";
-  environment.variables.XMODIFIERS = "@im=fcitx";
-  environment.variables.INPUT_METHOD = "fcitx";
-  environment.variables.XIM = "fcitx";
-  environment.variables.XIM_PROGRAM = "fcitx";
-  environment.variables.SDL_IM_MODULE = "fcitx";
+  environment.variables.GTK_IM_MODULE = "ibus";
+  environment.variables.QT_IM_MODULE = "ibus";
+  environment.variables.XMODIFIERS = "@im=ibus";
+  environment.variables.INPUT_METHOD = "ibus";
+  environment.variables.XIM = "ibus";
+  environment.variables.XIM_PROGRAM = "ibus";
+  environment.variables.SDL_IM_MODULE = "ibus";
   environment.variables.GLFW_IM_MODULE = "ibus";
+  environment.sessionVariables.NIXOS_OZONE_WL = "1";
 
   # Enable CUPS
   services.printing = {
@@ -106,12 +107,6 @@
 
   # Display manager
   services.xserver.displayManager.gdm.enable = true;
-  services.xserver.displayManager.defaultSession = "sway";
-
-  services.xserver.windowManager.i3 = {
-    enable = true;
-    package = pkgs.i3-gaps;
-  };
 
   # Applications & Services
   services.flatpak.enable = true;
@@ -129,9 +124,6 @@
     portal = {
       enable = true;
       wlr.enable = true;
-      extraPortals = with pkgs; [
-        xdg-desktop-portal-kde
-      ] ++ lib.optional (!config.services.xserver.desktopManager.gnome.enable) xdg-desktop-portal-gtk;
     };
     icons.icons = with pkgs; [ papirus-icon-theme ];
   };
@@ -151,11 +143,6 @@
   };
 
   programs.adb.enable = true;
-
-  programs.sway = {
-    enable = true;
-    wrapperFeatures.gtk = true;
-  };
 
   services.dbus.enable = true;
 

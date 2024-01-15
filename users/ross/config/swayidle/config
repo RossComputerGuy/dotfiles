@@ -1,3 +1,0 @@
-timeout 300 "swaymsg exec '$lock'"
-timeout 600 'swaymsg "output * dpms off"' resume 'swaymsg "output * dpms on"'
-before-sleep "swaymsg exec '$lock'"

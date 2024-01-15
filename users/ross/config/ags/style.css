@@ -1,0 +1,31 @@
+.panel, .quicksettings {
+  background-color: #1a1b26;
+  border-radius: 4px;
+}
+
+.quicksettings > box > revealer {
+  padding: 6px;
+}
+
+.quicksettings {
+  border-width: 1px;
+  border-style: solid;
+  border-color: rgba(255,255,255,0.08);
+}
+
+.avatar {
+  border-radius: 4px;
+  padding: 8px;
+}
+
+.network > button {
+  background: none;
+  border: none;
+}
+
+.network {
+  background-color: rgba(192, 202, 245, 0.04);
+  border-color: rgb(192, 202, 245);
+  border-radius: 6px;
+  padding-right: 10px;
+}
