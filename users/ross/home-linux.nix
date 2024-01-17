@@ -27,6 +27,23 @@ in
   xdg.configFile."nvim/lua/init.lua".source = ./config/nvim/lua/init.lua;
   fonts.fontconfig.enable = lib.mkForce true;
   home.file."Pictures/wallpaper.jpg".source = ./pictures/wallpaper.jpg;
+
+  xdg.configFile."waypaper/config.ini".source = pkgs.writeText "waypaper.ini" (generators.toINI {} {
+    Settings = {
+      folder = "/home/ross/Pictures";
+      wallpaper = "/home/ross/Pictures/wallpaper.jpg";
+      backend = "swww";
+      monitors = "All";
+      fill = "Fill";
+      sort = "name";
+      color = "#1a1b26";
+      swww_transition_type = "any";
+      swww_transition_step = 90;
+      swww_transition_angle = 0;
+      swww_transition_duration = 3;
+    };
+  });
+
   home.username = "ross";
   home.homeDirectory = mkForce "/home/ross";
   home.packages = with pkgs; [
@@ -52,6 +69,7 @@ in
     xorg.xrandr
     papirus-icon-theme
     swww
+    waypaper
     brightnessctl
     (prismlauncher.override {
       glfw = pkgs.glfw-wayland-minecraft;
@@ -63,6 +81,10 @@ in
 
   gtk = {
     enable = true;
+    cursorTheme = {
+      package = pkgs.shuba-cursors;
+      name = "Shuba";
+    };
     iconTheme = {
       package = pkgs.papirus-icon-theme;
       name = "Papirus-Dark";
@@ -111,8 +133,7 @@ in
       "$mod" = "SUPER";
       exec-once = [
         "ags"
-        "swww init"
-        "swww img ~/Pictures/wallpaper.jpg"
+        "waypaper --restore --random"
       ];
       general = {
         gaps_in = 4;

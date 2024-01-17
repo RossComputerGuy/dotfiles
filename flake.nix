@@ -13,6 +13,10 @@
   inputs.hyprland.url = github:hyprwm/Hyprland;
   inputs.ags.url = github:Aylur/ags;
   inputs.hycov.url = github:DreamMaoMao/hycov;
+  inputs.shuba-cursors = {
+    url = github:RossComputerGuy/shuba-cursors;
+    inputs.nixpkgs.follows = "nixpkgs";
+  };
 
   inputs.nixos-apple-silicon = {
     url = github:tpwrules/nixos-apple-silicon;
@@ -29,7 +33,7 @@
     fallback = true;
   };
 
-  outputs = { self, expidus-sdk, nur, home-manager, nixpkgs, nixpkgs-unstable, darwin, nixos-apple-silicon, nixpkgs-firefox-119, hyprland, ags, hycov }@inputs:
+  outputs = { self, expidus-sdk, nur, home-manager, nixpkgs, nixpkgs-unstable, darwin, nixos-apple-silicon, nixpkgs-firefox-119, hyprland, ags, hycov, shuba-cursors }@inputs:
     with expidus-sdk.lib;
     let
       inherit (home-manager.lib) hm homeConfiguration;
@@ -40,12 +44,39 @@
         hyprland = hyprland.overlays.default;
         default = (final: prev: {
           path = nixpkgs;
+
+          shuba-cursors = shuba-cursors.packages.${final.system}.default;
+
           inherit (nixpkgs-unstable.legacyPackages.${final.system}) wlroots libdrm ffmpeg-headless
             ostree gnome fwupd fwup libsForQt5 qt5 libsForQt6 qt6 fcitx5 gcr openscad prismlauncher
             pipewire wireplumber xdg-desktop-portal ffmpeg_4-full ffmpeg_4-headless ffmpeg_4 xorg
             upower noto-fonts noto-fonts-color-emoji samba webkitgtk webkitgtk_4_1 webkitgtk_6_0
             networkmanager networkmanager-vpnc networkmanager-sstp networkmanager-l2tp networkmanager-openconnect
-            mesa fcitx5-with-addons fcitx5-gtk fcitx5-mozc fcitx5-authy;
+            fcitx5-with-addons fcitx5-gtk fcitx5-mozc fcitx5-authy waydroid;
+
+          mesa = nixpkgs-unstable.legacyPackages.${final.system}.mesa.overrideAttrs (f: p: rec {
+            version = "24.0.0-rc1";
+            name = "mesa-${version}";
+
+            patches = let
+              basePath = "${nixpkgs-unstable}/pkgs/development/libraries/mesa";
+            in [
+              "${basePath}/musl.patch"
+              "${basePath}/opencl.patch"
+              "${basePath}/disk_cache-include-dri-driver-path-in-cache-key.patch"
+            ];
+
+            src = final.fetchurl {
+              urls = [
+                "https://archive.mesa3d.org/mesa-${version}.tar.xz"
+                "https://mesa.freedesktop.org/archive/mesa-${version}.tar.xz"
+                "ftp://ftp.freedesktop.org/pub/mesa/mesa-${version}.tar.xz"
+                "ftp://ftp.freedesktop.org/pub/mesa/${version}/mesa-${version}.tar.xz"
+                "ftp://ftp.freedesktop.org/pub/mesa/older-versions/${versions.major version}.x/${version}/mesa-${version}.tar.xz"
+              ];
+              hash = "sha256-hvsZnrrNlztnUjgdbTnyOLg+V749aVeMOCQ1OkCujO4=";
+            };
+          });
 
           ibus = prev.ibus.override {
             withWayland = true;
@@ -63,7 +94,6 @@
             stdenv = prev.gcc13Stdenv;
           };
 
-          waydroid = prev.callPackage "${nixpkgs-unstable}/pkgs/os-specific/linux/waydroid/default.nix" {};
           inherit (nixpkgs-unstable.legacyPackages.${final.system}) qemu;
           inherit (nixpkgs-firefox-119.legacyPackages.${final.system}) firefox;
 
