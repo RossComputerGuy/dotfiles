@@ -53,6 +53,7 @@
     useExperimentalGPUDriver = true;
     addEdgeKernelConfig = true;
     setupAsahiSound = true;
+    experimentalGPUInstallMode = "overlay";
   };
 
   boot.extraModprobeConfig = ''
