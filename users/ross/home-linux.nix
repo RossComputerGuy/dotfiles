@@ -123,9 +123,6 @@ in
 
   wayland.windowManager.hyprland = {
     enable = true;
-    package = pkgs.hyprland.override {
-      legacyRenderer = true;
-    };
     plugins = [
       "${pkgs.hycov}/lib/libhycov.so"
     ];

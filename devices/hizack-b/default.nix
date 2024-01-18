@@ -64,4 +64,6 @@
     device = "/dev/nvme0n1p5";
     fsType = "ext4";
   };
+
+  home-manager.users.ross.wayland.windowManager.hyprland.package = pkgs.hyprland-legacy-renderer;
 }

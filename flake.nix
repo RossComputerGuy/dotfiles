@@ -47,7 +47,7 @@
           path = nixpkgs;
 
           shuba-cursors = shuba-cursors.packages.${final.system}.default;
-          inherit (nixpkgs-unstable.legacyPackages.${final.system}) libdrm noto-fonts-color-emoji openscad;
+          inherit (nixpkgs-unstable.legacyPackages.${final.system}) noto-fonts-color-emoji openscad;
 
           #inherit (nixpkgs-unstable.legacyPackages.${final.system}) wlroots libdrm ffmpeg-headless
           #  ostree gnome fwupd fwup libsForQt5 qt5 libsForQt6 qt6 fcitx5 gcr openscad prismlauncher
@@ -86,12 +86,9 @@
             withWayland = true;
           };
 
-          hyprland = prev.hyprland.override (f: p: {
+          wlroots-hyprland = prev.wlroots-hyprland.override {
             inherit (nixpkgs-unstable.legacyPackages.${final.system}) libdrm;
-            wlroots = prev.wlroots-hyprland.override (f2: p2: {
-              inherit (nixpkgs-unstable.legacyPackages.${final.system}) wlroots;
-            });
-          });
+          };
 
           hycov = prev.callPackage "${hycov}/default.nix" {
             inherit (final) hyprland;
