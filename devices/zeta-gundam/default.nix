@@ -135,7 +135,5 @@ in
     };
 
   # Users
-  home-manager.users.ross.xdg.configFile."eww/device.yuck".source = ./config/eww/device.yuck;
-  home-manager.users.ross.xdg.configFile."sway/config.d/device.conf".source = ./config/sway/config.d/device.conf;
   home-manager.users.ross.home.packages = [ nvidia-offload ];
 }

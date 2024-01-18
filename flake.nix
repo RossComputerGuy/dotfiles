@@ -49,6 +49,12 @@
           shuba-cursors = shuba-cursors.packages.${final.system}.default;
           inherit (nixpkgs-unstable.legacyPackages.${final.system}) noto-fonts-color-emoji openscad;
 
+          libdrm = prev.callPackage "${nixpkgs-unstable}/pkgs/development/libraries/libdrm" {};
+
+          libsecret = prev.libsecret.overrideAttrs (f: p: {
+            doCheck = false;
+          });
+
           #inherit (nixpkgs-unstable.legacyPackages.${final.system}) wlroots libdrm ffmpeg-headless
           #  ostree gnome fwupd fwup libsForQt5 qt5 libsForQt6 qt6 fcitx5 gcr openscad prismlauncher
           #  pipewire wireplumber xdg-desktop-portal ffmpeg_4-full ffmpeg_4-headless ffmpeg_4 xorg
@@ -84,10 +90,6 @@
 
           ibus = prev.ibus.override {
             withWayland = true;
-          };
-
-          wlroots-hyprland = prev.wlroots-hyprland.override {
-            inherit (nixpkgs-unstable.legacyPackages.${final.system}) libdrm;
           };
 
           hycov = prev.callPackage "${hycov}/default.nix" {

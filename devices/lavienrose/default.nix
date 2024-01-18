@@ -20,8 +20,6 @@ in
 
   environment.systemPackages = [ i3-randr-setup ];
 
-  services.xserver.desktopManager.gnome.enable = true;
-
   # Bootloader
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.systemd-boot.enable = true;
