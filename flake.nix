@@ -42,6 +42,11 @@
       overlays = {
         nur = nur.overlay;
         apple-silicon = nixos-apple-silicon.overlays.default;
+
+        wlroots_17 = (final: prev: {
+          wlroots = (prev.callPackage "${nixpkgs-unstable}/pkgs/development/libraries/wlroots" {}).wlroots_0_17;
+        });
+
         hyprland = hyprland.overlays.default;
         default = (final: prev: {
           path = nixpkgs;
@@ -53,6 +58,15 @@
 
           libsecret = prev.libsecret.overrideAttrs (f: p: {
             doCheck = false;
+          });
+
+          xdg-desktop-portal = prev.xdg-desktop-portal.overrideAttrs (f: p: {
+            doCheck = false;
+
+            nativeBuildInputs = p.nativeBuildInputs ++ (with prev; [
+              python3Packages.pytest
+              python3Packages.python-dbusmock
+            ]);
           });
 
           #inherit (nixpkgs-unstable.legacyPackages.${final.system}) wlroots libdrm ffmpeg-headless
