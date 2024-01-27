@@ -71,6 +71,7 @@ in
     swww
     waypaper
     brightnessctl
+    kanshi
     (prismlauncher.override {
       glfw = pkgs.glfw-wayland-minecraft;
     })
@@ -131,6 +132,7 @@ in
       exec-once = [
         "ags"
         "waypaper --restore --random"
+        "kanshi &"
       ];
       general = {
         gaps_in = 4;
