@@ -129,9 +129,13 @@ in
     ];
     settings = {
       "$mod" = "SUPER";
+      env = [
+        "QT_QPA_PLATFORM,wayland"
+        "MOZ_ENABLE_WAYLAND,1"
+      ];
       exec-once = [
         "ags"
-        "waypaper --restore --random"
+        "waypaper --restore"
         "kanshi &"
       ];
       general = {
