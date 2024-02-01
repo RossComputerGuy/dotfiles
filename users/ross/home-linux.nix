@@ -58,10 +58,6 @@ in
     grim
     slurp
     wl-clipboard
-    corefonts
-    noto-fonts
-    noto-fonts-emoji
-    dejavu_fonts
     migu
     xidlehook
     maim
@@ -75,6 +71,10 @@ in
     (prismlauncher.override {
       glfw = pkgs.glfw-wayland-minecraft;
     })
+    corefonts
+    noto-fonts
+    noto-fonts-emoji
+    dejavu_fonts
   ];
 
   home.sessionVariables.MANPAGER = "nvimpager";
