@@ -39,7 +39,7 @@ return require('packer').startup(function(use)
     run = ':TSUpdate',
     config = function()
       require('nvim-treesitter.configs').setup({
-        ensure_installed = { 'c', 'css', 'javascript', 'go', 'http', 'markdown', 'nix', 'scss', 'sql', 'vim', 'vue', 'vala' },
+        ensure_installed = { 'c', 'css', 'javascript', 'go', 'http', 'markdown', 'nix', 'scss', 'sql', 'vim', 'vue', 'vala', 'zig' },
         sync_install = false,
         auto_install = true,
         highlight = {
@@ -97,7 +97,8 @@ return require('packer').startup(function(use)
         'markdown',
         'typescript',
         'typescriptreact',
-        'yaml'
+        'yaml',
+        'zig',
       },
     }) end,
   }
@@ -174,6 +175,7 @@ return require('packer').startup(function(use)
         vala_ls = {},
         terraformls = {},
         golangci_lint_ls = {},
+        zls = {},
       }
       mlsp.setup_handlers({
         function(name)

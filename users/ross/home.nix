@@ -30,7 +30,6 @@ in
     withPython3 = true;
     plugins = with pkgs.vimPlugins; [
       packer-nvim
-      fcitx-vim
     ];
     extraConfig = ''
       lua require("init")
