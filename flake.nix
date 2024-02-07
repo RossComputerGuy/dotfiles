@@ -26,6 +26,7 @@
 
   inputs.home-manager.url = github:nix-community/home-manager/release-23.11;
   inputs.darwin.url = github:lnl7/nix-darwin/master;
+  inputs.nixos-hardware.url = "github:NixOS/nixos-hardware/master";
 
   nixConfig = rec {
     trusted-public-keys = [ "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=" "cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g=" ];
@@ -34,7 +35,7 @@
     fallback = true;
   };
 
-  outputs = { self, expidus-sdk, nur, home-manager, nixpkgs, nixpkgs-unstable, darwin, nixos-apple-silicon, nixpkgs-firefox-119, hyprland, ags, hycov, shuba-cursors }@inputs:
+  outputs = { self, expidus-sdk, nur, home-manager, nixpkgs, nixpkgs-unstable, darwin, nixos-apple-silicon, nixpkgs-firefox-119, hyprland, ags, hycov, shuba-cursors, nixos-hardware }@inputs:
     with expidus-sdk.lib;
     let
       inherit (home-manager.lib) hm homeConfiguration;
@@ -144,7 +145,7 @@
                 ./devices/${machine}/default.nix
               ];
             });
-        })) nixpkgsFor;
+          })) nixpkgsFor;
 
       nixosConfigurations = forAllMachines (machine:
         import "${nixpkgs}/nixos/lib/eval-config.nix" (rec {
@@ -205,6 +206,40 @@
               nur-modules.repos.ilya-fedin.modules.flatpak-fonts
               nur-modules.repos.ilya-fedin.modules.flatpak-icons
               nixos-apple-silicon.nixosModules.default
+            ];
+          });
+          "jegan" = import "${nixpkgs}/nixos/lib/eval-config.nix" (rec {
+            system = "riscv64-linux";
+            inherit (expidus-sdk) lib;
+            pkgs = nixpkgsFor.${system};
+            modules = let
+              machine = "jegan";
+              nur-modules = import nur.outPath {
+                pkgs = nixpkgsFor.${system};
+                nurpkgs = nixpkgsFor.${system};
+              };
+            in [
+              {
+                documentation.nixos.enable = false;
+                home-manager.sharedModules = [
+                  hyprland.homeManagerModules.default
+                  ags.homeManagerModules.default
+                ];
+
+                disabledModules = [
+                  "services/desktops/pipewire/pipewire.nix"
+                ];
+
+                imports = [
+                  "${nixpkgs-unstable}/nixos/modules/services/desktops/pipewire/pipewire.nix"
+                ];
+              }
+              home-manager.nixosModules.default
+              ./system/default.nix
+              ./system/linux/default.nix
+              ./devices/${machine}/default.nix
+              nur-modules.repos.ilya-fedin.modules.flatpak-fonts
+              nur-modules.repos.ilya-fedin.modules.flatpak-icons
             ];
           });
         };
