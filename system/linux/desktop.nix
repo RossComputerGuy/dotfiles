@@ -105,9 +105,6 @@
   hardware.opengl.enable = true;
   fonts.fontDir.enable = true;
 
-  # Display manager
-  services.xserver.displayManager.gdm.enable = true;
-
   # Applications & Services
   services.flatpak.enable = true;
   services.upower.enable = true;

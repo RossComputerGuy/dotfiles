@@ -16,7 +16,6 @@
 
   environment.systemPackages = with pkgs; [
     sumneko-lua-language-server
-    rnix-lsp
     fd
     ripgrep
     cachix

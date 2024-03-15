@@ -19,8 +19,7 @@
   };
 
   inputs.nixos-apple-silicon = {
-    # url = github:tpwrules/nixos-apple-silicon;
-    url = github:yu-re-ka/nixos-m1/nixos-unstable-fixes;
+    url = github:tpwrules/nixos-apple-silicon;
     inputs.nixpkgs.follows = "nixpkgs";
   };
 
@@ -53,13 +52,9 @@
           path = nixpkgs;
 
           shuba-cursors = shuba-cursors.packages.${final.system}.default;
-          inherit (nixpkgs-unstable.legacyPackages.${final.system}) noto-fonts-color-emoji openscad;
+          inherit (nixpkgs-unstable.legacyPackages.${final.system}) openscad wayland-protocols upower;
 
           libdrm = prev.callPackage "${nixpkgs-unstable}/pkgs/development/libraries/libdrm" {};
-
-          libsecret = prev.libsecret.overrideAttrs (f: p: {
-            doCheck = false;
-          });
 
           xdg-desktop-portal = prev.xdg-desktop-portal.overrideAttrs (f: p: {
             doCheck = false;
@@ -189,14 +184,6 @@
                 home-manager.sharedModules = [
                   hyprland.homeManagerModules.default
                   ags.homeManagerModules.default
-                ];
-
-                disabledModules = [
-                  "services/desktops/pipewire/pipewire.nix"
-                ];
-
-                imports = [
-                  "${nixpkgs-unstable}/nixos/modules/services/desktops/pipewire/pipewire.nix"
                 ];
               }
               home-manager.nixosModules.default

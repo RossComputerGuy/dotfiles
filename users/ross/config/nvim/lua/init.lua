@@ -150,7 +150,6 @@ return require('packer').startup(function(use)
         clangd = {},
         pyright = {},
         tsserver = {},
-        rnix = {},
         tailwindcss = {},
         sumneko_lua = {
           settings = {
