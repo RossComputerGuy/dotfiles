@@ -7,8 +7,6 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = false;
 
-  virtualisation.waydroid.enable = true;
-
   boot.binfmt = {
     emulatedSystems = [
       "x86_64-linux"
