@@ -151,15 +151,16 @@
         "hyprland": "hyprland"
       },
       "locked": {
-        "lastModified": 1713322986,
-        "narHash": "sha256-/h6Rv5PKvC3GXzqfHCx58LOwkWix7xbH5x/zuqwz2Y0=",
+        "lastModified": 1713146561,
+        "narHash": "sha256-tZX4jkF9G+awMxVEb1H6mUlDHGppwSnkz5GIT2jUXts=",
         "owner": "DreamMaoMao",
         "repo": "hycov",
-        "rev": "62a71218f7fc613d30b037bfc7b4be0a08ddd566",
+        "rev": "4792d91a4c19de0aeaa55482b101151d77e26eca",
         "type": "github"
       },
       "original": {
         "owner": "DreamMaoMao",
+        "ref": "0.39.0.2",
         "repo": "hycov",
         "type": "github"
       }
@@ -278,15 +279,16 @@
         "xdph": "xdph_2"
       },
       "locked": {
-        "lastModified": 1713296181,
-        "narHash": "sha256-c2hUYlSi7QOful5lIEWVRl1dborfctAvWY9CwoTLxXI=",
+        "lastModified": 1713283263,
+        "narHash": "sha256-Urb/njWiHYUudXpmK8EKl9Z58esTIG0PxXw5LuM2r5g=",
         "owner": "hyprwm",
         "repo": "Hyprland",
-        "rev": "e8e02e81e84bb04efa0c926361ec80c60744f665",
+        "rev": "fe7b748eb668136dd0558b7c8279bfcd7ab4d759",
         "type": "github"
       },
       "original": {
         "owner": "hyprwm",
+        "ref": "v0.39.1",
         "repo": "Hyprland",
         "type": "github"
       }
@@ -356,11 +358,11 @@
     },
     "nixos-hardware": {
       "locked": {
-        "lastModified": 1712909959,
-        "narHash": "sha256-7/5ubuwdEbQ7Z+Vqd4u0mM5L2VMNDsBh54visp27CtQ=",
+        "lastModified": 1713377320,
+        "narHash": "sha256-OrBm62B+X9jylr6cPgKc+5OSgF2PRW9IY0ARCOtURMY=",
         "owner": "NixOS",
         "repo": "nixos-hardware",
-        "rev": "f58b25254be441cd2a9b4b444ed83f1e51244f1f",
+        "rev": "f2d364de6589f7a029624983593eafc3c4dac726",
         "type": "github"
       },
       "original": {
@@ -497,11 +499,11 @@
     },
     "nur": {
       "locked": {
-        "lastModified": 1713321863,
-        "narHash": "sha256-Np4ZmbAlSCCq6D23S9yMapTxu7aGpf//6TI2xRnroOE=",
+        "lastModified": 1713400649,
+        "narHash": "sha256-uu5jpkhbOmHtmdbjAhyrPS+5/hRBKf3dHQDPECmzXH8=",
         "owner": "nix-community",
         "repo": "NUR",
-        "rev": "f5c127294e93ed97bd6d3cdd3c8b7ad61b923651",
+        "rev": "4c311a66b26d6ada31723e2473b1b67e0631ecb5",
         "type": "github"
       },
       "original": {

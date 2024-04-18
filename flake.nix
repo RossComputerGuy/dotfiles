@@ -10,9 +10,9 @@
   inputs.nixpkgs-unstable.url = github:NixOS/nixpkgs/nixos-unstable;
   inputs.nixpkgs-firefox-119.url = github:NixOS/nixpkgs/7df1b3e9fa6ace9b2dff8f97952b12c17291cf1e;
   inputs.nur.url = github:nix-community/NUR;
-  inputs.hyprland.url = github:hyprwm/Hyprland;
+  inputs.hyprland.url = github:hyprwm/Hyprland/v0.39.1;
   inputs.ags.url = github:Aylur/ags;
-  inputs.hycov.url = github:DreamMaoMao/hycov;
+  inputs.hycov.url = github:DreamMaoMao/hycov/0.39.0.2;
   inputs.shuba-cursors = {
     url = github:RossComputerGuy/shuba-cursors;
     inputs.nixpkgs.follows = "nixpkgs";
@@ -43,27 +43,11 @@
         nur = nur.overlay;
         apple-silicon = nixos-apple-silicon.overlays.default;
 
-        wlroots_17 = (final: prev: {
-          wlroots = (prev.callPackage "${nixpkgs-unstable}/pkgs/development/libraries/wlroots" {}).wlroots_0_17;
-        });
-
         hyprland = hyprland.overlays.default;
         default = (final: prev: {
           path = nixpkgs;
 
           shuba-cursors = shuba-cursors.packages.${final.system}.default;
-          inherit (nixpkgs-unstable.legacyPackages.${final.system}) openscad wayland-protocols upower;
-
-          libdrm = prev.callPackage "${nixpkgs-unstable}/pkgs/development/libraries/libdrm" {};
-
-          xdg-desktop-portal = prev.xdg-desktop-portal.overrideAttrs (f: p: {
-            doCheck = false;
-
-            nativeBuildInputs = p.nativeBuildInputs ++ (with prev; [
-              python3Packages.pytest
-              python3Packages.python-dbusmock
-            ]);
-          });
 
           ibus = prev.ibus.override {
             withWayland = true;
