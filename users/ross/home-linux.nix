@@ -124,6 +124,9 @@ in
 
   wayland.windowManager.hyprland = {
     enable = true;
+    plugins = [
+      "${pkgs.hycov}/lib/libhycov.so"
+    ];
     settings = {
       "$mod" = "SUPER";
       env = [
@@ -181,7 +184,7 @@ in
         "$mod SHIFT, up, movewindow, u"
         "$mod SHIFT, down, movewindow, d"
 
-        #",XF86LaunchA,hycov:toggleoverview"
+        ",XF86LaunchA,hycov:toggleoverview"
 
         "$mod, F, togglefloating"
         "$mod SHIFT, F, pin"
