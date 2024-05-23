@@ -35,7 +35,6 @@
   programs.zsh.enable = true;
 
   environment.systemPackages = with pkgs; [
-    vala-language-server
     lm_sensors
     fwupd-efi
   ];

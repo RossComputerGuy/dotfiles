@@ -42,7 +42,17 @@
       enable = false;
       iwd.enable = true;
     };
-    networkmanager.wifi.backend = "iwd";
+    networkmanager = {
+      wifi.backend = "iwd";
+      plugins = lib.mkForce (with pkgs; [
+        networkmanager-fortisslvpn
+        networkmanager-iodine
+        networkmanager-l2tp
+        networkmanager-openvpn
+        networkmanager-vpnc
+        networkmanager-sstp
+      ]);
+    };
   };
 
   hardware.asahi = {
