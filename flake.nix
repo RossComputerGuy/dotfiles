@@ -1,14 +1,7 @@
 {
   description = "A Flake of my NixOS machines";
 
-  inputs.expidus-sdk = {
-    url = github:ExpidusOS/sdk;
-    inputs.nixpkgs.follows = "nixpkgs";
-  };
-
-  inputs.nixpkgs.url = github:NixOS/nixpkgs/nixos-23.11;
-  inputs.nixpkgs-unstable.url = github:NixOS/nixpkgs/nixos-unstable;
-  inputs.nixpkgs-firefox-119.url = github:NixOS/nixpkgs/7df1b3e9fa6ace9b2dff8f97952b12c17291cf1e;
+  inputs.nixpkgs.url = github:NixOS/nixpkgs/nixos-24.05-small;
   inputs.nur.url = github:nix-community/NUR;
   inputs.hyprland.url = github:hyprwm/Hyprland/v0.39.1;
   inputs.ags.url = github:Aylur/ags;
@@ -23,7 +16,7 @@
     inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  inputs.home-manager.url = github:nix-community/home-manager/release-23.11;
+  inputs.home-manager.url = github:nix-community/home-manager;
   inputs.darwin.url = github:lnl7/nix-darwin/master;
   inputs.nixos-hardware.url = "github:NixOS/nixos-hardware/master";
 
@@ -34,10 +27,10 @@
     fallback = true;
   };
 
-  outputs = { self, expidus-sdk, nur, home-manager, nixpkgs, nixpkgs-unstable, darwin, nixos-apple-silicon, nixpkgs-firefox-119, hyprland, ags, hycov, shuba-cursors, nixos-hardware }@inputs:
-    with expidus-sdk.lib;
+  outputs = { self, nur, home-manager, nixpkgs, darwin, nixos-apple-silicon, hyprland, ags, hycov, shuba-cursors, nixos-hardware }@inputs:
+    with nixpkgs.lib;
     let
-      inherit (home-manager.lib) hm homeConfiguration;
+      inherit (home-manager.lib) hm homeManagerConfiguration;
 
       overlays = {
         nur = nur.overlay;
@@ -57,9 +50,6 @@
             inherit (final) hyprland;
             stdenv = prev.gcc13Stdenv;
           };
-
-          inherit (nixpkgs-unstable.legacyPackages.${final.system}) qemu;
-          inherit (nixpkgs-firefox-119.legacyPackages.${final.system}) firefox;
 
           box64 = prev.box64.overrideAttrs (f: p: {
             cmakeFlags = p.cmakeFlags ++ [
@@ -98,7 +88,6 @@
         homeConfigurations = forAllUsers (user:
           homeManagerConfiguration {
             inherit pkgs;
-            inherit (expidus-sdk) lib;
             modules = [
               ./users/${user}/home.nix
               ./users/${user}/home-${pkgs.targetPlatform.parsed.kernel.name}.nix
@@ -111,11 +100,7 @@
             darwin.lib.darwinSystem {
               inherit system pkgs;
               inputs = {
-                inherit darwin;
-                nixpkgs = expidus-sdk // {
-                  legacyPackages = nixpkgsFor;
-                  inherit (nixpkgs) outPath;
-                };
+                inherit darwin nixpkgs;
               };
               modules = [
                 home-manager.darwinModules.default
@@ -129,7 +114,6 @@
       nixosConfigurations = forAllMachines (machine:
         import "${nixpkgs}/nixos/lib/eval-config.nix" (rec {
           system = "x86_64-linux";
-          inherit (expidus-sdk) lib;
           pkgs = nixpkgsFor.${system};
           modules = let
             nur-modules = import nur.outPath {
@@ -154,7 +138,6 @@
         })) // {
           "hizack-b" = import "${nixpkgs}/nixos/lib/eval-config.nix" (rec {
             system = "aarch64-linux";
-            inherit (expidus-sdk) lib;
             pkgs = nixpkgsFor.${system};
             modules = let
               machine = "hizack-b";
@@ -181,7 +164,6 @@
           });
           "jegan" = import "${nixpkgs}/nixos/lib/eval-config.nix" (rec {
             system = "riscv64-linux";
-            inherit (expidus-sdk) lib;
             pkgs = nixpkgsFor.${system};
             modules = let
               machine = "jegan";
@@ -195,14 +177,6 @@
                 home-manager.sharedModules = [
                   hyprland.homeManagerModules.default
                   ags.homeManagerModules.default
-                ];
-
-                disabledModules = [
-                  "services/desktops/pipewire/pipewire.nix"
-                ];
-
-                imports = [
-                  "${nixpkgs-unstable}/nixos/modules/services/desktops/pipewire/pipewire.nix"
                 ];
               }
               home-manager.nixosModules.default
