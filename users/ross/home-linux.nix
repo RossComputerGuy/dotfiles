@@ -20,8 +20,8 @@ in
     ./home.nix
   ];
 
-  xdg.configFile."alacritty/alacritty.yml".source = ./config/alacritty/alacritty.yml;
-  xdg.configFile."alacritty/alacritty-device.yml".source = ./config/alacritty/alacritty-linux.yml;
+  xdg.configFile."alacritty/alacritty.toml".source = ./config/alacritty/alacritty.toml;
+  xdg.configFile."alacritty/alacritty-device.toml".source = ./config/alacritty/alacritty-linux.toml;
   xdg.configFile."electron-flags.conf".source = ./config/electron-flags.conf;
   xdg.configFile."mimeapps.list".source = ./config/mimeapps.list;
   xdg.configFile."nvim/lua/init.lua".source = ./config/nvim/lua/init.lua;
@@ -147,7 +147,6 @@ in
       gestures = {
         workspace_swipe = true;
         workspace_swipe_forever = true;
-        workspace_swipe_numbered = true;
       };
       decoration.rounding = 3;
       bindm = [

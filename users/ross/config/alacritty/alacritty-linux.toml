@@ -1,0 +1,18 @@
+[font.bold]
+family = "Liberation Mono"
+style = "Bold"
+
+[font.bold_italic]
+family = "Liberation Mono"
+style = "Bold Italic"
+
+[font.italic]
+family = "Liberation Mono"
+style = "Italic"
+
+[font.normal]
+family = "Liberation Mono"
+style = "Refular"
+
+[window]
+decorations = "none"
