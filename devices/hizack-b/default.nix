@@ -1,4 +1,11 @@
 { config, lib, pkgs, ... }:
+let
+  box64' = pkgs.box64.overrideAttrs (f: p: {
+    cmakeFlags = p.cmakeFlags ++ [
+      "-DM1=ON"
+    ];
+  });
+in
 {
   imports = [
     ../../system/linux/desktop.nix
@@ -10,8 +17,13 @@
   boot.binfmt = {
     emulatedSystems = [
       "x86_64-linux"
+      "i686-linux"
       "i386-linux"
     ];
+    registrations = {
+      i686-linux.interpreter = lib.mkForce (lib.getExe box64');
+      x86_64-linux.interpreter = lib.mkForce (lib.getExe box64');
+    };
   };
 
   boot.kernelPatches = [{
@@ -31,6 +43,7 @@
     openscad
     mpv
     vlc
+    box64'
   ];
 
   programs.firefox.enable = true;
