@@ -12,7 +12,7 @@
   };
 
   inputs.nixos-apple-silicon = {
-    url = github:tpwrules/nixos-apple-silicon;
+    url = github:RossComputerGuy/nixos-apple-silicon/fix/cross-compiling;
     inputs.nixpkgs.follows = "nixpkgs";
   };
 
@@ -52,9 +52,13 @@
           };
 
           box64 = prev.box64.overrideAttrs (f: p: {
-            cmakeFlags = p.cmakeFlags ++ [
-              "-DPAGE16K=1"
-            ];
+            version = "0.2.8";
+            src = prev.fetchFromGitHub {
+              owner = "ptitSeb";
+              repo = "box64";
+              rev = "v${f.version}";
+              hash = "sha256-P+m+JS3THh3LWMZYW6BQ7QyNWlBuL+hMcUtUbpMHzis=";
+            };
           });
 
           rtl8723bs-firmware = prev.runCommand "rtl8723bs-firmware" {} ''
@@ -138,7 +142,33 @@
         })) // {
           "hizack-b" = import "${nixpkgs}/nixos/lib/eval-config.nix" (rec {
             system = "aarch64-linux";
-            pkgs = nixpkgsFor.${system};
+            pkgs = nixpkgsFor.${system}.appendOverlays [
+              (final: prev: {
+                tbb = prev.callPackage ./pkgs/development/libraries/tbb/2020_3.nix {};
+                glew110 = prev.glew110.overrideAttrs (f: p: {
+                  patchPhase = ''
+                    sed -i "s|CC = cc|CC = $CC|" config/Makefile.linux
+                    sed -i "s|LD = cc|LD = $CC|" config/Makefile.linux
+                  '' + p.patchPhase;
+                });
+              })
+              (final: prev: {
+                steam = prev.callPackage "${nixpkgs}/pkgs/games/steam/fhsenv.nix" (let
+                  makeWrapped = steamArch: pkgs: pkgs.callPackage "${nixpkgs}/pkgs/games/steam/runtime-wrapped.nix" {
+                    inherit steamArch;
+                    steam-runtime = pkgs.callPackage "${nixpkgs}/pkgs/games/steam/runtime.nix" {};
+                  };
+                in {
+                  buildFHSEnv = final.pkgsCross.gnu64.callPackage ./pkgs/build-support/build-fhsenv-bubblewrap/default.nix {
+                    inherit (final.pkgsCross.gnu64) pkgsi686Linux;
+                  };
+                  glxinfo-i686 = final.pkgsCross.gnu64.pkgsi686Linux.glxinfo;
+                  steam-runtime-wrapped-i686 = makeWrapped "i386" final.pkgsCross.gnu64.pkgsi686Linux;
+                  steam-runtime-wrapped = makeWrapped "amd64" final.pkgsCross.gnu64;
+                  steam = final.pkgsCross.gnu64.callPackage "${nixpkgs}/pkgs/games/steam/steam.nix" {};
+                });
+              })
+            ];
             modules = let
               machine = "hizack-b";
               nur-modules = import nur.outPath {
@@ -151,6 +181,10 @@
                 home-manager.sharedModules = [
                   hyprland.homeManagerModules.default
                   ags.homeManagerModules.default
+                ];
+
+                disabledModules = [
+                  "${nixpkgs}/nixos/modules/programs/steam.nix"
                 ];
               }
               home-manager.nixosModules.default
