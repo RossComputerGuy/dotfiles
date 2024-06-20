@@ -1,0 +1,27 @@
+--- a/crates/krun-guest/src/net.rs	2024-06-20 10:34:52.013163973 -0700
++++ b/crates/krun-guest/src/net.rs	2024-06-20 10:35:06.086287771 -0700
+@@ -18,24 +18,5 @@
+         sethostname(hostname.as_bytes()).context("Failed to set hostname")?;
+     }
+ 
+-    let output = Command::new("/sbin/dhclient")
+-        .output()
+-        .context("Failed to execute `dhclient` as child process")?;
+-    debug!(output:?; "dhclient output");
+-    if !output.status.success() {
+-        let err = if let Some(code) = output.status.code() {
+-            anyhow!("`dhclient` process exited with status code: {code}")
+-        } else {
+-            anyhow!(
+-                "`dhclient` process terminated by signal: {}",
+-                output
+-                    .status
+-                    .signal()
+-                    .expect("either one of status code or signal should be set")
+-            )
+-        };
+-        Err(err)?;
+-    }
+-
+     Ok(())
+ }

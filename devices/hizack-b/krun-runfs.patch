@@ -1,0 +1,64 @@
+diff --git a/crates/krun-guest/src/mount.rs b/crates/krun-guest/src/mount.rs
+index 31b6566..8ec9df3 100644
+--- a/crates/krun-guest/src/mount.rs
++++ b/crates/krun-guest/src/mount.rs
+@@ -1,9 +1,10 @@
+-use std::fs::File;
++use std::fs::{File, create_dir_all};
++use std::env::var_os;
+ use std::os::fd::AsFd;
+ 
+ use anyhow::{Context, Result};
+ use rustix::fs::CWD;
+-use rustix::mount::{mount2, move_mount, open_tree, MountFlags, MoveMountFlags, OpenTreeFlags};
++use rustix::mount::{mount2, move_mount, mount_recursive_bind, open_tree, MountFlags, MoveMountFlags, OpenTreeFlags};
+ 
+ pub fn mount_filesystems() -> Result<()> {
+     mount2(
+@@ -40,6 +41,26 @@ pub fn mount_filesystems() -> Result<()> {
+         .context("Failed to move_mount `/etc/resolv.conf`")?;
+     }
+ 
++    let opengl_driver = var_os("OPENGL_DRIVER");
++    if let Some(dir) = opengl_driver {
++        create_dir_all("/run/opengl-driver")?;
++        mount_recursive_bind(
++            dir,
++            "/run/opengl-driver",
++        )
++        .context("Failed to mount `/run/opengl-driver`")?;
++    }
++
++    let nixos_curr_sys = var_os("NIXOS_CURRENT_SYSTEM");
++    if let Some(dir) = nixos_curr_sys {
++        create_dir_all("/run/current-system")?;
++        mount_recursive_bind(
++            dir,
++            "/run/current-system",
++        )
++        .context("Failed to mount `/run/current-system`")?;
++    }
++
+     mount2(
+         Some("binfmt_misc"),
+         "/proc/sys/fs/binfmt_misc",
+diff --git a/crates/krun/src/env.rs b/crates/krun/src/env.rs
+index 7efd3f6..876cf03 100644
+--- a/crates/krun/src/env.rs
++++ b/crates/krun/src/env.rs
+@@ -11,12 +11,14 @@ use utils::env::find_in_path;
+ 
+ /// Automatically pass these environment variables to the microVM, if they are
+ /// set.
+-const WELL_KNOWN_ENV_VARS: [&str; 5] = [
++const WELL_KNOWN_ENV_VARS: [&str; 7] = [
+     "LD_LIBRARY_PATH",
+     "LIBGL_DRIVERS_PATH",
+     "MESA_LOADER_DRIVER_OVERRIDE", // needed for asahi
+     "PATH",                        // needed by `krun-guest` program
+     "RUST_LOG",
++    "OPENGL_DRIVER",               // needed for OpenGL on NixOS
++    "NIXOS_CURRENT_SYSTEM",        // needed for some paths to work on NixOS
+ ];
+ 
+ /// See https://github.com/AsahiLinux/docs/wiki/Devices
