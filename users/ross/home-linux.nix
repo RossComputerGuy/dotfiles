@@ -51,7 +51,7 @@ in
     nvimpager
     xdg-user-dirs
     alacritty
-    solaar
+    #solaar
     dunst
     playerctl
     pamixer
@@ -62,7 +62,6 @@ in
     xidlehook
     maim
     xclip
-    xorg.xrandr
     papirus-icon-theme
     swww
     waypaper

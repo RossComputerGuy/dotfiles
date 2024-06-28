@@ -1,7 +1,7 @@
 {
   description = "A Flake of my NixOS machines";
 
-  inputs.nixpkgs.url = github:NixOS/nixpkgs/nixos-24.05-small;
+  inputs.nixpkgs.url = github:NixOS/nixpkgs/nixos-24.05;
   inputs.nur.url = github:nix-community/NUR;
   inputs.hyprland.url = github:hyprwm/Hyprland/v0.39.1;
   inputs.ags.url = github:Aylur/ags;
@@ -12,11 +12,11 @@
   };
 
   inputs.nixos-apple-silicon = {
-    url = github:RossComputerGuy/nixos-apple-silicon/fix/cross-compiling;
+    url = github:tpwrules/nixos-apple-silicon;
     inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  inputs.home-manager.url = github:nix-community/home-manager;
+  inputs.home-manager.url = github:nix-community/home-manager/release-24.05;
   inputs.darwin.url = github:lnl7/nix-darwin/master;
   inputs.nixos-hardware.url = "github:NixOS/nixos-hardware/master";
 
