@@ -1,23 +1,23 @@
 {
   description = "A Flake of my NixOS machines";
 
-  inputs.nixpkgs.url = github:NixOS/nixpkgs/nixos-24.05;
-  inputs.nur.url = github:nix-community/NUR;
-  inputs.hyprland.url = github:hyprwm/Hyprland/v0.39.1;
-  inputs.ags.url = github:Aylur/ags;
-  inputs.hycov.url = github:DreamMaoMao/hycov/0.39.0.2;
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
+  inputs.nur.url = "github:nix-community/NUR";
+  inputs.hyprland.url = "git+https://github.com/hyprwm/Hyprland?ref=main&rev=918d8340afd652b011b937d29d5eea0be08467f5&submodules=1";
+  inputs.ags.url = "github:Aylur/ags";
+  inputs.hycov.url = "github:DreamMaoMao/hycov/0.41.2.1";
   inputs.shuba-cursors = {
-    url = github:RossComputerGuy/shuba-cursors;
+    url = "github:RossComputerGuy/shuba-cursors";
     inputs.nixpkgs.follows = "nixpkgs";
   };
 
   inputs.nixos-apple-silicon = {
-    url = github:tpwrules/nixos-apple-silicon;
+    url = "github:tpwrules/nixos-apple-silicon";
     inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  inputs.home-manager.url = github:nix-community/home-manager/release-24.05;
-  inputs.darwin.url = github:lnl7/nix-darwin/master;
+  inputs.home-manager.url = "github:nix-community/home-manager/release-24.05";
+  inputs.darwin.url = "github:lnl7/nix-darwin/master";
   inputs.nixos-hardware.url = "github:NixOS/nixos-hardware/master";
 
   nixConfig = rec {

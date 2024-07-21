@@ -1,7 +1,0 @@
-diff --git a/VERSION b/VERSION
-index 9ee215335ae472743b96c3935aa73a33399ea724..71f1b3f7e3d9979661b2412da140df0d326888f7 100644
---- a/VERSION
-+++ b/VERSION
-@@ -1 +1 @@
--24.0.0-rc1
-+24.0.0-devel
