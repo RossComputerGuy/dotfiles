@@ -221,6 +221,31 @@
               nur-modules.repos.ilya-fedin.modules.flatpak-icons
             ];
           });
+          "zeta3a" = import "${nixpkgs}/nixos/lib/eval-config.nix" (rec {
+            system = "aarch64-linux";
+            pkgs = nixpkgsFor.${system};
+            modules = let
+              machine = "zeta3a";
+              nur-modules = import nur.outPath {
+                pkgs = nixpkgsFor.${system};
+                nurpkgs = nixpkgsFor.${system};
+              };
+            in [
+              {
+                documentation.nixos.enable = false;
+                home-manager.sharedModules = [
+                  hyprland.homeManagerModules.default
+                  ags.homeManagerModules.default
+                ];
+              }
+              home-manager.nixosModules.default
+              ./system/default.nix
+              ./system/linux/default.nix
+              ./devices/${machine}/default.nix
+              nur-modules.repos.ilya-fedin.modules.flatpak-fonts
+              nur-modules.repos.ilya-fedin.modules.flatpak-icons
+            ];
+          });
         };
     };
 }
