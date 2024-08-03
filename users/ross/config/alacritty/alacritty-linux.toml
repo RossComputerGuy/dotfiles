@@ -12,7 +12,7 @@ style = "Italic"
 
 [font.normal]
 family = "Liberation Mono"
-style = "Refular"
+style = "Regular"
 
 [window]
 decorations = "none"
