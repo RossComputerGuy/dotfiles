@@ -33,7 +33,7 @@
     };
     autoScrub = {
       enable = true;
-      pools = [ "rpool" ];
+      pools = [ "zpool" ];
     };
     autoSnapshot = {
       enable = true;
@@ -45,50 +45,32 @@
   # Filesystems
 
   fileSystems."/" =
-    { device = "rpool/nixos";
+    { device = "zpool/root";
       fsType = "zfs";
       options = [ "zfsutil" ];
     };
 
-  # TODO
-  #fileSystems."/boot" =
-  #  { device = "/dev/disk/by-uuid/AE42-EF0B";
-  #    fsType = "vfat";
-  #  };
-
-  fileSystems."/backup" =
-    { device = "rpool/backup";
-      fsType = "zfs";
-      options = [ "zfsutil" ];
+  fileSystems."/boot" =
+    { device = "/dev/disk/by-label/boot";
+      fsType = "vfat";
     };
 
   fileSystems."/nix" =
-    { device = "rpool/nixos/nix";
+    { device = "zpool/nix";
       fsType = "zfs";
       options = [ "zfsutil" ];
     };
 
   fileSystems."/home" =
-    { device = "rpool/userdata/home";
+    { device = "zpool/home";
       fsType = "zfs";
       options = [ "zfsutil" ];
     };
 
-  fileSystems."/root" =
-    { device = "rpool/userdata/home/root";
+  fileSystems."/var" =
+    { device = "zpool/var";
       fsType = "zfs";
       options = [ "zfsutil" ];
-    };
-
-  fileSystems."/home/ross" =
-    { device = "rpool/userdata/home/ross";
-      fsType = "zfs";
-      options = [ "zfsutil" ];
-    };
-
-  fileSystems."/mnt/games" =
-    { device = "/dev/disk/by-uuid/38022704-1140-4687-b1b0-d31bd490d17d";
-      fsType = "ext4";
     };
 
   # Users
