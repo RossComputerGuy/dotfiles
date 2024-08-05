@@ -37,6 +37,10 @@
   environment.systemPackages = with pkgs; [
     lm_sensors
     fwupd-efi
+    nix-output-monitor
+    nix-diff
+    nixpkgs-review
+    nixfmt-rfc-style
   ];
 
   system.stateVersion = "23.05";
