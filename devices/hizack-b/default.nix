@@ -40,8 +40,6 @@
     ];
   };
 
-  programs.firefox.enable = true;
-
   hardware.bluetooth.enable = true;
   networking = {
     hostName = "hizack-b";

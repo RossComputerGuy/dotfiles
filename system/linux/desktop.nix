@@ -141,6 +141,8 @@
 
   programs.adb.enable = true;
 
+  programs.firefox.enable = true;
+
   services.dbus.enable = true;
 
   # Users
