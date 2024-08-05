@@ -18,6 +18,8 @@
   networking.hostName = "zeta3a";
   networking.hostId = "f174c9ca";
 
+  services.openssh.enable = true;
+
   # Graphics
   services.xserver.enable = true;
   services.xserver.videoDrivers = [ "amdgpu" ];
