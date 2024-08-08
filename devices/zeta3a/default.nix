@@ -11,6 +11,12 @@
   boot.zfs.devNodes = "/dev/";
   boot.kernelPackages = pkgs.linuxPackages_6_8;
 
+  boot.binfmt.emulatedSystems = [
+    "x86_64-linux"
+    "i686-linux"
+    "i386-linux"
+  ];
+
   # Initrd
   boot.initrd.availableKernelModules = [ "nvme" "xhci_pci" "ahci" "usbhid" "uas" "usb_storage" "sd_mod" "amdgpu" ];
 
