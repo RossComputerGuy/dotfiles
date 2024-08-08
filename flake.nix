@@ -116,7 +116,7 @@
           })) nixpkgsFor;
 
       nixosConfigurations = forAllMachines (machine:
-        import "${nixpkgs}/nixos/lib/eval-config.nix" (rec {
+        nixpkgs.lib.nixosSystem (rec {
           system = "x86_64-linux";
           pkgs = nixpkgsFor.${system};
           modules = let
@@ -140,7 +140,7 @@
             nur-modules.repos.ilya-fedin.modules.flatpak-icons
           ];
         })) // {
-          "hizack-b" = import "${nixpkgs}/nixos/lib/eval-config.nix" (rec {
+          "hizack-b" = nixpkgs.lib.nixosSystem (rec {
             system = "aarch64-linux";
             pkgs = nixpkgsFor.${system}.appendOverlays [
               (final: prev: {
@@ -196,7 +196,7 @@
               nixos-apple-silicon.nixosModules.default
             ];
           });
-          "jegan" = import "${nixpkgs}/nixos/lib/eval-config.nix" (rec {
+          "jegan" = nixpkgs.lib.nixosSystem (rec {
             system = "riscv64-linux";
             pkgs = nixpkgsFor.${system};
             modules = let
@@ -221,7 +221,7 @@
               nur-modules.repos.ilya-fedin.modules.flatpak-icons
             ];
           });
-          "zeta3a" = import "${nixpkgs}/nixos/lib/eval-config.nix" (rec {
+          "zeta3a" = nixpkgs.lib.nixosSystem (rec {
             system = "aarch64-linux";
             pkgs = nixpkgsFor.${system};
             modules = let
