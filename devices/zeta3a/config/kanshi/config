@@ -7,4 +7,6 @@ profile {
 
   # TV
   output "DP-1" position 1920,0 scale 1
+
+  output "VGA-1" disable
 }
