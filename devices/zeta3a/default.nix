@@ -11,6 +11,16 @@
   boot.zfs.devNodes = "/dev/";
   boot.kernelPackages = pkgs.linuxPackages_6_8;
 
+  boot.kernelPatches = [
+    {
+      name = "64k-page-size";
+      patch = null;
+      extraConfig = ''
+        ARM64_64K_PAGES y
+      '';
+    }
+  ];
+
   boot.binfmt.emulatedSystems = [
     "x86_64-linux"
     "i686-linux"
