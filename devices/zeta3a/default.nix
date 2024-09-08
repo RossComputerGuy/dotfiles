@@ -13,10 +13,11 @@
 
   boot.kernelPatches = [
     {
-      name = "64k-page-size";
+      name = "perf";
       patch = null;
       extraConfig = ''
         ARM64_64K_PAGES y
+        HZ_100 y
       '';
     }
   ];
