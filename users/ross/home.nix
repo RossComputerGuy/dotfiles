@@ -59,6 +59,7 @@ in
     }
     (mkIf (shellAliases ? "lsd") {
       programs.lsd = {
+        enable = true;
         settings = {
           icons = {
             when = "never";
