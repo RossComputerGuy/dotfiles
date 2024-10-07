@@ -46,6 +46,15 @@
             withWayland = true;
           };
 
+          wayland = prev.wayland.overrideAttrs (self: super: {
+            version = "1.23.1";
+
+            src = final.fetchurl {
+              url = with self; "https://gitlab.freedesktop.org/wayland/wayland/-/releases/${version}/downloads/${pname}-${version}.tar.xz";
+              hash = "sha256-hk+yqDmeLQ7DnVbp2bdTwJN3W+rcYCLOgfRBkpqB5e0=";
+            };
+          });
+
           libinput = prev.libinput.overrideAttrs (self: super: {
             version = "1.26.0";
 
