@@ -46,6 +46,18 @@
             withWayland = true;
           };
 
+          libinput = prev.libinput.overrideAttrs (self: super: {
+            version = "1.26.0";
+
+            src = final.fetchFromGitLab {
+              domain = "gitlab.freedesktop.org";
+              owner = "libinput";
+              repo = "libinput";
+              rev = self.version;
+              hash = "sha256-mlxw4OUjaAdgRLFfPKMZDMOWosW9yKAkzDccwuLGCwQ=";
+            };
+          });
+
           hycov = prev.callPackage "${hycov}/default.nix" {
             inherit (final) hyprland;
             stdenv = prev.gcc13Stdenv;
