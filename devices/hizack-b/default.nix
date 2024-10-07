@@ -1,8 +1,8 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, inputs, ... }:
 {
   imports = [
     ../../system/linux/desktop.nix
-    ./steam.nix
+    inputs.nixos-apple-silicon.nixosModules.default
   ];
 
   boot.loader.systemd-boot.enable = true;

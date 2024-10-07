@@ -1,206 +1,213 @@
 {
   description = "A Flake of my NixOS machines";
 
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
-  inputs.nur.url = "github:nix-community/NUR";
-  inputs.hyprland.url = "git+https://github.com/hyprwm/Hyprland?ref=main&rev=0c7a7e2d569eeed9d6025f3eef4ea0690d90845d&submodules=1";
-  inputs.ags.url = "github:Aylur/ags";
-  inputs.hycov.url = "github:DreamMaoMao/hycov/0.41.2.1";
-  inputs.shuba-cursors = {
-    url = "github:RossComputerGuy/shuba-cursors";
-    inputs.nixpkgs.follows = "nixpkgs";
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
+    nur.url = "github:nix-community/NUR";
+    hyprland.url = "git+https://github.com/hyprwm/Hyprland?ref=main&rev=0c7a7e2d569eeed9d6025f3eef4ea0690d90845d&submodules=1";
+    ags.url = "github:Aylur/ags";
+    hycov.url = "github:DreamMaoMao/hycov/0.41.2.1";
+    shuba-cursors = {
+      url = "github:RossComputerGuy/shuba-cursors";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    nixos-apple-silicon = {
+      url = "github:tpwrules/nixos-apple-silicon";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    home-manager.url = "github:nix-community/home-manager/release-24.05";
+    darwin.url = "github:lnl7/nix-darwin/master";
+    nixos-hardware.url = "github:NixOS/nixos-hardware/master";
   };
-
-  inputs.nixos-apple-silicon = {
-    url = "github:tpwrules/nixos-apple-silicon";
-    inputs.nixpkgs.follows = "nixpkgs";
-  };
-
-  inputs.home-manager.url = "github:nix-community/home-manager/release-24.05";
-  inputs.darwin.url = "github:lnl7/nix-darwin/master";
-  inputs.nixos-hardware.url = "github:NixOS/nixos-hardware/master";
 
   nixConfig = rec {
-    trusted-public-keys = [ "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=" "cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g=" ];
-    substituters = [ "https://cache.nixos.org" "https://cache.garnix.io" ];
+    trusted-public-keys = [
+      "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+      "cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g="
+    ];
+    substituters = [
+      "https://cache.nixos.org"
+      "https://cache.garnix.io"
+    ];
     trusted-substituters = substituters;
     fallback = true;
   };
 
-  outputs = { self, nur, home-manager, nixpkgs, darwin, nixos-apple-silicon, hyprland, ags, hycov, shuba-cursors, nixos-hardware }@inputs:
-    with nixpkgs.lib;
+  outputs =
+    {
+      self,
+      nur,
+      home-manager,
+      nixpkgs,
+      darwin,
+      nixos-apple-silicon,
+      hyprland,
+      ags,
+      hycov,
+      shuba-cursors,
+      nixos-hardware,
+      ...
+    }@inputs:
     let
-      inherit (home-manager.lib) hm homeManagerConfiguration;
+      inherit (nixpkgs) lib;
 
       overlays = {
         nur = nur.overlay;
         apple-silicon = nixos-apple-silicon.overlays.default;
 
         hyprland = hyprland.overlays.default;
-        default = (final: prev: {
-          path = nixpkgs;
+        default = (
+          final: prev: {
+            path = nixpkgs;
 
-          shuba-cursors = shuba-cursors.packages.${final.system}.default;
+            shuba-cursors = shuba-cursors.packages.${final.system}.default;
 
-          ibus = prev.ibus.override {
-            withWayland = true;
-          };
+            ibus = prev.ibus.override { withWayland = true; };
 
-          wayland = prev.wayland.overrideAttrs (self: super: {
-            version = "1.23.1";
+            wayland = prev.wayland.overrideAttrs (
+              self: super: {
+                version = "1.23.1";
 
-            src = final.fetchurl {
-              url = with self; "https://gitlab.freedesktop.org/wayland/wayland/-/releases/${version}/downloads/${pname}-${version}.tar.xz";
-              hash = "sha256-hk+yqDmeLQ7DnVbp2bdTwJN3W+rcYCLOgfRBkpqB5e0=";
+                patches = [];
+                src = final.fetchurl {
+                  url =
+                    with self;
+                    "https://gitlab.freedesktop.org/wayland/wayland/-/releases/${version}/downloads/${pname}-${version}.tar.xz";
+                  hash = "sha256-hk+yqDmeLQ7DnVbp2bdTwJN3W+rcYCLOgfRBkpqB5e0=";
+                };
+              }
+            );
+
+            libinput = prev.libinput.overrideAttrs (
+              self: super: {
+                version = "1.26.0";
+
+                src = final.fetchFromGitLab {
+                  domain = "gitlab.freedesktop.org";
+                  owner = "libinput";
+                  repo = "libinput";
+                  rev = self.version;
+                  hash = "sha256-mlxw4OUjaAdgRLFfPKMZDMOWosW9yKAkzDccwuLGCwQ=";
+                };
+              }
+            );
+
+            hycov = prev.callPackage "${hycov}/default.nix" {
+              inherit (final) hyprland;
+              stdenv = prev.gcc13Stdenv;
             };
-          });
 
-          libinput = prev.libinput.overrideAttrs (self: super: {
-            version = "1.26.0";
+            box64 = prev.box64.overrideAttrs (
+              f: p: {
+                version = "0.2.8";
+                src = prev.fetchFromGitHub {
+                  owner = "ptitSeb";
+                  repo = "box64";
+                  rev = "v${f.version}";
+                  hash = "sha256-P+m+JS3THh3LWMZYW6BQ7QyNWlBuL+hMcUtUbpMHzis=";
+                };
+              }
+            );
 
-            src = final.fetchFromGitLab {
-              domain = "gitlab.freedesktop.org";
-              owner = "libinput";
-              repo = "libinput";
-              rev = self.version;
-              hash = "sha256-mlxw4OUjaAdgRLFfPKMZDMOWosW9yKAkzDccwuLGCwQ=";
-            };
-          });
-
-          hycov = prev.callPackage "${hycov}/default.nix" {
-            inherit (final) hyprland;
-            stdenv = prev.gcc13Stdenv;
-          };
-
-          box64 = prev.box64.overrideAttrs (f: p: {
-            version = "0.2.8";
-            src = prev.fetchFromGitHub {
-              owner = "ptitSeb";
-              repo = "box64";
-              rev = "v${f.version}";
-              hash = "sha256-P+m+JS3THh3LWMZYW6BQ7QyNWlBuL+hMcUtUbpMHzis=";
-            };
-          });
-
-          rtl8723bs-firmware = prev.runCommand "rtl8723bs-firmware" {} ''
-            mkdir -p $out/lib/firmware
-          '';
-        });
+            rtl8723bs-firmware = prev.runCommand "rtl8723bs-firmware" { } ''
+              mkdir -p $out/lib/firmware
+            '';
+          }
+        );
       };
 
-      nixpkgsFor = genAttrs [ "aarch64-darwin" "x86_64-darwin" "aarch64-linux" "x86_64-linux" ] (system:
+      systems = [
+        "aarch64-darwin"
+        "riscv64-linux"
+        "aarch64-linux"
+        "x86_64-linux"
+      ];
+      nixpkgsFor = lib.genAttrs systems (
+        system:
         import nixpkgs.outPath {
           inherit system;
           overlays = (builtins.attrValues overlays);
           config = {
             allowUnfree = true;
           };
-        });
+        }
+      );
 
-      machines = [ "lavienrose" "zeta-gundam" ];
-      forAllMachines = genAttrs machines;
+      machines = {
+        lavienrose = "x86_64-linux";
+        zeta-gundam = "x86_64-linux";
+        zeta3a = "aarch64-linux";
+        hizack-b = "aarch64-linux";
+        jegan = "riscv64-linux";
+      };
+      forAllMachines = func: lib.mapAttrs func machines;
 
       users = [ "ross" ];
-      forAllUsers = genAttrs users;
+      forAllUsers =
+        func:
+        lib.listToAttrs (
+          lib.lists.flatten (
+            lib.map (
+              system: lib.map (user: lib.nameValuePair ("${system}/${user}") (func system user)) users
+            ) systems
+          )
+        );
 
-      darwinMachines = [ "Hizack" ];
-      forAllDarwinMachines = genAttrs darwinMachines;
-    in {
+      darwinMachines = {
+        "Hizack" = "aarch64-darwin";
+      };
+      forAllDarwinMachines = func: lib.mapAttrs func darwinMachines;
+    in
+    {
       inherit overlays;
       legacyPackages = nixpkgsFor;
 
-      packages = builtins.mapAttrs (system: pkgs: {
-        homeConfigurations = forAllUsers (user:
-          homeManagerConfiguration {
-            inherit pkgs;
-            modules = [
-              ./users/${user}/home.nix
-              ./users/${user}/home-${pkgs.targetPlatform.parsed.kernel.name}.nix
-              hyprland.homeManagerModules.default
-              ags.homeManagerModules.default
-            ];
-          });
-        } // (optionalAttrs pkgs.targetPlatform.isDarwin {
-          darwinConfigurations = forAllDarwinMachines (machine:
-            darwin.lib.darwinSystem {
-              inherit system pkgs;
-              inputs = {
-                inherit darwin nixpkgs;
-              };
-              modules = [
-                home-manager.darwinModules.default
-                ./system/default.nix
-                ./system/darwin.nix
-                ./devices/${machine}/default.nix
-              ];
-            });
-          })) nixpkgsFor;
-
-      nixosConfigurations = forAllMachines (machine:
-        nixpkgs.lib.nixosSystem (rec {
-          system = "x86_64-linux";
+      homeConfigurations = forAllUsers (
+        system: user:
+        home-manager.lib.homeManagerConfiguration (rec {
           pkgs = nixpkgsFor.${system};
-          modules = let
-            nur-modules = import nur.outPath {
-              pkgs = nixpkgsFor.${system};
-              nurpkgs = nixpkgsFor.${system};
-            };
-          in [
-            {
-              documentation.nixos.enable = false;
-              home-manager.sharedModules = [
-                hyprland.homeManagerModules.default
-                ags.homeManagerModules.default
-              ];
-            }
-            home-manager.nixosModules.default
-            ./system/default.nix
-            ./system/linux/default.nix
-            ./devices/${machine}/default.nix
-            nur-modules.repos.ilya-fedin.modules.flatpak-fonts
-            nur-modules.repos.ilya-fedin.modules.flatpak-icons
+          modules = [
+            ./users/${user}/home.nix
+            ./users/${user}/home-${pkgs.targetPlatform.parsed.kernel.name}.nix
+            hyprland.homeManagerModules.default
+            ags.homeManagerModules.default
           ];
-        })) // {
-          "hizack-b" = nixpkgs.lib.nixosSystem (rec {
-            system = "aarch64-linux";
-            pkgs = nixpkgsFor.${system};
-            modules = let
-              machine = "hizack-b";
-              nur-modules = import nur.outPath {
-                pkgs = nixpkgsFor.${system};
-                nurpkgs = nixpkgsFor.${system};
-              };
-            in [
-              {
-                documentation.nixos.enable = false;
-                home-manager.sharedModules = [
-                  hyprland.homeManagerModules.default
-                  ags.homeManagerModules.default
-                ];
+        })
+      );
 
-                disabledModules = [
-                  "${nixpkgs}/nixos/modules/programs/steam.nix"
-                ];
-              }
-              home-manager.nixosModules.default
-              ./system/default.nix
-              ./system/linux/default.nix
-              ./devices/${machine}/default.nix
-              nur-modules.repos.ilya-fedin.modules.flatpak-fonts
-              nur-modules.repos.ilya-fedin.modules.flatpak-icons
-              nixos-apple-silicon.nixosModules.default
-            ];
-          });
-          "jegan" = nixpkgs.lib.nixosSystem (rec {
-            system = "riscv64-linux";
-            pkgs = nixpkgsFor.${system};
-            modules = let
-              machine = "jegan";
+      darwinConfigurations = forAllDarwinMachines (
+        machine: system:
+        darwin.lib.darwinSystem {
+          inherit system;
+          pkgs = nixpkgsFor.${system};
+          inputs = {
+            inherit darwin nixpkgs;
+          };
+          modules = [
+            home-manager.darwinModules.default
+            ./system/default.nix
+            ./system/darwin.nix
+            ./devices/${machine}/default.nix
+          ];
+        }
+      );
+
+      nixosConfigurations = forAllMachines (
+        machine: system:
+        lib.nixosSystem (rec {
+          inherit system;
+          pkgs = nixpkgsFor.${system};
+          specialArgs = {
+            inherit inputs;
+          };
+          modules =
+            let
               nur-modules = import nur.outPath {
                 pkgs = nixpkgsFor.${system};
                 nurpkgs = nixpkgsFor.${system};
               };
-            in [
+            in
+            [
               {
                 documentation.nixos.enable = false;
                 home-manager.sharedModules = [
@@ -215,32 +222,7 @@
               nur-modules.repos.ilya-fedin.modules.flatpak-fonts
               nur-modules.repos.ilya-fedin.modules.flatpak-icons
             ];
-          });
-          "zeta3a" = nixpkgs.lib.nixosSystem (rec {
-            system = "aarch64-linux";
-            pkgs = nixpkgsFor.${system};
-            modules = let
-              machine = "zeta3a";
-              nur-modules = import nur.outPath {
-                pkgs = nixpkgsFor.${system};
-                nurpkgs = nixpkgsFor.${system};
-              };
-            in [
-              {
-                documentation.nixos.enable = false;
-                home-manager.sharedModules = [
-                  hyprland.homeManagerModules.default
-                  ags.homeManagerModules.default
-                ];
-              }
-              home-manager.nixosModules.default
-              ./system/default.nix
-              ./system/linux/default.nix
-              ./devices/${machine}/default.nix
-              nur-modules.repos.ilya-fedin.modules.flatpak-fonts
-              nur-modules.repos.ilya-fedin.modules.flatpak-icons
-            ];
-          });
-        };
+        })
+      );
     };
 }
