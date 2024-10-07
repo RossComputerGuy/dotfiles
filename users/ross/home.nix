@@ -13,7 +13,7 @@ in
     gcc
     nodePackages.dockerfile-language-server-nodejs
   ];
-  home.stateVersion = "22.11";
+  home.stateVersion = "24.05";
   home.sessionVariables.EDITOR = "nvim";
   programs.home-manager.enable = true;
   programs.lsd = {
@@ -49,7 +49,7 @@ in
   };
   programs.zsh = {
     enable = true;
-    enableAutosuggestions = true;
+    autosuggestion.enable = true;
     enableCompletion = true;
     syntaxHighlighting.enable = true;
     enableVteIntegration = true;

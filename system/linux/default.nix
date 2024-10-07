@@ -18,6 +18,7 @@
 
   services.resolved.extraConfig = ''
     DNS=192.168.1.163
+    DNS=100.101.228.123
     DNS=8.8.8.8
     DNS=8.8.4.4
     DNSOverTLS=yes

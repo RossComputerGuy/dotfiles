@@ -3,7 +3,7 @@
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
   inputs.nur.url = "github:nix-community/NUR";
-  inputs.hyprland.url = "git+https://github.com/hyprwm/Hyprland?ref=main&rev=918d8340afd652b011b937d29d5eea0be08467f5&submodules=1";
+  inputs.hyprland.url = "git+https://github.com/hyprwm/Hyprland?ref=main&rev=0c7a7e2d569eeed9d6025f3eef4ea0690d90845d&submodules=1";
   inputs.ags.url = "github:Aylur/ags";
   inputs.hycov.url = "github:DreamMaoMao/hycov/0.41.2.1";
   inputs.shuba-cursors = {
@@ -142,33 +142,7 @@
         })) // {
           "hizack-b" = nixpkgs.lib.nixosSystem (rec {
             system = "aarch64-linux";
-            pkgs = nixpkgsFor.${system}.appendOverlays [
-              (final: prev: {
-                tbb = prev.callPackage ./pkgs/development/libraries/tbb/2020_3.nix {};
-                glew110 = prev.glew110.overrideAttrs (f: p: {
-                  patchPhase = ''
-                    sed -i "s|CC = cc|CC = $CC|" config/Makefile.linux
-                    sed -i "s|LD = cc|LD = $CC|" config/Makefile.linux
-                  '' + p.patchPhase;
-                });
-              })
-              (final: prev: {
-                steam = prev.callPackage "${nixpkgs}/pkgs/games/steam/fhsenv.nix" (let
-                  makeWrapped = steamArch: pkgs: pkgs.callPackage "${nixpkgs}/pkgs/games/steam/runtime-wrapped.nix" {
-                    inherit steamArch;
-                    steam-runtime = pkgs.callPackage "${nixpkgs}/pkgs/games/steam/runtime.nix" {};
-                  };
-                in {
-                  buildFHSEnv = final.pkgsCross.gnu64.callPackage ./pkgs/build-support/build-fhsenv-bubblewrap/default.nix {
-                    inherit (final.pkgsCross.gnu64) pkgsi686Linux;
-                  };
-                  glxinfo-i686 = final.pkgsCross.gnu64.pkgsi686Linux.glxinfo;
-                  steam-runtime-wrapped-i686 = makeWrapped "i386" final.pkgsCross.gnu64.pkgsi686Linux;
-                  steam-runtime-wrapped = makeWrapped "amd64" final.pkgsCross.gnu64;
-                  steam = final.pkgsCross.gnu64.callPackage "${nixpkgs}/pkgs/games/steam/steam.nix" {};
-                });
-              })
-            ];
+            pkgs = nixpkgsFor.${system};
             modules = let
               machine = "hizack-b";
               nur-modules = import nur.outPath {
