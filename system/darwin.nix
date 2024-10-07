@@ -1,5 +1,7 @@
 { config, lib, pkgs, ... }:
 {
+  system.stateVersion = 5;
+
   system.defaults.NSGlobalDomain.AppleShowAllExtensions = true;
   system.defaults.NSGlobalDomain._HIHideMenuBar = true;
   system.defaults.NSGlobalDomain."com.apple.swipescrolldirection" = false;
