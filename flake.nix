@@ -3,8 +3,16 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
+    # <https://github.com/nix-systems/nix-systems>
+    systems.url = "github:nix-systems/default-linux";
     nur.url = "github:nix-community/NUR";
-    hyprland.url = "git+https://github.com/hyprwm/Hyprland?ref=main&rev=0c7a7e2d569eeed9d6025f3eef4ea0690d90845d&submodules=1";
+    hyprland = {
+      url = "git+https://github.com/hyprwm/Hyprland?ref=main&rev=0c7a7e2d569eeed9d6025f3eef4ea0690d90845d&submodules=1";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        systems.follows = "systems";
+      };
+    };
     ags.url = "github:Aylur/ags";
     hycov.url = "github:DreamMaoMao/hycov/0.41.2.1";
     shuba-cursors = {
@@ -60,7 +68,18 @@
           final: prev: {
             path = nixpkgs;
 
-            shuba-cursors = shuba-cursors.packages.${final.system}.default;
+            shuba-cursors = final.stdenv.mkDerivation {
+              pname = "shuba-cursors";
+              version = "git-${inputs.shuba-cursors.shortRev or "dirty"}";
+
+              src = lib.cleanSource inputs.shuba-cursors;
+
+              installPhase = ''
+                install -dm 755 $out/share/icons/Shuba
+                cp -r cursors $out/share/icons/Shuba/cursors
+                cp index.theme $out/share/icons/Shuba/index.theme
+              '';
+            };
 
             ibus = prev.ibus.override { withWayland = true; };
 
@@ -68,7 +87,7 @@
               self: super: {
                 version = "1.23.1";
 
-                patches = [];
+                patches = [ ];
                 src = final.fetchurl {
                   url =
                     with self;
@@ -157,21 +176,44 @@
         "Hizack" = "aarch64-darwin";
       };
       forAllDarwinMachines = func: lib.mapAttrs func darwinMachines;
+
+      homeManagerModules = [
+        hyprland.homeManagerModules.default
+        ags.homeManagerModules.default
+      ];
     in
     {
       inherit overlays;
       legacyPackages = nixpkgsFor;
 
+      packages = lib.mapAttrs (system: pkgs: rec {
+        ags =
+          (pkgs.callPackage "${inputs.ags}/nix" {
+            version = builtins.replaceStrings [ "\n" ] [ "" ] (builtins.readFile "${inputs.ags}/version");
+            inherit (pkgs.gnome) gnome-bluetooth;
+          }).overrideAttrs
+            (
+              self: prev: {
+                meta = prev.meta // {
+                  platforms = lib.platforms.linux;
+                };
+              }
+            );
+
+        inherit (pkgs) hyprland;
+      }) nixpkgsFor;
+
       homeConfigurations = forAllUsers (
         system: user:
         home-manager.lib.homeManagerConfiguration (rec {
           pkgs = nixpkgsFor.${system};
+          extraSpecialArgs = {
+            inherit inputs;
+          };
           modules = [
             ./users/${user}/home.nix
             ./users/${user}/home-${pkgs.targetPlatform.parsed.kernel.name}.nix
-            hyprland.homeManagerModules.default
-            ags.homeManagerModules.default
-          ];
+          ] ++ homeManagerModules;
         })
       );
 
@@ -210,10 +252,7 @@
             [
               {
                 documentation.nixos.enable = false;
-                home-manager.sharedModules = [
-                  hyprland.homeManagerModules.default
-                  ags.homeManagerModules.default
-                ];
+                home-manager.sharedModules = homeManagerModules;
               }
               home-manager.nixosModules.default
               ./system/default.nix

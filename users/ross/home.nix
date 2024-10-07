@@ -1,6 +1,6 @@
 { config, lib, pkgs, ... }:
 let
-  shellAliases =  {
+  shellAliases = lib.optionalAttrs (config.programs.lsd.enable) {
     ls = "lsd";
   };
 in
@@ -17,7 +17,7 @@ in
   home.sessionVariables.EDITOR = "nvim";
   programs.home-manager.enable = true;
   programs.lsd = {
-    enable = true;
+    enable = pkgs.haskell.compiler.native-bignum.ghc965.meta.available;
     settings = {
       icons = {
         when = "never";

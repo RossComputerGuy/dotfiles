@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, inputs, ... }:
 with lib;
 let
   dbus-sway-environment = pkgs.writeTextFile {
@@ -67,14 +67,13 @@ in
     waypaper
     brightnessctl
     kanshi
-    (prismlauncher.override {
-      glfw = pkgs.glfw-wayland-minecraft;
-    })
     corefonts
     noto-fonts
     noto-fonts-emoji
     dejavu_fonts
-  ];
+  ] ++ lib.optional (pkgs.openjdk.meta.available) (prismlauncher.override {
+    glfw = pkgs.glfw-wayland-minecraft;
+  });
 
   home.sessionVariables.MANPAGER = "nvimpager";
   home.sessionVariables.PAGER = "nvimpager";
@@ -101,6 +100,7 @@ in
 
   programs.ags = {
     enable = true;
+    package = inputs.self.packages.${pkgs.stdenv.targetPlatform.system}.ags;
     configDir = ./config/ags;
     extraPackages = with pkgs; [ accountsservice brightnessctl ];
   };
@@ -123,6 +123,7 @@ in
 
   wayland.windowManager.hyprland = {
     enable = true;
+    package = inputs.self.packages."${pkgs.stdenv.targetPlatform.system}".hyprland;
     plugins = [
       #"${pkgs.hycov}/lib/libhycov.so"
     ];
