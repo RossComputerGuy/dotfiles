@@ -77,6 +77,5 @@
     fsType = "ext4";
   };
 
-  home-manager.users.ross.wayland.windowManager.hyprland.package = pkgs.hyprland-legacy-renderer;
   home-manager.users.ross.xdg.configFile."kanshi/config".source = ./config/kanshi/config;
 }
