@@ -15,7 +15,7 @@ rec {
   usernames = [ "ross" ];
   homes = builtins.listToAttrs (builtins.attrValues
     (builtins.mapAttrs (key: value: {
-      name = value.config.home.username;
+      name = value.home.username;
       inherit value;
     }) (genAttrs usernames importHome)));
 

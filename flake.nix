@@ -200,7 +200,7 @@
               }
             );
 
-        inherit (pkgs) hyprland;
+        inherit (pkgs) hyprland hyprland-legacy-renderer;
       }) nixpkgsFor;
 
       homeConfigurations = forAllUsers (
