@@ -6,7 +6,7 @@
 
   # Virtualization
   virtualisation.docker.enable = true;
-  virtualisation.libvirtd.enable = true;
+  virtualisation.libvirtd.enable = pkgs.zfs.meta.available;
 
   # Network Configuration
   security.rtkit.enable = true;
@@ -30,7 +30,7 @@
   i18n.supportedLocales = [ "en_US.UTF-8/UTF-8" "ja_JP.UTF-8/UTF-8" ];
 
   # Packages
-  services.fwupd.enable = true;
+  services.fwupd.enable = pkgs.valgrind.meta.available;
   services.udisks2.enable = true;
   programs.git.enable = true;
   programs.zsh.enable = true;
@@ -38,10 +38,11 @@
   environment.systemPackages = with pkgs; [
     lm_sensors
     fwupd-efi
-    nix-output-monitor
-    nix-diff
     nixpkgs-review
-    nixfmt-rfc-style
+  ] ++ lib.optionals (pkgs.haskell.compiler.ghc965.meta.available) [
+    pkgs.nix-output-monitor
+    pkgs.nix-diff
+    pkgs.nixfmt-rfc-style
   ];
 
   system.stateVersion = "23.05";

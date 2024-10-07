@@ -23,7 +23,6 @@
     sumneko-lua-language-server
     fd
     ripgrep
-    cachix
     clang-tools
     gcc
   ];
