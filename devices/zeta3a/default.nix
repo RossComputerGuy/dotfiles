@@ -11,8 +11,6 @@
   boot.zfs.devNodes = "/dev/";
   boot.kernelPackages = pkgs.linuxPackages_6_10;
 
-  boot.kernel.sysctl."vm.nr_hugepages" = 448;
-
   boot.kernelPatches = [
     {
       name = "perf";
