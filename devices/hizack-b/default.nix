@@ -8,6 +8,8 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = false;
 
+  boot.kernelParams = [ "unstable_edid" ];
+
   boot.binfmt.emulatedSystems = [
     "x86_64-linux"
     "i686-linux"
