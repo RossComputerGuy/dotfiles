@@ -8,27 +8,28 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = false;
 
-  boot.kernelParams = [ "unstable_edid" ];
+  boot.kernelParams = [ "apple_dcp.unstable_edid=1" "apple_dcp.show_notch=1" ];
+  /*boot.kernelPackages = lib.mkForce (pkgs.linuxPackagesFor ((pkgs.linuxKernel.manualConfig (rec {
+    version = "6.12.1-asahi";
+    modDirVersion = version;
+    extraMeta.branch = "6.12";
+
+    src = pkgs.fetchFromGitHub {
+      owner = "AsahiLinux";
+      repo = "linux";
+      rev = "asahi-6.12.1-1";
+      hash = "sha256-gXC+2I9N7Vg4aAfZYpFhCjZJWHrZpfSepuNDzIFHTuk=";
+    };
+
+    inherit (pkgs.linux-asahi.kernel) configfile kernelPatches config;
+  })).overrideAttrs (f: p: {
+    inherit (pkgs.linux-asahi.kernel) nativeBuildInputs buildInputs RUST_LIB_SRC;
+  })));*/
 
   boot.binfmt.emulatedSystems = [
     "x86_64-linux"
     "i686-linux"
     "i386-linux"
-  ];
-
-  boot.kernelPatches = [
-    {
-      name = "waydroid";
-      patch = null;
-      extraConfig = ''
-        ANDROID_BINDER_IPC y
-        ANDROID_BINDERFS y
-        ANDROID_BINDER_DEVICES binder,hwbinder,vndbinder
-        ASHMEM y
-        ANDROID_BINDERFS y
-        ANDROID_BINDER_IPC y
-      '';
-    }
   ];
 
   environment = {
