@@ -1,7 +1,6 @@
 { config, pkgs, lib, ... }:
 {
   time.timeZone = "America/Los_Angeles";
-  systemd.enableUnifiedCgroupHierarchy = true;
   hardware.enableRedistributableFirmware = true;
 
   # Virtualization
@@ -13,16 +12,7 @@
 
   services.resolved.enable = true;
   networking.networkmanager.enable = true;
-  networking.networkmanager.dns = "systemd-resolved";
   networking.firewall.checkReversePath = "loose";
-
-  services.resolved.extraConfig = ''
-    DNS=192.168.1.163
-    DNS=100.101.228.123
-    DNS=8.8.8.8
-    DNS=8.8.4.4
-    DNSOverTLS=yes
-  '';
 
   # Keyboard & Input
 

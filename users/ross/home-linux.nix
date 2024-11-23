@@ -72,7 +72,7 @@ in
     noto-fonts-emoji
     dejavu_fonts
   ] ++ lib.optional (pkgs.openjdk.meta.available) (prismlauncher.override {
-    glfw = pkgs.glfw-wayland-minecraft;
+    glfw3-minecraft = pkgs.glfw-wayland-minecraft;
   });
 
   home.sessionVariables.MANPAGER = "nvimpager";
@@ -98,12 +98,12 @@ in
     };
   };
 
-  programs.ags = {
+  /*programs.ags = {
     enable = true;
-    package = inputs.self.packages.${pkgs.stdenv.targetPlatform.system}.ags;
+    package = pkgs.ags;
     configDir = ./config/ags;
     extraPackages = with pkgs; [ accountsservice brightnessctl ];
-  };
+  };*/
 
   programs.fuzzel = {
     enable = true;
@@ -118,92 +118,6 @@ in
         border = "ffffff14";
         selection = "c0caf5ff";
       };
-    };
-  };
-
-  wayland.windowManager.hyprland = {
-    enable = true;
-    package = inputs.self.packages."${pkgs.stdenv.targetPlatform.system}".hyprland;
-    plugins = [
-      #"${pkgs.hycov}/lib/libhycov.so"
-    ];
-    settings = {
-      "$mod" = "SUPER";
-      env = [
-        "QT_QPA_PLATFORM,wayland"
-        "MOZ_ENABLE_WAYLAND,1"
-      ];
-      exec-once = [
-        "ags"
-        "waypaper --restore"
-        "kanshi &"
-      ];
-      general = {
-        gaps_in = 4;
-        gaps_out = 4;
-        gaps_workspaces = 4;
-        resize_on_border = true;
-      };
-      gestures = {
-        workspace_swipe = true;
-        workspace_swipe_forever = true;
-      };
-      decoration.rounding = 3;
-      bindm = [
-        "$mod,mouse:272,movewindow"
-      ];
-      bindle = [
-        ",XF86MonBrightnessUp,exec,brightnessctl s +10%"
-        ",XF86MonBrightnessDown,exec,brightnessctl s 10%-"
-        ",XF86AudioRaiseVolume,exec,pamixer -ui 2"
-        ",XF86AudioLowerVolume,exec,pamixer -ud 2"
-      ];
-      bindl = [
-        ",XF86AudioPlay,exec,playerctl play-pause"
-        ",XF86AudioStop,exec,playerctl stop"
-        ",XF86AudioPause,exec,playerctl play-pause"
-        ",XF86AudioPrev,exec,playerctl previous"
-        ",XF86AudioNext,exec,playerctl next"
-        ",XF86AudioMute,exec,pamixer --toggle-mute"
-      ];
-      bind = [
-        "$mod SHIFT, Q, exit"
-        "$mod SHIFT, R, exec, hyprctl reload"
-        "$mod, Q, killactive"
-        "$mod, Return, exec, alacritty"
-        "$mod, D, exec, fuzzel"
-
-        "$mod, left, movefocus, l"
-        "$mod, right, movefocus, r"
-        "$mod, up, movefocus, u"
-        "$mod, down, movefocus, d"
-
-        "$mod SHIFT, left, movewindow, l"
-        "$mod SHIFT, right, movewindow, r"
-        "$mod SHIFT, up, movewindow, u"
-        "$mod SHIFT, down, movewindow, d"
-
-        #",XF86LaunchA,hycov:toggleoverview"
-
-        "$mod, F, togglefloating"
-        "$mod SHIFT, F, pin"
-  
-        ",Print,exec,grim - | wl-copy"
-        "SHIFT,Print,exec,slurp | grim -g - - | wl-copy"
-
-        "$mod,P,exec,grim - | wl-copy"
-        "$mod SHIFT, P,exec,slurp | grim -g - - | wl-copy"
-      ] ++ (
-        builtins.concatLists (builtins.genList (
-          x:
-            let
-              ws = let
-                c = (x + 1) / 10;
-              in builtins.toString (x + 1 - (c * 10));
-            in [
-              "$mod, ${ws}, workspace, ${toString (x + 1)}"
-              "$mod SHIFT, ${ws}, movetoworkspace, ${toString (x + 1)}"
-            ]) 10));
     };
   };
 }

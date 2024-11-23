@@ -2,19 +2,11 @@
   description = "A Flake of my NixOS machines";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
     # <https://github.com/nix-systems/nix-systems>
     systems.url = "github:nix-systems/default-linux";
     nur.url = "github:nix-community/NUR";
-    hyprland = {
-      url = "git+https://github.com/hyprwm/Hyprland?ref=main&rev=0c7a7e2d569eeed9d6025f3eef4ea0690d90845d&submodules=1";
-      inputs = {
-        nixpkgs.follows = "nixpkgs";
-        systems.follows = "systems";
-      };
-    };
-    ags.url = "github:Aylur/ags";
-    hycov.url = "github:DreamMaoMao/hycov/0.41.2.1";
+    nixos-cosmic.url = "github:lilyinstarlight/nixos-cosmic";
     shuba-cursors = {
       url = "github:RossComputerGuy/shuba-cursors";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -23,7 +15,7 @@
       url = "github:tpwrules/nixos-apple-silicon";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    home-manager.url = "github:nix-community/home-manager/release-24.05";
+    home-manager.url = "github:nix-community/home-manager/release-24.11";
     darwin.url = "github:lnl7/nix-darwin/master";
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
   };
@@ -32,10 +24,12 @@
     trusted-public-keys = [
       "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
       "cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g="
+      "cosmic.cachix.org-1:Dya9IyXD4xdBehWjrkPv6rtxpmMdRel02smYzA85dPE="
     ];
     substituters = [
       "https://cache.nixos.org"
       "https://cache.garnix.io"
+      "https://cosmic.cachix.org"
     ];
     trusted-substituters = substituters;
     fallback = true;
@@ -49,9 +43,7 @@
       nixpkgs,
       darwin,
       nixos-apple-silicon,
-      hyprland,
-      ags,
-      hycov,
+      nixos-cosmic,
       shuba-cursors,
       nixos-hardware,
       ...
@@ -62,8 +54,6 @@
       overlays = {
         nur = nur.overlay;
         apple-silicon = nixos-apple-silicon.overlays.default;
-
-        hyprland = hyprland.overlays.default;
         default = (
           final: prev: {
             path = nixpkgs;
@@ -83,54 +73,14 @@
 
             ibus = prev.ibus.override { withWayland = true; };
 
-            wayland = prev.wayland.overrideAttrs (
-              self: super: {
-                version = "1.23.1";
+            bazel_7 = prev.bazel_7.override { enableNixHacks = false; };
+            bazel = prev.bazel.override { enableNixHacks = false; };
 
-                patches = [ ];
-                src = final.fetchurl {
-                  url =
-                    with self;
-                    "https://gitlab.freedesktop.org/wayland/wayland/-/releases/${version}/downloads/${pname}-${version}.tar.xz";
-                  hash = "sha256-hk+yqDmeLQ7DnVbp2bdTwJN3W+rcYCLOgfRBkpqB5e0=";
-                };
-              }
-            );
-
-            libinput = prev.libinput.overrideAttrs (
-              self: super: {
-                version = "1.26.0";
-
-                src = final.fetchFromGitLab {
-                  domain = "gitlab.freedesktop.org";
-                  owner = "libinput";
-                  repo = "libinput";
-                  rev = self.version;
-                  hash = "sha256-mlxw4OUjaAdgRLFfPKMZDMOWosW9yKAkzDccwuLGCwQ=";
-                };
-              }
-            );
-
-            hycov = prev.callPackage "${hycov}/default.nix" {
-              inherit (final) hyprland;
-              stdenv = prev.gcc13Stdenv;
+            tokyonight-gtk-theme = prev.tokyonight-gtk-theme.override {
+              gnome-shell = final.writeShellScriptBin "gnome-shell" ''
+                echo "GNOME Shell ${final.gnome-shell.version}"
+              '';
             };
-
-            box64 = prev.box64.overrideAttrs (
-              f: p: {
-                version = "0.2.8";
-                src = prev.fetchFromGitHub {
-                  owner = "ptitSeb";
-                  repo = "box64";
-                  rev = "v${f.version}";
-                  hash = "sha256-P+m+JS3THh3LWMZYW6BQ7QyNWlBuL+hMcUtUbpMHzis=";
-                };
-              }
-            );
-
-            rtl8723bs-firmware = prev.runCommand "rtl8723bs-firmware" { } ''
-              mkdir -p $out/lib/firmware
-            '';
           }
         );
       };
@@ -178,30 +128,11 @@
       forAllDarwinMachines = func: lib.mapAttrs func darwinMachines;
 
       homeManagerModules = [
-        hyprland.homeManagerModules.default
-        ags.homeManagerModules.default
       ];
     in
     {
       inherit overlays;
       legacyPackages = nixpkgsFor;
-
-      packages = lib.mapAttrs (system: pkgs: rec {
-        ags =
-          (pkgs.callPackage "${inputs.ags}/nix" {
-            version = builtins.replaceStrings [ "\n" ] [ "" ] (builtins.readFile "${inputs.ags}/version");
-            inherit (pkgs.gnome) gnome-bluetooth;
-          }).overrideAttrs
-            (
-              self: prev: {
-                meta = prev.meta // {
-                  platforms = lib.platforms.linux;
-                };
-              }
-            );
-
-        inherit (pkgs) hyprland hyprland-legacy-renderer;
-      }) nixpkgsFor;
 
       homeConfigurations = forAllUsers (
         system: user:
@@ -260,6 +191,7 @@
               ./devices/${machine}/default.nix
               nur-modules.repos.ilya-fedin.modules.flatpak-fonts
               nur-modules.repos.ilya-fedin.modules.flatpak-icons
+              nixos-cosmic.nixosModules.default
             ];
         })
       );

@@ -45,7 +45,6 @@
   '';
 
   # Sound
-  sound.enable = true;
   hardware.pulseaudio.enable = false;
   services.pipewire = {
     enable = true;
@@ -57,18 +56,19 @@
 
   # i18n
   i18n.inputMethod = {
-    enabled = "fcitx5";
-    fcitx5.addons = with pkgs; [ fcitx5-mozc ];
+    enable = true;
+    type = "ibus";
+    ibus.engines = with pkgs.ibus-engines; [ mozc ];
   };
 
-  environment.variables.GTK_IM_MODULE = "fcitx";
-  environment.variables.QT_IM_MODULE = "fcitx";
-  environment.variables.XMODIFIERS = "@im=fcitx";
-  environment.variables.INPUT_METHOD = "fcitx";
-  environment.variables.XIM = "fcitx";
-  environment.variables.XIM_PROGRAM = "fcitx";
-  environment.variables.SDL_IM_MODULE = "fcitx";
-  environment.variables.GLFW_IM_MODULE = "fcitx";
+  environment.variables.GTK_IM_MODULE = "ibus";
+  environment.variables.QT_IM_MODULE = "ibus";
+  environment.variables.XMODIFIERS = "@im=ibus";
+  environment.variables.INPUT_METHOD = "ibus";
+  environment.variables.XIM = "ibus";
+  environment.variables.XIM_PROGRAM = "ibus";
+  environment.variables.SDL_IM_MODULE = "ibus";
+  environment.variables.GLFW_IM_MODULE = "ibus";
   environment.sessionVariables.NIXOS_OZONE_WL = "1";
 
   # Enable CUPS
@@ -100,9 +100,10 @@
   };
 
   # Graphics
+  services.colord.enable = true;
   services.gnome.at-spi2-core.enable = true;
   services.xserver.enable = true;
-  hardware.opengl.enable = true;
+  hardware.graphics.enable = true;
   fonts.fontDir.enable = true;
 
   # Applications & Services
@@ -144,6 +145,9 @@
   programs.firefox.enable = true;
 
   services.dbus.enable = true;
+
+  services.displayManager.cosmic-greeter.enable = true;
+  services.desktopManager.cosmic.enable = true;
 
   # Users
   users.groups.games = {};
