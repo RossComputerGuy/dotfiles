@@ -9,7 +9,7 @@
   boot.loader.systemd-boot.enable = true;
   boot.supportedFilesystems = [ "zfs" ];
   boot.zfs.devNodes = "/dev/";
-  boot.kernelPackages = pkgs.linuxPackages_6_10;
+  boot.kernelPackages = pkgs.linuxPackages_6_6;
 
   boot.kernelPatches = [
     {
@@ -40,8 +40,6 @@
   # Graphics
   services.xserver.enable = true;
   services.xserver.videoDrivers = [ "amdgpu" ];
-
-  hardware.opengl.driSupport = true;
 
   # Services
   services.irqbalance.enable = true;
