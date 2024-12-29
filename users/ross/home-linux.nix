@@ -27,6 +27,10 @@ in
   xdg.configFile."nvim/lua/init.lua".source = ./config/nvim/lua/init.lua;
   fonts.fontconfig.enable = lib.mkForce true;
   home.file."Pictures/wallpaper.jpg".source = ./pictures/wallpaper.jpg;
+  home.file.".gdbinit".source = pkgs.fetchurl {
+    url = "https://github.com/cyrus-and/gdb-dashboard/raw/05b31885798f16b1c1da9cb78f8c78746dd3557e/.gdbinit";
+    hash = "sha256-i9JJuGQpd/2cB6f/VyfZ3jVWxIz1ZxLb0j5UmM/0ELI=";
+  };
 
   xdg.configFile."waypaper/config.ini".source = pkgs.writeText "waypaper.ini" (generators.toINI {} {
     Settings = {
