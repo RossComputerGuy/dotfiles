@@ -4,10 +4,15 @@
     inputs.nixos-hardware.nixosModules.starfive-visionfive-2
   ];
 
-  networking.hostName = "jegan";
-
-  fileSystems."/" =
-    { device = "/dev/nvme0n1p2";
-      fsType = "ext4";
-    };
+  config = lib.mkMerge [
+    {
+      networking.hostName = "jegan";
+    }
+    (lib.mkIf (pkgs.stdenv.hostPlatform.system == pkgs.stdenv.buildPlatform.system) {
+      fileSystems."/" = {
+        device = "/dev/nvme0n1p2";
+        fsType = "ext4";
+      };
+    })
+  ];
 }

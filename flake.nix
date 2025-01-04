@@ -111,6 +111,15 @@
       };
       forAllMachines = func: lib.mapAttrs func machines;
 
+      machineCross = {
+        jegan = {
+          extraModules = [
+            "${nixos-hardware}/starfive/visionfive/v2/sd-image-installer.nix"
+          ];
+          output = "sdImage";
+        };
+      };
+
       users = [ "ross" ];
       forAllUsers =
         func:
@@ -162,8 +171,11 @@
         localSystem: pkgs:
         forAllMachines (
           machine: crossSystem:
-          (mkMachine machine { system = localSystem; } { system = crossSystem; } [ ])
-          .config.system.build.toplevel
+          let
+            cfg = machineCross.${machine} or {};
+          in
+          (mkMachine machine { system = localSystem; } { system = crossSystem; } (cfg.extraModules or []))
+          .config.system.build.${cfg.output or "toplevel"}
         )
       ) nixpkgsFor;
 
