@@ -17,7 +17,7 @@
     };
     home-manager.url = "github:nix-community/home-manager/release-24.11";
     darwin.url = "github:lnl7/nix-darwin/master";
-    nixos-hardware.url = "github:NixOS/nixos-hardware/master";
+    nixos-hardware.url = "github:RossComputerGuy/nixos-hardware/feat/vf2-improve";
   };
 
   nixConfig = rec {
@@ -52,7 +52,7 @@
       inherit (nixpkgs) lib;
 
       overlays = {
-        nur = nur.overlay;
+        nur = nur.overlays.default;
         apple-silicon = nixos-apple-silicon.overlays.default;
         default = (
           final: prev: {
@@ -129,10 +129,43 @@
 
       homeManagerModules = [
       ];
+
+      mkMachine =
+        machine: localSystem: crossSystem: extraModules:
+        lib.nixosSystem {
+          specialArgs = {
+            inherit inputs;
+          };
+          modules = [
+            {
+              documentation.nixos.enable = false;
+              home-manager.sharedModules = homeManagerModules;
+              nixpkgs = {
+                overlays = (builtins.attrValues overlays);
+                inherit crossSystem localSystem;
+                config.allowUnfree = true;
+              };
+            }
+            home-manager.nixosModules.default
+            ./system/default.nix
+            ./system/linux/default.nix
+            ./devices/${machine}/default.nix
+            nixos-cosmic.nixosModules.default
+          ] ++ extraModules;
+        };
     in
     {
       inherit overlays;
       legacyPackages = nixpkgsFor;
+
+      packages = lib.mapAttrs (
+        localSystem: pkgs:
+        forAllMachines (
+          machine: crossSystem:
+          (mkMachine machine { system = localSystem; } { system = crossSystem; } [ ])
+          .config.system.build.toplevel
+        )
+      ) nixpkgsFor;
 
       homeConfigurations = forAllUsers (
         system: user:
@@ -166,34 +199,7 @@
       );
 
       nixosConfigurations = forAllMachines (
-        machine: system:
-        lib.nixosSystem (rec {
-          inherit system;
-          pkgs = nixpkgsFor.${system};
-          specialArgs = {
-            inherit inputs;
-          };
-          modules =
-            let
-              nur-modules = import nur.outPath {
-                pkgs = nixpkgsFor.${system};
-                nurpkgs = nixpkgsFor.${system};
-              };
-            in
-            [
-              {
-                documentation.nixos.enable = false;
-                home-manager.sharedModules = homeManagerModules;
-              }
-              home-manager.nixosModules.default
-              ./system/default.nix
-              ./system/linux/default.nix
-              ./devices/${machine}/default.nix
-              nur-modules.repos.ilya-fedin.modules.flatpak-fonts
-              nur-modules.repos.ilya-fedin.modules.flatpak-icons
-              nixos-cosmic.nixosModules.default
-            ];
-        })
+        machine: system: mkMachine machine { inherit system; } { inherit system; } [ ]
       );
     };
 }

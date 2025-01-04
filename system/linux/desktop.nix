@@ -44,6 +44,8 @@
     LABEL="solaar_end"
   '';
 
+  environment.systemPackages = with pkgs; [ papirus-icon-theme ];
+
   # Sound
   hardware.pulseaudio.enable = false;
   services.pipewire = {
@@ -123,7 +125,6 @@
       enable = true;
       wlr.enable = true;
     };
-    icons.icons = with pkgs; [ papirus-icon-theme ];
   };
 
   systemd.user.services.polkit-gnome-authentication-agent-1 = {

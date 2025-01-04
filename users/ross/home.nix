@@ -2,7 +2,7 @@
 let
   inherit (lib) mkMerge mkIf;
 
-  shellAliases = lib.optionalAttrs (pkgs.haskell.compiler.ghc965.meta.available) {
+  shellAliases = lib.optionalAttrs (pkgs.stdenv.hostPlatform.system == pkgs.stdenv.buildPlatform.system) {
     ls = "lsd";
   };
 in
