@@ -4,8 +4,6 @@
     inputs.nixos-hardware.nixosModules.starfive-visionfive-2
   ];
 
-  boot.loader.systemd-boot.enable = true;
-
   networking.hostName = "jegan";
 
   fileSystems."/" =

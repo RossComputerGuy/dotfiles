@@ -29,7 +29,7 @@
     lm_sensors
     fwupd-efi
     nixpkgs-review
-  ] ++ lib.optionals (pkgs.haskell.compiler.ghc965.meta.available) [
+  ] ++ lib.optionals (pkgs.stdenv.hostPlatform.system == pkgs.stdenv.buildPlatform.system) [
     pkgs.nix-output-monitor
     pkgs.nix-diff
     pkgs.nixfmt-rfc-style

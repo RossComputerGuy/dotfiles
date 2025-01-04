@@ -75,7 +75,7 @@ in
     noto-fonts
     noto-fonts-emoji
     dejavu_fonts
-  ] ++ lib.optional (pkgs.openjdk.meta.available) (prismlauncher.override {
+  ] ++ lib.optional (!pkgs.stdenv.hostPlatform.isRiscV64) (prismlauncher.override {
     glfw3-minecraft = pkgs.glfw-wayland-minecraft;
   });
 
