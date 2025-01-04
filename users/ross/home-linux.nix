@@ -100,6 +100,9 @@ in
       package = pkgs.tokyo-night-gtk;
       name = "Tokyonight-Dark";
     };
+    gtk3.extraConfig = {
+      gtk-application-prefer-dark-theme = true;
+    };
   };
 
   /*programs.ags = {
