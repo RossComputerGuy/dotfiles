@@ -14,6 +14,11 @@
         device = "/dev/nvme0n1p2";
         fsType = "ext4";
       };
+
+      boot.loader = {
+        systemd-boot.enable = true;
+        generic-extlinux-compatible.enable = false;
+      };
     })
   ];
 }
