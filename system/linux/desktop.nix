@@ -75,8 +75,9 @@
 
   # Enable CUPS
   services.printing = {
-    enable = true;
+    enable = pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform;
     drivers = with pkgs; lib.optional (!stdenv.hostPlatform.isRiscV64) [ hplipWithPlugin ];
+    #browsed.enable = pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform;
   };
   services.avahi = {
     enable = true;
@@ -102,11 +103,13 @@
   };
 
   # Graphics
-  services.colord.enable = true;
+  services.colord.enable = pkgs.stdenv.buildPlatform == pkgs.stdenv.hostPlatform;
   services.gnome.at-spi2-core.enable = true;
   services.xserver.enable = true;
   hardware.graphics.enable = true;
-  fonts.fontDir.enable = true;
+  fonts.fontDir.enable = lib.mkForce (pkgs.stdenv.buildPlatform == pkgs.stdenv.hostPlatform);
+
+  services.power-profiles-daemon.enable = lib.mkForce (pkgs.stdenv.buildPlatform == pkgs.stdenv.hostPlatform);
 
   # Applications & Services
   services.flatpak.enable = true;
@@ -120,12 +123,9 @@
     dejavu_fonts
   ];
 
-  xdg = {
-    portal = {
-      enable = true;
-      wlr.enable = true;
-    };
-  };
+  xdg.portal.extraPortals = lib.mkForce (with pkgs; [
+    xdg-desktop-portal-cosmic
+  ]);
 
   systemd.user.services.polkit-gnome-authentication-agent-1 = {
     description = "polkit-gnome-authentication-agent-1";
@@ -141,7 +141,7 @@
     };
   };
 
-  programs.adb.enable = true;
+  programs.adb.enable = !pkgs.stdenv.hostPlatform.isRiscV64;
 
   programs.firefox.enable = true;
 
