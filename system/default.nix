@@ -20,10 +20,9 @@
   services.tailscale.enable = true;
 
   environment.systemPackages = with pkgs; [
-    sumneko-lua-language-server
     fd
     ripgrep
     clang-tools
     gcc
-  ];
+  ] ++ lib.optional (pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform) pkgs.sumneko-lua-language-server;
 }

@@ -13,13 +13,12 @@ in
     neofetch
     tree-sitter
     gcc
-    nodePackages.dockerfile-language-server-nodejs
-  ];
+  ] ++ lib.optional (pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform) pkgs.nodePackages.dockerfile-language-server-nodejs;
   home.stateVersion = "24.05";
   home.sessionVariables.EDITOR = "nvim";
   programs.home-manager.enable = true;
   programs.neovim = {
-    enable = true;
+    enable = pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform;
     withNodeJs = true;
     withPython3 = true;
     plugins = with pkgs.vimPlugins; [
@@ -37,7 +36,7 @@ in
   programs.git = {
     userEmail = "tristan.ross@midstall.com";
     userName = "Tristan Ross";
-    extraConfig = {
+    extraConfig = lib.mkIf (pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform) {
       core.pager = "nvimpager";
     };
   };

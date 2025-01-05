@@ -20,39 +20,27 @@ in
     ./home.nix
   ];
 
+  xdg.mime = {
+    sharedMimeInfoPackage = lib.mkForce pkgs.pkgsBuildBuild.shared-mime-info;
+    desktopFileUtilsPackage = lib.mkForce pkgs.pkgsBuildBuild.desktop-file-utils;
+  };
+
   xdg.configFile."alacritty/alacritty.toml".source = ./config/alacritty/alacritty.toml;
   xdg.configFile."alacritty/alacritty-device.toml".source = ./config/alacritty/alacritty-linux.toml;
   xdg.configFile."electron-flags.conf".source = ./config/electron-flags.conf;
   xdg.configFile."mimeapps.list".source = ./config/mimeapps.list;
   xdg.configFile."nvim/lua/init.lua".source = ./config/nvim/lua/init.lua;
-  fonts.fontconfig.enable = lib.mkForce true;
+  fonts.fontconfig.enable = lib.mkForce (pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform);
   home.file."Pictures/wallpaper.jpg".source = ./pictures/wallpaper.jpg;
   home.file.".gdbinit".source = pkgs.fetchurl {
     url = "https://github.com/cyrus-and/gdb-dashboard/raw/05b31885798f16b1c1da9cb78f8c78746dd3557e/.gdbinit";
     hash = "sha256-i9JJuGQpd/2cB6f/VyfZ3jVWxIz1ZxLb0j5UmM/0ELI=";
   };
 
-  xdg.configFile."waypaper/config.ini".source = pkgs.writeText "waypaper.ini" (generators.toINI {} {
-    Settings = {
-      folder = "/home/ross/Pictures";
-      wallpaper = "/home/ross/Pictures/wallpaper.jpg";
-      backend = "swww";
-      monitors = "All";
-      fill = "Fill";
-      sort = "name";
-      color = "#1a1b26";
-      swww_transition_type = "any";
-      swww_transition_step = 90;
-      swww_transition_angle = 0;
-      swww_transition_duration = 3;
-    };
-  });
-
   home.username = "ross";
   home.homeDirectory = mkForce "/home/ross";
   home.packages = with pkgs; [
     dbus-sway-environment
-    nvimpager
     xdg-user-dirs
     alacritty
     #solaar
@@ -63,12 +51,9 @@ in
     slurp
     wl-clipboard
     migu
-    xidlehook
     maim
     xclip
-    papirus-icon-theme
     swww
-    waypaper
     brightnessctl
     kanshi
     corefonts
@@ -77,10 +62,15 @@ in
     dejavu_fonts
   ] ++ lib.optional (!pkgs.stdenv.hostPlatform.isRiscV64) (prismlauncher.override {
     glfw3-minecraft = pkgs.glfw-wayland-minecraft;
-  });
+  }) ++ lib.optionals (pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform) [
+    pkgs.papirus-icon-theme
+    pkgs.nvimpager
+  ];
 
-  home.sessionVariables.MANPAGER = "nvimpager";
-  home.sessionVariables.PAGER = "nvimpager";
+  home.sessionVariables = lib.mkIf (pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform) {
+    MANPAGER = "nvimpager";
+    PAGER = "nvimpager";
+  };
 
   gtk = {
     enable = true;
@@ -88,7 +78,7 @@ in
       package = pkgs.shuba-cursors;
       name = "Shuba";
     };
-    iconTheme = {
+    iconTheme = lib.mkIf (pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform) {
       package = pkgs.papirus-icon-theme;
       name = "Papirus-Dark";
     };
@@ -102,29 +92,6 @@ in
     };
     gtk3.extraConfig = {
       gtk-application-prefer-dark-theme = true;
-    };
-  };
-
-  /*programs.ags = {
-    enable = true;
-    package = pkgs.ags;
-    configDir = ./config/ags;
-    extraPackages = with pkgs; [ accountsservice brightnessctl ];
-  };*/
-
-  programs.fuzzel = {
-    enable = true;
-    settings = {
-      main = {
-        icon-theme = "Papirus-Dark";
-        terminal = "${lib.getExe pkgs.alacritty} -e";
-      };
-      colors = {
-        background = "1a1b26ff";
-        text = "ffffffff";
-        border = "ffffff14";
-        selection = "c0caf5ff";
-      };
     };
   };
 }

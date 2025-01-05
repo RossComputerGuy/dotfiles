@@ -44,7 +44,7 @@
     LABEL="solaar_end"
   '';
 
-  environment.systemPackages = with pkgs; [ papirus-icon-theme ];
+  environment.systemPackages = with pkgs; lib.optional (stdenv.hostPlatform == stdenv.buildPlatform) [ papirus-icon-theme ];
 
   # Sound
   hardware.pulseaudio.enable = false;
@@ -58,7 +58,7 @@
 
   # i18n
   i18n.inputMethod = {
-    enable = true;
+    enable = !pkgs.stdenv.hostPlatform.isRiscV64;
     type = "ibus";
     ibus.engines = with pkgs.ibus-engines; [ mozc ];
   };
@@ -76,7 +76,7 @@
   # Enable CUPS
   services.printing = {
     enable = true;
-    drivers = with pkgs; [ hplipWithPlugin ];
+    drivers = with pkgs; lib.optional (!stdenv.hostPlatform.isRiscV64) [ hplipWithPlugin ];
   };
   services.avahi = {
     enable = true;

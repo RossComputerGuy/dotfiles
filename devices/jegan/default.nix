@@ -1,6 +1,7 @@
 { config, lib, pkgs, inputs, ... }:
 {
   imports = [
+    #../../system/linux/desktop.nix
     inputs.nixos-hardware.nixosModules.starfive-visionfive-2
   ];
 
