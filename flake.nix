@@ -3,6 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
+    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
     # <https://github.com/nix-systems/nix-systems>
     systems.url = "github:nix-systems/default-linux";
     nur = {
@@ -24,6 +25,10 @@
     home-manager = {
       url = "github:nix-community/home-manager/release-24.11";
       inputs.nixpkgs.follows = "nixpkgs";
+    };
+    home-manager-unstable = {
+      url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
     darwin = {
       url = "github:lnl7/nix-darwin/master";
@@ -53,6 +58,8 @@
       nur,
       home-manager,
       nixpkgs,
+      nixpkgs-unstable,
+      home-manager-unstable,
       darwin,
       nixos-apple-silicon,
       nixos-cosmic,
@@ -132,6 +139,13 @@
         };
       };
 
+      machineConfig = {
+        jegan = {
+          nixpkgs = nixpkgs-unstable;
+          home-manager = home-manager-unstable;
+        };
+      };
+
       users = [ "ross" ];
       forAllUsers =
         func:
@@ -153,7 +167,10 @@
 
       mkMachine =
         machine: localSystem: crossSystem: extraModules:
-        lib.nixosSystem {
+        let
+          cfg = machineConfig.${machine} or { };
+        in
+        (cfg.nixpkgs or inputs.nixpkgs).lib.nixosSystem {
           specialArgs = {
             inherit inputs;
           };
@@ -167,7 +184,7 @@
                 config.allowUnfree = true;
               };
             }
-            home-manager.nixosModules.default
+            (cfg.home-manager or inputs.home-manager).nixosModules.default
             ./system/default.nix
             ./system/linux/default.nix
             ./devices/${machine}/default.nix
@@ -179,17 +196,17 @@
       inherit overlays;
       legacyPackages = nixpkgsFor;
 
-      packages = lib.mapAttrs (
-        localSystem: pkgs:
+      packages = lib.genAttrs systems (
+        localSystem:
         forAllMachines (
           machine: crossSystem:
           let
-            cfg = machineCross.${machine} or {};
+            cfg = machineCross.${machine} or { };
           in
-          (mkMachine machine { system = localSystem; } { system = crossSystem; } (cfg.extraModules or []))
+          (mkMachine machine { system = localSystem; } { system = crossSystem; } (cfg.extraModules or [ ]))
           .config.system.build.${cfg.output or "toplevel"}
         )
-      ) nixpkgsFor;
+      );
 
       homeConfigurations = forAllUsers (
         system: user:

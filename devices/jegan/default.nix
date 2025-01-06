@@ -7,7 +7,17 @@
 
   config = lib.mkMerge [
     {
-      networking.hostName = "jegan";
+      networking = {
+        hostName = "jegan";
+        networkmanager.plugins = lib.mkForce (with pkgs; [
+          networkmanager-fortisslvpn
+          networkmanager-iodine
+          networkmanager-l2tp
+          networkmanager-openvpn
+          networkmanager-vpnc
+          networkmanager-sstp
+        ]);
+      };
     }
     (lib.mkIf (pkgs.stdenv.hostPlatform.system == pkgs.stdenv.buildPlatform.system) {
       fileSystems."/" = {

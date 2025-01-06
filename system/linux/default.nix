@@ -3,6 +3,8 @@
   time.timeZone = "America/Los_Angeles";
   hardware.enableRedistributableFirmware = true;
 
+  environment.stub-ld.enable = pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform;
+
   # Virtualization
   virtualisation.docker.enable = true;
   virtualisation.libvirtd.enable = pkgs.zfs.meta.available;
