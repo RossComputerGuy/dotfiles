@@ -29,10 +29,10 @@
     lm_sensors
     fwupd-efi
     nixpkgs-review
-  ] ++ lib.optionals (pkgs.stdenv.hostPlatform.system == pkgs.stdenv.buildPlatform.system) [
+    nixfmt-rfc-style
+  ] ++ lib.optionals (!pkgs.stdenv.hostPlatform.isRiscV64) [
     pkgs.nix-output-monitor
     pkgs.nix-diff
-    pkgs.nixfmt-rfc-style
   ];
 
   system.stateVersion = "23.05";

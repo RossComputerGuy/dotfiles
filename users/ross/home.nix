@@ -2,7 +2,7 @@
 let
   inherit (lib) mkMerge mkIf;
 
-  shellAliases = lib.optionalAttrs (pkgs.stdenv.hostPlatform.system == pkgs.stdenv.buildPlatform.system) {
+  shellAliases = lib.optionalAttrs (!pkgs.stdenv.hostPlatform.isRiscV64) {
     ls = "lsd";
   };
 in
