@@ -5,8 +5,14 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
     # <https://github.com/nix-systems/nix-systems>
     systems.url = "github:nix-systems/default-linux";
-    nur.url = "github:nix-community/NUR";
-    nixos-cosmic.url = "github:lilyinstarlight/nixos-cosmic";
+    nur = {
+      url = "github:nix-community/NUR";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    nixos-cosmic = {
+      url = "github:lilyinstarlight/nixos-cosmic";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     shuba-cursors = {
       url = "github:RossComputerGuy/shuba-cursors";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -15,8 +21,14 @@
       url = "github:tpwrules/nixos-apple-silicon";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    home-manager.url = "github:nix-community/home-manager/release-24.11";
-    darwin.url = "github:lnl7/nix-darwin/master";
+    home-manager = {
+      url = "github:nix-community/home-manager/release-24.11";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    darwin = {
+      url = "github:lnl7/nix-darwin/master";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     nixos-hardware.url = "github:RossComputerGuy/nixos-hardware/feat/vf2-improve";
   };
 
