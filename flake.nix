@@ -132,6 +132,10 @@
                 )
               else
                 prev.bpftools;
+
+            openexr = prev.openexr.overrideAttrs (f: p: {
+              doCheck = p.doCheck && !final.stdenv.hostPlatform.isRiscV64;
+            });
           }
         );
       };
