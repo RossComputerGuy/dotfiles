@@ -100,6 +100,38 @@
                 echo "GNOME Shell ${final.gnome-shell.version}"
               '';
             };
+
+            # PR: https://github.com/NixOS/nixpkgs/pull/371240
+            bpftools =
+              if final.stdenv.hostPlatform.isRiscV64 then
+                prev.bpftools.overrideAttrs (
+                  f: p: {
+                    patches = p.patches ++ [
+                      (final.fetchpatch {
+                        # libbpf: Add missing per-arch include path
+                        # https://patchwork.kernel.org/project/linux-riscv/patch/20240927131355.350918-1-bjorn@kernel.org/
+                        url = "https://patchwork.kernel.org/project/linux-riscv/patch/20240927131355.350918-1-bjorn@kernel.org/raw/";
+                        hash = "sha256-edXY/ejHW5L7rGgY5B2GmVZxUgnLdBadNhBOSAgcL7M=";
+                      })
+                      (final.fetchpatch {
+                        # selftests: bpf: Add missing per-arch include path
+                        # https://patchwork.kernel.org/project/linux-riscv/patch/20240927131355.350918-2-bjorn@kernel.org/
+                        url = "https://patchwork.kernel.org/project/linux-riscv/patch/20240927131355.350918-2-bjorn@kernel.org/raw/";
+                        hash = "sha256-7yNWE/L/qd3vcLtJYoSyGxB3ytySlr20R0D3t5ni2Fc=";
+                      })
+                      (final.fetchpatch {
+                        # tools: Override makefile ARCH variable if defined, but empty
+                        # https://patchwork.kernel.org/project/linux-riscv/patch/20241127101748.165693-1-bjorn@kernel.org/
+                        url = "https://patchwork.kernel.org/project/linux-riscv/patch/20241127101748.165693-1-bjorn@kernel.org/raw/";
+                        hash = "sha256-y8N71Hm1XfX9g3S6PzW2m7Lxp6wQQMfQE9L0QNt8cYY=";
+                      })
+                    ];
+
+                    makeFlags = [ "ARCH=${final.stdenv.hostPlatform.linuxArch}" ];
+                  }
+                )
+              else
+                prev.bpftools;
           }
         );
       };
