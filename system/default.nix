@@ -24,5 +24,5 @@
     ripgrep
     clang-tools
     gcc
-  ] ++ lib.optional (pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform) pkgs.sumneko-lua-language-server;
+  ] ++ lib.optional (pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform && !pkgs.stdenv.hostPlatform.isRiscV64) pkgs.sumneko-lua-language-server;
 }
