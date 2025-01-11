@@ -133,9 +133,21 @@
               else
                 prev.bpftools;
 
-            openexr = prev.openexr.overrideAttrs (f: p: {
-              doCheck = p.doCheck && !final.stdenv.hostPlatform.isRiscV64;
-            });
+            openexr = prev.openexr.overrideAttrs (
+              f: p: {
+                doCheck = p.doCheck && !final.stdenv.hostPlatform.isRiscV64;
+              }
+            );
+
+            pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
+              (pythonFinal: pythonPrev: {
+                hypothesis = pythonPrev.hypothesis.overrideAttrs (
+                  f: p: {
+                    doCheck = p.doCheck && !final.stdenv.hostPlatform.isRiscV64;
+                  }
+                );
+              })
+            ];
           }
         );
       };
