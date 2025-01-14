@@ -139,6 +139,12 @@
               }
             );
 
+            ripgrep = prev.ripgrep.overrideAttrs (
+              f: p: {
+                doCheck = p.doCheck && !final.stdenv.hostPlatform.isRiscV64;
+              }
+            );
+
             pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
               (pythonFinal: pythonPrev: {
                 hypothesis = pythonPrev.hypothesis.overrideAttrs (
