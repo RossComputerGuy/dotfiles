@@ -154,6 +154,12 @@
                 );
               })
             ];
+
+            libjxl = prev.libjxl.overrideAttrs (
+              f: p: {
+                doCheck = p.doCheck && !final.stdenv.hostPlatform.isRiscV64;
+              }
+            );
           }
         );
       };
