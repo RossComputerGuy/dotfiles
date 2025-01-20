@@ -34,7 +34,7 @@
       url = "github:lnl7/nix-darwin/master";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    nixos-hardware.url = "github:RossComputerGuy/nixos-hardware/feat/vf2-improve";
+    nixos-hardware.url = "github:NixOS/nixos-hardware";
   };
 
   nixConfig = rec {
@@ -160,6 +160,22 @@
                 doCheck = p.doCheck && !final.stdenv.hostPlatform.isRiscV64;
               }
             );
+
+            nodejs_22 = if final.stdenv.hostPlatform.isRiscV64 then (prev.callPackage "${nixpkgs}/pkgs/development/web/nodejs/nodejs.nix" {
+              python = final.python3;
+            } {
+              version = "22.13.0";
+              sha256 = "e50db6730716ba2ae953cf99d10c80295bd33bb72d3c829d9e99f6af56d626c7";
+              patches = [
+                "${nixpkgs}/pkgs/development/web/nodejs/configure-emulator.patch"
+                "${nixpkgs}/pkgs/development/web/nodejs/configure-armv6-vfpv2.patch"
+                "${nixpkgs}/pkgs/development/web/nodejs/disable-darwin-v8-system-instrumentation-node19.patch"
+                "${nixpkgs}/pkgs/development/web/nodejs/bypass-darwin-xcrun-node16.patch"
+                "${nixpkgs}/pkgs/development/web/nodejs/node-npm-build-npm-package-logic.patch"
+                "${nixpkgs}/pkgs/development/web/nodejs/use-correct-env-in-tests.patch"
+                "${nixpkgs}/pkgs/development/web/nodejs/bin-sh-node-run-v22.patch"
+              ];
+            }) else prev.nodejs_22;
           }
         );
       };
