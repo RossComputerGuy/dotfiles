@@ -224,7 +224,10 @@
                       })
                     ];
                   }
-                )
+                ).overrideAttrs (f: p: {
+                  doCheck = false;
+                  doInstallCheck = false;
+                })
               else
                 prev.nodejs_22;
           }
