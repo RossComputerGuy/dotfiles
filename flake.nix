@@ -332,9 +332,11 @@
           machine: crossSystem:
           let
             cfg = machineCross.${machine} or { };
+            nixos = mkMachine machine { system = localSystem; } { system = crossSystem; } (cfg.extraModules or [ ]);
           in
-          (mkMachine machine { system = localSystem; } { system = crossSystem; } (cfg.extraModules or [ ]))
-          .config.system.build.${cfg.output or "toplevel"}
+          nixos.config.system.build.${cfg.output or "toplevel"} // {
+            inherit nixos;
+          }
         )
       );
 
