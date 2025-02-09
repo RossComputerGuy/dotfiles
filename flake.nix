@@ -19,7 +19,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nixos-apple-silicon = {
-      url = "github:tpwrules/nixos-apple-silicon";
+      url = "github:tpwrules/nixos-apple-silicon/f919f2eb3476ce2aa234b8599ce87d77e1badc04";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     home-manager = {
@@ -252,8 +252,6 @@
       );
 
       machines = {
-        lavienrose = "x86_64-linux";
-        zeta-gundam = "x86_64-linux";
         zeta3a = "aarch64-linux";
         hizack-b = "aarch64-linux";
         jegan = "riscv64-linux";
@@ -319,7 +317,7 @@
             ./system/linux/default.nix
             ./devices/${machine}/default.nix
             nixos-cosmic.nixosModules.default
-          ] ++ extraModules;
+          ] ++ (cfg.extraModules or []) ++ extraModules;
         };
     in
     {
