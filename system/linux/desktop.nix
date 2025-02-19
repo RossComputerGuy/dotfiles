@@ -44,7 +44,7 @@
     LABEL="solaar_end"
   '';
 
-  environment.systemPackages = with pkgs; lib.optional (stdenv.hostPlatform == stdenv.buildPlatform) [ papirus-icon-theme ];
+  environment.systemPackages = with pkgs; lib.optional (stdenv.hostPlatform == stdenv.buildPlatform) papirus-icon-theme;
 
   # Sound
   hardware.pulseaudio.enable = false;
@@ -76,7 +76,6 @@
   # Enable CUPS
   services.printing = {
     enable = pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform;
-    drivers = with pkgs; lib.optional (!stdenv.hostPlatform.isRiscV64) [ hplipWithPlugin ];
     #browsed.enable = pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform;
   };
   services.avahi = {
