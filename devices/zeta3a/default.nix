@@ -9,7 +9,7 @@
   boot.loader.systemd-boot.enable = true;
   boot.supportedFilesystems = [ "zfs" ];
   boot.zfs.devNodes = "/dev/";
-  boot.kernelPackages = pkgs.linuxPackages_6_6;
+  boot.kernelPackages = pkgs.linuxPackages_6_12;
 
   boot.kernelPatches = [
     {
