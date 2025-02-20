@@ -60,6 +60,8 @@
     };
   };
 
+  i18n.inputMethod.enable = lib.mkForce false;
+
   # Filesystems
 
   fileSystems."/" =

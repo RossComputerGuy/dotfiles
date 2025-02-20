@@ -63,14 +63,16 @@
     ibus.engines = with pkgs.ibus-engines; [ mozc ];
   };
 
-  environment.variables.GTK_IM_MODULE = "ibus";
-  environment.variables.QT_IM_MODULE = "ibus";
-  environment.variables.XMODIFIERS = "@im=ibus";
-  environment.variables.INPUT_METHOD = "ibus";
-  environment.variables.XIM = "ibus";
-  environment.variables.XIM_PROGRAM = "ibus";
-  environment.variables.SDL_IM_MODULE = "ibus";
-  environment.variables.GLFW_IM_MODULE = "ibus";
+  environment.variables = lib.mkIf (config.i18n.inputMethod.enable) {
+    GTK_IM_MODULE = "ibus";
+    QT_IM_MODULE = "ibus";
+    XMODIFIERS = "@im=ibus";
+    INPUT_METHOD = "ibus";
+    XIM = "ibus";
+    XIM_PROGRAM = "ibus";
+    SDL_IM_MODULE = "ibus";
+    GLFW_IM_MODULE = "ibus";
+  };
   environment.sessionVariables.NIXOS_OZONE_WL = "1";
 
   # Enable CUPS
