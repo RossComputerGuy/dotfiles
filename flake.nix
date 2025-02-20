@@ -244,6 +244,10 @@
           nixpkgs = nixpkgs-unstable;
           home-manager = home-manager-unstable;
         };
+        zeta3a = {
+          nixpkgs = nixpkgs-unstable;
+          home-manager = home-manager-unstable;
+        };
       };
 
       users = [ "ross" ];
