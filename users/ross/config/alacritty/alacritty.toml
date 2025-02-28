@@ -1,4 +1,4 @@
-[[general]]
+[general]
 import = [
   "~/.config/alacritty/alacritty-device.toml"
 ]
