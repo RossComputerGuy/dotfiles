@@ -6,6 +6,7 @@
 
   # allow matthewcroughan to do remote builds
   nix = {
+    settings.trusted-users = [ "nix-ssh" ];
     sshServe = {
       protocol = "ssh-ng";
       enable = true;
