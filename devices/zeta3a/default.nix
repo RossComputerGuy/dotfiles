@@ -4,6 +4,19 @@
     ../../system/linux/desktop.nix
   ];
 
+  # allow matthewcroughan to do remote builds
+  nix = {
+    sshServe = {
+      protocol = "ssh-ng";
+      enable = true;
+      write = true;
+      keys = [
+        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOq9gQxVP6k8TNYgkBR+oasyEIooP3QTPmWSkyvywic6 root@t480"
+        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJRGo4DFyjy4qaQK+UyTECRURVVNs2ZqyVRfGAqc6t0a matthew@t480"
+      ];
+    };
+  };
+
   # Bootloader
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.systemd-boot.enable = true;
