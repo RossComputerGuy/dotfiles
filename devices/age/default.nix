@@ -2,7 +2,7 @@
 {
   # Bootloader
   boot.loader.efi.canTouchEfiVariables = true;
-  boot.loader.systemd-boot.enable = true;
+  boot.loader.grub.enable = true;
 
   fileSystems."/" =
     { device = "/dev/disk/by-partlabel/ROOT";
