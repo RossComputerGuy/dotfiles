@@ -14,8 +14,11 @@
       fsType = "vfat";
     };
 
-  services.ttyd = {
-    enable = true;
-    writeable = true;
+  services = {
+    ttyd = {
+      enable = true;
+      writeable = true;
+    };
+    fwupd.enable = lib.mkForce false;
   };
 }
