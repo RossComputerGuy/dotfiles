@@ -223,6 +223,7 @@
         zeta3a = "aarch64-linux";
         hizack-b = "aarch64-linux";
         jegan = "riscv64-linux";
+        age = "aarch64-linux";
       };
       forAllMachines = func: lib.mapAttrs func machines;
 
