@@ -20,5 +20,11 @@
       writeable = true;
     };
     fwupd.enable = lib.mkForce false;
+    udisks2.enable = lib.mkForce false;
+  };
+
+  virtualisation = {
+    docker.enable = lib.mkForce false;
+    libvirtd.enable = lib.mkForce false;
   };
 }
