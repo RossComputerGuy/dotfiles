@@ -2,14 +2,17 @@
 {
   # Bootloader
   boot.loader.efi.canTouchEfiVariables = true;
-  boot.loader.grub.enable = true;
+  boot.loader.grub = {
+    enable = true;
+    device = "/dev/disk/by-partlabel/EFI";
+  };
 
   fileSystems."/" =
     { device = "/dev/disk/by-partlabel/ROOT";
       fsType = "ext4";
     };
 
-  fileSystems."/boot" =
+  fileSystems."/boot/efi" =
     { device = "/dev/disk/by-partlabel/EFI";
       fsType = "vfat";
     };
