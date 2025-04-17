@@ -22,17 +22,42 @@
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.systemd-boot.enable = true;
   boot.supportedFilesystems = [ "zfs" ];
-  boot.zfs.devNodes = "/dev/";
-  boot.kernelPackages = pkgs.linuxPackages_6_12;
+  boot.zfs = {
+    devNodes = "/dev/";
+    package = pkgs.pkgsLLVM.zfs.overrideAttrs (f: p: {
+      NIX_CFLAGS_LINK = "";
+
+      configureFlags = p.configureFlags
+        ++ [ "--without-libunwind" ];
+    });
+    modulePackage = config.boot.kernelPackages."${pkgs.pkgsLLVM.zfs.kernelModuleAttribute}".overrideAttrs (f: p: {
+      NIX_CFLAGS_LINK = "";
+      nativeBuildInputs = p.nativeBuildInputs ++ [ pkgs.pkgsLLVM.pkgsBuildTarget.gcc ];
+    });
+  };
+  boot.kernelPackages = pkgs.pkgsLLVM.linuxPackages_6_12;
+
+  systemd.package = pkgs.pkgsLLVM.systemd;
 
   boot.kernelPatches = [
     {
       name = "perf";
+    patch = null;
+      extraStructuredConfig = with lib.kernel; {
+        ARM64_64K_PAGES = yes;
+        HZ_100 = yes;
+      };
+    }
+    {
+      name = "vdso";
       patch = null;
-      extraConfig = ''
-        ARM64_64K_PAGES y
-        HZ_100 y
-      '';
+      extraStructuredConfig = with lib.kernel; {
+        COMPAT = no;
+        ARMV8_DEPRECATED = lib.mkForce unset;
+        COMPAT_ALIGNMENT_FIXUPS = lib.mkForce unset;
+        CP15_BARRIER_EMULATION = lib.mkForce unset;
+        MODULES = yes;
+      };
     }
   ];
 

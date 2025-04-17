@@ -129,6 +129,35 @@
               }
             );
 
+            tcp_wrappers = prev.tcp_wrappers.overrideAttrs (f: p: {
+              patches = p.patches ++ lib.optional (final.stdenv.cc.isClang) ./pkgs/by-name/tc/tcp_wrappers/clang.diff;
+            });
+
+            keyutils = if final.stdenv.hostPlatform.useLLVM then
+              prev.keyutils.overrideAttrs (f: p: {
+                NIX_LDFLAGS = "--undefined-version";
+              })
+            else prev.keyutils;
+
+            util-linux = prev.util-linux.overrideAttrs (f: p: {
+              configureFlags = p.configureFlags
+                ++ lib.optional final.stdenv.hostPlatform.useLLVM "LDFLAGS=-Wl,--undefined-version";
+            });
+
+            nfs-utils = prev.nfs-utils.overrideAttrs (f: p: {
+              configureFlags = p.configureFlags
+                ++ lib.optional final.stdenv.hostPlatform.useLLVM "CFLAGS=-Wno-format-nonliteral";
+            });
+
+            systemd = if final.stdenv.hostPlatform.useLLVM then
+              prev.systemd.override {
+                withHomed = false;
+                withCryptsetup = false;
+                withRepart = false;
+                withFido2 = false;
+              }
+            else prev.systemd;
+
             nodejs_22 =
               if final.stdenv.hostPlatform.isRiscV64 then
                 (prev.callPackage "${nixpkgs}/pkgs/development/web/nodejs/nodejs.nix"

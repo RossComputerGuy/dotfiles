@@ -106,12 +106,6 @@ return require('packer').startup(function(use)
   use {
     'neovim/nvim-lspconfig',
     requires = {
-      'hrsh7th/nvim-cmp',
-      'hrsh7th/cmp-buffer',
-      'hrsh7th/cmp-path',
-      'hrsh7th/cmp-cmdline',
-      'hrsh7th/cmp-nvim-lsp',
-      'hrsh7th/cmp-nvim-lua',
       'williamboman/mason.nvim',
       'williamboman/mason-lspconfig.nvim',
     },
@@ -119,11 +113,8 @@ return require('packer').startup(function(use)
       local lspconfig = require('lspconfig')
       local mlsp = require('mason-lspconfig')
       local mason = require('mason')
-      local cmp_lsp = require('cmp_nvim_lsp')
-      local cmp = require('cmp')
 
       local capabilities = vim.lsp.protocol.make_client_capabilities()
-      capabilities = cmp_lsp.default_capabilities(capabilities)
 
       local on_attach = function(client, bufnr)
         vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
@@ -193,42 +184,6 @@ return require('packer').startup(function(use)
       })
 
       mason.setup()
-
-      cmp.setup({
-        snippet = {
-          expand = function(args)
-            vim.fn["vsnip#anonymous"](args.body)
-          end,
-        },
-        mapping = cmp.mapping.preset.insert({
-          ['<C-b>'] = cmp.mapping.scroll_docs(-4),
-          ['<C-f>'] = cmp.mapping.scroll_docs(4),
-          ['<C-Space>'] = cmp.mapping.complete(),
-          ['<CR>'] = cmp.mapping.confirm { select = true },
-          ['<C-e>'] = cmp.mapping.abort(),
-        }),
-        sources = cmp.config.sources({
-          { name = 'buffer' },
-          { name = 'nvim_lua' },
-          { name = 'nvim_lsp' },
-        })
-      })
-
-      cmp.setup.cmdline('/', {
-        mapping = cmp.mapping.preset.cmdline(),
-        sources = {
-          { name = 'buffer' }
-        }
-      })
-
-      cmp.setup.cmdline(':', {
-        mapping = cmp.mapping.preset.cmdline(),
-        sources = cmp.config.sources({
-          { name = 'path' }
-        }, {
-          { name = 'cmdline' }
-        })
-      })
     end
   }
 
