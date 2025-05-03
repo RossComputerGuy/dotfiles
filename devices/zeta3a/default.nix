@@ -22,22 +22,7 @@
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.systemd-boot.enable = true;
   boot.supportedFilesystems = [ "zfs" ];
-  boot.zfs = {
-    devNodes = "/dev/";
-    package = pkgs.pkgsLLVM.zfs.overrideAttrs (f: p: {
-      NIX_CFLAGS_LINK = "";
-
-      configureFlags = p.configureFlags
-        ++ [ "--without-libunwind" ];
-    });
-    modulePackage = config.boot.kernelPackages."${pkgs.pkgsLLVM.zfs.kernelModuleAttribute}".overrideAttrs (f: p: {
-      NIX_CFLAGS_LINK = "";
-      nativeBuildInputs = p.nativeBuildInputs ++ [ pkgs.pkgsLLVM.pkgsBuildTarget.gcc ];
-    });
-  };
-  boot.kernelPackages = pkgs.pkgsLLVM.linuxPackages_6_12;
-
-  systemd.package = pkgs.pkgsLLVM.systemd;
+  boot.zfs.devNodes = "/dev/";
 
   boot.kernelPatches = [
     {
@@ -68,7 +53,7 @@
   ];
 
   # Initrd
-  boot.initrd.availableKernelModules = [ "nvme" "xhci_pci" "ahci" "usbhid" "uas" "usb_storage" "sd_mod" "amdgpu" ];
+  boot.initrd.availableKernelModules = [ "nvme" "xhci_pci" "ahci" "usbhid" "uas" "usb_storage" "sd_mod" ];
 
   # Networking
   networking.hostName = "zeta3a";
@@ -78,7 +63,9 @@
 
   # Graphics
   services.xserver.enable = true;
-  services.xserver.videoDrivers = [ "amdgpu" ];
+  services.xserver.videoDrivers = [ "nvidia" ];
+
+  hardware.nvidia.open = true;
 
   # Services
   services.irqbalance.enable = true;

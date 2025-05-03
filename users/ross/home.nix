@@ -1,10 +1,6 @@
 { config, lib, pkgs, ... }:
 let
   inherit (lib) mkMerge mkIf;
-
-  shellAliases = lib.optionalAttrs (!pkgs.stdenv.hostPlatform.isRiscV64) {
-    ls = "lsd";
-  };
 in
 {
   home.packages = with pkgs; [
@@ -31,7 +27,6 @@ in
   programs.bash = {
     enable = true;
     enableVteIntegration = true;
-    inherit shellAliases;
   };
   programs.git = {
     userEmail = "tristan.ross@midstall.com";
@@ -50,10 +45,9 @@ in
       enable = true;
       theme = "tjkirch";
     };
-    inherit shellAliases;
   };
   manual.manpages.enable = false;
-  programs.lsd = mkIf (shellAliases ? "ls") {
+  programs.lsd = {
     enable = true;
     settings = {
       icons = {
