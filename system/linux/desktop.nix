@@ -44,7 +44,9 @@
     LABEL="solaar_end"
   '';
 
-  environment.systemPackages = with pkgs; lib.optional (stdenv.hostPlatform == stdenv.buildPlatform) papirus-icon-theme;
+  environment.systemPackages = with pkgs; ([
+    muvm
+  ] ++ lib.optional (stdenv.hostPlatform == stdenv.buildPlatform) papirus-icon-theme);
 
   # Sound
   hardware.pulseaudio.enable = false;
