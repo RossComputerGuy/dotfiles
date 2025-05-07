@@ -53,7 +53,7 @@
   ];
 
   # Initrd
-  boot.initrd.availableKernelModules = [ "nvme" "xhci_pci" "ahci" "usbhid" "uas" "usb_storage" "sd_mod" ];
+  boot.initrd.availableKernelModules = [ "nvme" "xhci_pci" "ahci" "usbhid" "uas" "usb_storage" "sd_mod" "nvidia" ];
 
   # Networking
   networking.hostName = "zeta3a";
