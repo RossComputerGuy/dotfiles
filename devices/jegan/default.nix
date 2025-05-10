@@ -7,16 +7,27 @@
 
   config = lib.mkMerge [
     {
+      documentation = {
+        enable = false;
+        man.enable = false;
+        info.enable = false;
+        doc.enable = false;
+        dev.enable = false;
+        nixos.enable = false;
+      };
+
+      hardware.deviceTree.name = "starfive/jh7110-starfive-visionfive-2-v1.3b.dtb";
+
       networking = {
         hostName = "jegan";
-        networkmanager.plugins = lib.mkForce (with pkgs; [
-          networkmanager-fortisslvpn
-          networkmanager-iodine
-          networkmanager-l2tp
-          networkmanager-openvpn
-          networkmanager-vpnc
-          networkmanager-sstp
-        ]);
+        networkmanager.plugins = lib.mkForce [];
+      };
+
+      services.udisks2.enable = lib.mkForce false;
+
+      virtualisation = {
+        docker.enable = lib.mkForce false;
+        libvirtd.enable = lib.mkForce false;
       };
     }
     (lib.mkIf (pkgs.stdenv.hostPlatform.system == pkgs.stdenv.buildPlatform.system) {
