@@ -48,7 +48,7 @@ in
   };
   manual.manpages.enable = false;
   programs.lsd = {
-    enable = true;
+    enable = !pkgs.stdenv.hostPlatform.isRiscV64;
     settings = {
       icons = {
         when = "never";

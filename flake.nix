@@ -129,34 +129,52 @@
               }
             );
 
-            tcp_wrappers = prev.tcp_wrappers.overrideAttrs (f: p: {
-              patches = p.patches ++ lib.optional (final.stdenv.cc.isClang) ./pkgs/by-name/tc/tcp_wrappers/clang.diff;
-            });
-
-            keyutils = if final.stdenv.hostPlatform.useLLVM then
-              prev.keyutils.overrideAttrs (f: p: {
-                NIX_LDFLAGS = "--undefined-version";
-              })
-            else prev.keyutils;
-
-            util-linux = prev.util-linux.overrideAttrs (f: p: {
-              configureFlags = p.configureFlags
-                ++ lib.optional final.stdenv.hostPlatform.useLLVM "LDFLAGS=-Wl,--undefined-version";
-            });
-
-            nfs-utils = prev.nfs-utils.overrideAttrs (f: p: {
-              configureFlags = p.configureFlags
-                ++ lib.optional final.stdenv.hostPlatform.useLLVM "CFLAGS=-Wno-format-nonliteral";
-            });
-
-            systemd = if final.stdenv.hostPlatform.useLLVM then
-              prev.systemd.override {
-                withHomed = false;
-                withCryptsetup = false;
-                withRepart = false;
-                withFido2 = false;
+            tcp_wrappers = prev.tcp_wrappers.overrideAttrs (
+              f: p: {
+                patches =
+                  p.patches
+                  ++ lib.optional (final.stdenv.cc.isClang) ./pkgs/by-name/tc/tcp_wrappers/clang.diff;
               }
-            else prev.systemd;
+            );
+
+            keyutils =
+              if final.stdenv.hostPlatform.useLLVM then
+                prev.keyutils.overrideAttrs (
+                  f: p: {
+                    NIX_LDFLAGS = "--undefined-version";
+                  }
+                )
+              else
+                prev.keyutils;
+
+            util-linux = prev.util-linux.overrideAttrs (
+              f: p: {
+                configureFlags =
+                  p.configureFlags
+                  ++ lib.optional final.stdenv.hostPlatform.useLLVM "LDFLAGS=-Wl,--undefined-version";
+              }
+            );
+
+            nfs-utils = prev.nfs-utils.overrideAttrs (
+              f: p: {
+                configureFlags =
+                  p.configureFlags
+                  ++ lib.optional final.stdenv.hostPlatform.useLLVM "CFLAGS=-Wno-format-nonliteral";
+              }
+            );
+
+            systemd =
+              if final.stdenv.hostPlatform.useLLVM then
+                prev.systemd.override {
+                  withHomed = false;
+                  withCryptsetup = false;
+                  withRepart = false;
+                  withFido2 = false;
+                }
+              else
+                prev.systemd;
+
+            xonsh = if final.stdenv.hostPlatform.isRiscV64 then final.emptyDirectory else prev.xonsh;
 
             nodejs_22 =
               if final.stdenv.hostPlatform.isRiscV64 then
@@ -221,10 +239,13 @@
                       })
                     ];
                   }
-                ).overrideAttrs (f: p: {
-                  doCheck = false;
-                  doInstallCheck = false;
-                })
+                ).overrideAttrs
+                  (
+                    f: p: {
+                      doCheck = false;
+                      doInstallCheck = false;
+                    }
+                  )
               else
                 prev.nodejs_22;
           }
@@ -308,22 +329,25 @@
           specialArgs = {
             inherit inputs;
           };
-          modules = [
-            {
-              documentation.nixos.enable = false;
-              home-manager.sharedModules = homeManagerModules;
-              nixpkgs = {
-                overlays = (builtins.attrValues overlays);
-                inherit crossSystem localSystem;
-                config.allowUnfree = true;
-              };
-            }
-            (cfg.home-manager or inputs.home-manager).nixosModules.default
-            ./system/default.nix
-            ./system/linux/default.nix
-            ./devices/${machine}/default.nix
-            nixos-cosmic.nixosModules.default
-          ] ++ (cfg.extraModules or []) ++ extraModules;
+          modules =
+            [
+              {
+                documentation.nixos.enable = false;
+                home-manager.sharedModules = homeManagerModules;
+                nixpkgs = {
+                  overlays = (builtins.attrValues overlays);
+                  inherit crossSystem localSystem;
+                  config.allowUnfree = true;
+                };
+              }
+              (cfg.home-manager or inputs.home-manager).nixosModules.default
+              ./system/default.nix
+              ./system/linux/default.nix
+              ./devices/${machine}/default.nix
+              nixos-cosmic.nixosModules.default
+            ]
+            ++ (cfg.extraModules or [ ])
+            ++ extraModules;
         };
     in
     {
@@ -336,9 +360,12 @@
           machine: crossSystem:
           let
             cfg = machineCross.${machine} or { };
-            nixos = mkMachine machine { system = localSystem; } { system = crossSystem; } (cfg.extraModules or [ ]);
+            nixos = mkMachine machine { system = localSystem; } { system = crossSystem; } (
+              cfg.extraModules or [ ]
+            );
           in
-          nixos.config.system.build.${cfg.output or "toplevel"} // {
+          nixos.config.system.build.${cfg.output or "toplevel"}
+          // {
             inherit nixos;
           }
         )

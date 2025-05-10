@@ -46,7 +46,6 @@ in
     #solaar
     dunst
     playerctl
-    pamixer
     grim
     slurp
     wl-clipboard
@@ -58,11 +57,14 @@ in
     kanshi
     corefonts
     noto-fonts
-    noto-fonts-emoji
     dejavu_fonts
-  ] ++ lib.optional (!pkgs.stdenv.hostPlatform.isRiscV64) (prismlauncher.override {
-    glfw3-minecraft = pkgs.glfw-wayland-minecraft;
-  }) ++ lib.optionals (pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform) [
+  ] ++ lib.optionals (!pkgs.stdenv.hostPlatform.isRiscV64) [
+    (prismlauncher.override {
+      glfw3-minecraft = pkgs.glfw-wayland-minecraft;
+    })
+    pamixer
+    noto-fonts-emoji
+  ] ++ lib.optionals (pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform) [
     pkgs.papirus-icon-theme
     pkgs.nvimpager
   ];
