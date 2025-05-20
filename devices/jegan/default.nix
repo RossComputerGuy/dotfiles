@@ -1,7 +1,7 @@
 { config, lib, pkgs, inputs, ... }:
 {
   imports = [
-    #../../system/linux/desktop.nix
+    ../../system/linux/desktop.nix
     inputs.nixos-hardware.nixosModules.starfive-visionfive-2
   ];
 
@@ -23,7 +23,10 @@
         networkmanager.plugins = lib.mkForce [];
       };
 
-      services.udisks2.enable = lib.mkForce false;
+      services = {
+        udisks2.enable = lib.mkForce false;
+        openssh.enable = true;
+      };
 
       virtualisation = {
         docker.enable = lib.mkForce false;
