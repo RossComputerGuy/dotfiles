@@ -33,17 +33,6 @@
         HZ_100 = yes;
       };
     }
-    {
-      name = "vdso";
-      patch = null;
-      extraStructuredConfig = with lib.kernel; {
-        COMPAT = no;
-        ARMV8_DEPRECATED = lib.mkForce unset;
-        COMPAT_ALIGNMENT_FIXUPS = lib.mkForce unset;
-        CP15_BARRIER_EMULATION = lib.mkForce unset;
-        MODULES = yes;
-      };
-    }
   ];
 
   boot.binfmt.emulatedSystems = [
