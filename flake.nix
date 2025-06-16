@@ -2,7 +2,7 @@
   description = "A Flake of my NixOS machines";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
     nixpkgs-unstable.url = "github:NixOS/nixpkgs";
     # <https://github.com/nix-systems/nix-systems>
     systems.url = "github:nix-systems/default-linux";
@@ -19,7 +19,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nixos-apple-silicon = {
-      url = "github:tpwrules/nixos-apple-silicon";
+      url = "github:nix-community/nixos-apple-silicon";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     home-manager = {
