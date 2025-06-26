@@ -4,6 +4,11 @@
     ../../system/linux/desktop.nix
   ];
 
+  programs.obs-studio = {
+    enable = true;
+    plugins = with pkgs.obs-studio-plugins; [ wlrobs ];
+  };
+
   # allow matthewcroughan to do remote builds
   nix = {
     settings.trusted-users = [ "nix-ssh" ];
