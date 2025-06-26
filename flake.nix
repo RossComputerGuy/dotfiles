@@ -169,6 +169,14 @@
               }
             );
 
+            obs-studio-plugins = prev.obs-studio-plugins // {
+              wlrobs = prev.obs-studio-plugins.wlrobs.overrideAttrs (f: p: {
+                meta = p.meta // {
+                  platforms = [ "aarch64-linux" "x86_64-linux" ];
+                };
+              });
+            };
+
             systemd =
               if final.stdenv.hostPlatform.useLLVM then
                 prev.systemd.override {
