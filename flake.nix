@@ -35,6 +35,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nixos-hardware.url = "github:NixOS/nixos-hardware";
+    disko.url = "github:nix-community/disko";
   };
 
   nixConfig = rec {
@@ -65,6 +66,7 @@
       nixos-cosmic,
       shuba-cursors,
       nixos-hardware,
+      disko,
       ...
     }@inputs:
     let
@@ -288,6 +290,7 @@
         hizack-b = "aarch64-linux";
         jegan = "riscv64-linux";
         age = "aarch64-linux";
+        jeda = "aarch64-linux";
       };
       forAllMachines = func: lib.mapAttrs func machines;
 
@@ -310,6 +313,10 @@
           home-manager = home-manager-unstable;
         };
         zeta3a = {
+          nixpkgs = nixpkgs-unstable;
+          home-manager = home-manager-unstable;
+        };
+        jeda = {
           nixpkgs = nixpkgs-unstable;
           home-manager = home-manager-unstable;
         };
