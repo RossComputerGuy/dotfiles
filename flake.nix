@@ -11,7 +11,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nixos-cosmic = {
-      url = "github:lilyinstarlight/nixos-cosmic";
+      url = "github:lilyinstarlight/nixos-cosmic?ref=pull/863/head";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     shuba-cursors = {
@@ -41,12 +41,12 @@
   nixConfig = rec {
     trusted-public-keys = [
       "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
-      "cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g="
+      #"cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g="
       "cosmic.cachix.org-1:Dya9IyXD4xdBehWjrkPv6rtxpmMdRel02smYzA85dPE="
     ];
     substituters = [
       "https://cache.nixos.org"
-      "https://cache.garnix.io"
+      #"https://cache.garnix.io"
       "https://cosmic.cachix.org"
     ];
     trusted-substituters = substituters;

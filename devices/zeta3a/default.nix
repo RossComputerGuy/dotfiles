@@ -45,6 +45,10 @@
     }
   ];
 
+  boot.extraModulePackages = with config.boot.kernelPackages; [ tt-kmd ];
+
+  boot.kernelModules = [ "tenstorrent" ];
+
   boot.binfmt.emulatedSystems = [
     "x86_64-linux"
     "i686-linux"

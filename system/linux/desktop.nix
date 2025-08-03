@@ -45,8 +45,8 @@
   '';
 
   environment.systemPackages = with pkgs; (
-    lib.optional (stdenv.hostPlatform.isAarch64) muvm
-    ++ lib.optional (stdenv.hostPlatform == stdenv.buildPlatform) papirus-icon-theme
+    #lib.optional (stdenv.hostPlatform.isAarch64) muvm
+    [] ++ lib.optional (stdenv.hostPlatform == stdenv.buildPlatform) papirus-icon-theme
   );
 
   # Sound
