@@ -23,7 +23,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     home-manager = {
-      url = "github:nix-community/home-manager/release-24.11";
+      url = "github:nix-community/home-manager/release-25.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     home-manager-unstable = {
@@ -36,6 +36,7 @@
     };
     nixos-hardware.url = "github:NixOS/nixos-hardware";
     disko.url = "github:nix-community/disko";
+    determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
   };
 
   nixConfig = rec {
@@ -67,6 +68,7 @@
       shuba-cursors,
       nixos-hardware,
       disko,
+      determinate,
       ...
     }@inputs:
     let
@@ -366,6 +368,7 @@
               ./system/linux/default.nix
               ./devices/${machine}/default.nix
               nixos-cosmic.nixosModules.default
+              determinate.nixosModules.default
             ]
             ++ (cfg.extraModules or [ ])
             ++ extraModules;
