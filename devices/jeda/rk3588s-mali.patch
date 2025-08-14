@@ -1,0 +1,12 @@
+--- a/arch/arm64/boot/dts/rockchip/overlay/Makefile	1969-12-31 16:00:01.000000000 -0800
++++ b/arch/arm64/boot/dts/rockchip/overlay/Makefile 2025-08-05 22:03:12.757495034 -0700
+@@ -299,8 +299,7 @@
+ 	rk3568-uart8-m1.dtbo \
+ 	rk3568-uart9-m1.dtbo \
+ 	rk3568-w1-gpio3-a5.dtbo \
+-	rk3568-w1-gpio3-d1.dtbo \
+-	rk3588s-mali.dtbo
++	rk3568-w1-gpio3-d1.dtbo
+ 
+ 
+ dtbotxt-$(CONFIG_ARCH_ROCKCHIP) += \
