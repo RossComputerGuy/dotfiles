@@ -6,7 +6,9 @@
     "${inputs.nixos-hardware}/rockchip/default.nix"
   ];
 
-  system.build.uboot = pkgs.buildUBoot {
+  hardware.rockchip.diskoImageName = "mmc.raw";
+
+  hardware.rockchip.platformFirmware = pkgs.buildUBoot {
     defconfig = "rk3588s_fydetab_duo_defconfig";
     extraMeta.platforms = [ "aarch64-linux" ];
     BL31 = "${pkgs.armTrustedFirmwareRK3588}/bl31.elf";
@@ -18,7 +20,7 @@
     };
     version = "5.10.0";
     filesToInstall = [
-      "idblock.bin"
+      "idbloader.img"
       "u-boot.itb"
       "rk3588_spl_loader_v1.18.113.bin"
       "tools/resource_tool"
@@ -37,8 +39,8 @@
       "004-enable-sdcard-for-fydetab.patch" = "sha256-xrZ1kuije6X+huvarDIGFhMy2Puq0XvlKa1ZfgGcwlQ=";
       "005-display-logo-on-loader-mode.patch" = "sha256-NMQHJMl8s1NUrDSnUX8gAmSNaurBU+m0xKd4TtEPmz4=";
       "006-update-deconfig.patch" = "sha256-ZukJEZjEFaN6F4+3VnHfkfdaOTQmkw3fdClk8OeOYRw=";
-      "007-add-deinit-after-show-bmp-add-ums-mode.patch" = "sha256-2Xfw7xKCz3mlxHgTzjMoN1lsQAZvb+DJlqdRjMCvAnQ=";
-      "008-add-charging-mode.patch" = "sha256-3hLt3md/xvTR2fvxbViEc5c3lWydb9YrixwVOvdygSs=";
+      "007-add-deinit-after-show-bmp-add-ums-mode.patch" = "sha256-4pHV+qiXMNHcIlC1ciFQsejVZvdnEhfs7QBbge9kHoM=";
+      "008-add-charging-mode.patch" = "sha256-AToALdx5mwyQ875ZnrpqbuUE9oGonH76RaUq6757U1E=";
       "009-set-lowpower-to-3.patch" = "sha256-CYYmY8vQcOIiA3QPvZt+AgI/BbkykoKGqLECim7kAyw=";
       "010-fix-compiling-issue.patch" = "sha256-hmiFFe0JuxXMPgeQFWI8qZop+VPmldxgs0Wowchswbs=";
       "011-fix-battery-temp.patch" = "sha256-MXe5FGzGETZ3wpW7ur5rBLysdNlDMwiq7/LNxdDpA0E=";
@@ -59,6 +61,12 @@
       CONFIG_TPL_BUILD=y
       CONFIG_SPL_FIT_SIGNATURE=y
       CONFIG_SPL_FIT_ROLLBACK_PROTECT=n
+      CONFIG_EFI_LOADER=y
+      CONFIG_CMD_BOOTEFI=y
+      CONFIG_CMD_BOOTEFI_HELLO_COMPILE=n
+      CONFIG_GENERATE_SMBIOS_TABLE=n
+      CONFIG_EFI_LOADER_BOUNCE_BUFFER=y
+      CONFIG_FIT_VERBOSE=y
     '';
     preBuild = ''
       patchShebangs arch/arm/mach-rockchip/make_fit_atf.sh
@@ -77,7 +85,17 @@
       sh ./make.sh --spl
       sh ./make.sh --idblock
       sh ./make.sh itb
+      mv idblock.bin idbloader.img
     '';
+    nativeBuildInputs = [
+      pkgs.pkg-config
+      pkgs.ncurses
+      pkgs.openssl
+      pkgs.which
+      pkgs.bc
+      pkgs.python3
+      pkgs.dtc
+    ];
   };
 
   system.build.ubootResource = pkgs.runCommand "u-boot-resource.img" {
@@ -98,7 +116,7 @@
       echo "Copying $src to $name"
       cp -r --no-preserve=ownership,mode $src $name
     done
-    export PATH=${config.system.build.uboot}:$PATH
+    export PATH=${config.hardware.rockchip.platformFirmware}:$PATH
     resource_tool *.bmp
     mv resource.img $out
   '';
@@ -152,9 +170,7 @@
   disko = {
     imageBuilder = {
       kernelPackages = pkgs.linuxPackages;
-      extraPostVM = ''
-        dd conv=notrunc,fsync if=${config.system.build.uboot}/idblock.bin of=$out/mmc.raw bs=512 seek=64
-        dd conv=notrunc,fsync if=${config.system.build.uboot}/u-boot.itb of=$out/mmc.raw bs=512 seek=16384
+      extraPostVM = config.hardware.rockchip.diskoExtraPostVM + ''
         dd conv=notrunc,fsync if=${config.system.build.ubootResource} of=$out/mmc.raw bs=512 seek=24580
       '';
     };
