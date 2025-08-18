@@ -94,8 +94,6 @@
               '';
             };
 
-            ibus = prev.ibus.override { withWayland = true; };
-
             bazel_7 = prev.bazel_7.override { enableNixHacks = false; };
             bazel = prev.bazel.override { enableNixHacks = false; };
 

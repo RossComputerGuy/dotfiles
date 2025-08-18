@@ -47,7 +47,9 @@
       "012-fix-make.patch" = "sha256-/8ZfhB04R4zIddOXJEx8GcnYoljYsGolbt/oQYsm/Xk=";
       "013-change-exit-charge-level.patch" = "sha256-84zy5yzoHyAutVmbCvvB5t4uJFQGsMt3jTUgVs5SIog=";
       "014-fix-spl-sdcard-issue.patch" = "sha256-jIHybAm9XKDbWF3xG4E9K8x2j5nfpHOp6/2gWDlQ6aU=";
-    });
+    }) ++ [
+      ./remove-sig-req.patch
+    ];
     src = pkgs.fetchFromGitHub {
       owner = "rockchip-linux";
       repo = "u-boot";
@@ -55,18 +57,19 @@
       hash = "sha256-OZmR6BLwCMK6lq9qmetIdrjSJJWcx7Po1OE9dBWL+Ew=";
     };
     extraConfig = ''
-      CONFIG_FIT_SIGNATURE=y
-      CONFIG_FIT_ROLLBACK_PROTECT=n
-      CONFIG_FIT_ENABLE_RSASSA_PSS_SUPPORT=n
+      CONFIG_FIT_SIGNATURE=n
       CONFIG_TPL_BUILD=y
-      CONFIG_SPL_FIT_SIGNATURE=y
+      CONFIG_SPL_FIT_SIGNATURE=n
       CONFIG_SPL_FIT_ROLLBACK_PROTECT=n
       CONFIG_EFI_LOADER=y
       CONFIG_CMD_BOOTEFI=y
       CONFIG_CMD_BOOTEFI_HELLO_COMPILE=n
       CONFIG_GENERATE_SMBIOS_TABLE=n
-      CONFIG_EFI_LOADER_BOUNCE_BUFFER=y
+      CONFIG_EFI_LOADER_BOUNCE_BUFFER=n
       CONFIG_FIT_VERBOSE=y
+      CONFIG_CONSOLE_DISABLE_CLI=n
+      CONFIG_CMD_FDT=y
+      CONFIG_DEFAULT_FDT_FILE="rk3588s-fydetab-duo.dtb"
     '';
     preBuild = ''
       patchShebangs arch/arm/mach-rockchip/make_fit_atf.sh
