@@ -153,7 +153,7 @@ in
   });
 
   boot.extraModprobeConfig = ''
-    options dhd firmware=${ap6275p}/lib/firmware/ap6275p/fw_bcm43752a2_pcie_ag.bin nvparam=${ap6275p}/lib/firmware/ap6275p/nvram_AP6275P.txt
+    options bcmdhd firmware=${ap6275p}/lib/firmware/ap6275p/fw_bcm43752a2_pcie_ag.bin nvparam=${ap6275p}/lib/firmware/ap6275p/nvram_AP6275P.txt
   '';
 
   boot.loader = {
@@ -177,6 +177,7 @@ in
 
   hardware.firmware = [
     ap6275p
+    (pkgs.callPackage ./mali-g610.nix {})
   ];
 
   disko = {
