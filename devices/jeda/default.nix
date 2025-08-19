@@ -1,10 +1,15 @@
 { config, pkgs, lib, inputs, ... }:
+let
+  ap6275p = pkgs.callPackage ./ap6275p.nix {};
+in
 {
   imports = [
     ../../system/linux/desktop.nix
     inputs.disko.nixosModules.default
     "${inputs.nixos-hardware}/rockchip/default.nix"
   ];
+
+  hardware.deviceTree.name = "rockchip/rk3588s-fydetab-duo.dtb";
 
   hardware.rockchip.diskoImageName = "mmc.raw";
 
@@ -66,10 +71,10 @@
       CONFIG_CMD_BOOTEFI_HELLO_COMPILE=n
       CONFIG_GENERATE_SMBIOS_TABLE=n
       CONFIG_EFI_LOADER_BOUNCE_BUFFER=n
-      CONFIG_FIT_VERBOSE=y
       CONFIG_CONSOLE_DISABLE_CLI=n
       CONFIG_CMD_FDT=y
       CONFIG_DEFAULT_FDT_FILE="rk3588s-fydetab-duo.dtb"
+      CONFIG_CMD_PXE=y
     '';
     preBuild = ''
       patchShebangs arch/arm/mach-rockchip/make_fit_atf.sh
@@ -139,22 +144,22 @@
     src = pkgs.fetchFromGitHub {
       owner = "Linux-for-Fydetab-Duo";
       repo = "linux-rockchip";
-      rev = "14294048d2a0deb7f38c890329aded87038d3299";
-      hash = "sha256-POEctS1MzPJv15qiOUL+NoMFvDjgoo1Ki4JCSAZ4lwM=";
+      rev = "74a1657bc526e336ff66add2fa83a0522957c4cb";
+      hash = "sha256-Q0uCxebYw3c5Z/ZxCmTNyEfuYQQcPaw5qpvRTSWdtVo=";
     };
     configfile = ./config;
     config = import ./config.nix;
     features.netfilterRPFilter = true;
-    kernelPatches = [
-      {
-        name = "rk3588s-mali.patch";
-        patch = ./rk3588s-mali.patch;
-        extraConfig = {};
-      }
-    ];
   });
 
-  boot.loader.systemd-boot.enable = true;
+  boot.extraModprobeConfig = ''
+    options dhd firmware=${ap6275p}/lib/firmware/ap6275p/fw_bcm43752a2_pcie_ag.bin nvparam=${ap6275p}/lib/firmware/ap6275p/nvram_AP6275P.txt
+  '';
+
+  boot.loader = {
+    generic-extlinux-compatible.enable = true;
+    grub.enable = false;
+  };
 
   boot.supportedFilesystems = [ "zfs" ];
   boot.zfs.devNodes = "/dev/";
@@ -169,6 +174,10 @@
   };
 
   hardware.rockchip.enable = true;
+
+  hardware.firmware = [
+    ap6275p
+  ];
 
   disko = {
     imageBuilder = {
@@ -216,11 +225,6 @@
         datasets = {
           root = {
             type = "zfs_fs";
-            options = {
-              encryption = "aes-256-gcm";
-              keyformat = "passphrase";
-              keylocation = "file://${./tmpkey}";#"prompt";
-            };
             mountpoint = "/";
           };
           nix = {
