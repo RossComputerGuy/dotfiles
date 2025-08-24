@@ -9,7 +9,40 @@ in
     "${inputs.nixos-hardware}/rockchip/default.nix"
   ];
 
-  hardware.deviceTree.name = "rockchip/rk3588s-fydetab-duo.dtb";
+  hardware.deviceTree = {
+    name = "rockchip/rk3588s-fydetab-duo.dtb";
+    overlays = [
+      {
+        name = "panthor-gpu";
+        dtsText = ''
+          /dts-v1/;
+          /plugin/;
+
+          #include <dt-bindings/clock/rk3588-cru.h>
+          #include <dt-bindings/interrupt-controller/arm-gic.h>
+          #include <dt-bindings/power/rk3588-power.h>
+
+          / {
+            compatible = "rockchip,rk3588s-tablet-12c-linux";
+            fragment@0 {
+              target = <&gpu>;
+              __overlay__ {
+                status = "disabled";
+              };
+            };
+
+            fragment@1 {
+              target = <&gpu_panthor>;
+              __overlay__ {
+                status = "okay";
+                mali-supply = <&vdd_gpu_s0>;
+              };
+            };
+          };
+        '';
+      }
+    ];
+  };
 
   hardware.rockchip.diskoImageName = "mmc.raw";
 
@@ -127,7 +160,7 @@ in
     export PATH=${config.hardware.rockchip.platformFirmware}:$PATH
     resource_tool *.bmp
     mv resource.img $out
-  '';
+'';
 
   boot.initrd.includeDefaultModules = false;
 
@@ -150,16 +183,32 @@ in
     configfile = ./config;
     config = import ./config.nix;
     features.netfilterRPFilter = true;
+    kernelPatches = [
+      {
+        name = "replace-rockchip_gem_mmap_buf.patch";
+        patch = pkgs.fetchpatch {
+          url = "https://github.com/radxa/kernel/commit/cab061d263d9072f56f78a725db71221907b26ec.patch";
+          hash = "sha256-nq7olWry56ow3bNrmqo6Dc1BrSy+HAjF29fZKFs8UlA=";
+        };
+      }
+    ];
   });
 
   boot.extraModprobeConfig = ''
-    options bcmdhd firmware=${ap6275p}/lib/firmware/ap6275p/fw_bcm43752a2_pcie_ag.bin nvparam=${ap6275p}/lib/firmware/ap6275p/nvram_AP6275P.txt
+    options bcmdhd firmware_path=${ap6275p}/lib/firmware/ap6275p/fw_bcm43752a2_pcie_ag.bin nvram_path=${ap6275p}/lib/firmware/ap6275p/nvram_ap6275p.txt conf_path=${ap6275p}/lib/firmware/ap6275p/config.txt
   '';
 
   boot.loader = {
     generic-extlinux-compatible.enable = true;
     grub.enable = false;
   };
+
+  boot.kernelModules = [
+    "himax_tp"
+    "mh248-fyde"
+    "bluetooth"
+    "hci_uart"
+  ];
 
   boot.supportedFilesystems = [ "zfs" ];
   boot.zfs.devNodes = "/dev/";
@@ -171,7 +220,14 @@ in
   networking = {
     hostName = "jeda";
     hostId = "d0976c4e";
+    wireless = {
+      enable = false;
+      iwd.enable = true;
+    };
+    networkmanager.wifi.backend = "iwd";
   };
+
+  hardware.sensor.iio.enable = true;
 
   hardware.rockchip.enable = true;
 
@@ -179,6 +235,25 @@ in
     ap6275p
     (pkgs.callPackage ./mali-g610.nix {})
   ];
+
+  systemd.services = {
+    bluetooth-fydetab = {
+      description = "FydeTab Duo Bluetooth fix";
+      wantedBy = [ "multi-user.target" ];
+      serviceConfig.Type = "simple";
+      script = ''
+        ${lib.getExe' pkgs.util-linux "rfkill"} block 0
+        ${lib.getExe' pkgs.util-linux "rfkill"} block bluetooth
+        sleep 2
+        ${lib.getExe' pkgs.util-linux "rfkill"} unblock 0
+        ${lib.getExe' pkgs.util-linux "rfkill"} unblock bluetooth
+
+        sleep 1
+
+        ${lib.getExe (pkgs.callPackage ./brcm-patchram.nix {})} --enable_hci --no2bytes --use_baudrate_for_download --tosleep 200000 --baudrate 1500000 --patchram ${ap6275p}/lib/firmware/ap6275p/BCM4362A2.hcd /dev/ttyS9
+      '';
+    };
+  };
 
   disko = {
     imageBuilder = {

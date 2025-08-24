@@ -10,6 +10,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-ksAOxZTnEka9SirHYxroLMbKi+99FY72X2z1pJhgYnY=";
   };
 
+  compressFirmware = false;
+
   dontConfigure = true;
   dontBuild = true;
 
@@ -22,6 +24,9 @@ stdenv.mkDerivation (finalAttrs: {
     install -m644 ap6275p/fw_bcm43752a2_pcie_ag.bin $out/lib/firmware/ap6275p/
     install -m644 ap6275p/nvram_AP6275P.txt $out/lib/firmware/ap6275p/
     install -m644 ap6275p/config.txt $out/lib/firmware/ap6275p/
+
+    mv $out/lib/firmware/ap6275p/nvram_AP6275P.txt $out/lib/firmware/ap6275p/nvram_ap6275p.txt
+    mv $out/lib/firmware/ap6275p/config.txt $out/lib/firmware/ap6275p/config_bcm43752a2_pcie_ag.txt
 
     runHook postInstall
   '';
