@@ -44,11 +44,6 @@
     LABEL="solaar_end"
   '';
 
-  environment.systemPackages = with pkgs; (
-    #lib.optional (stdenv.hostPlatform.isAarch64) muvm
-    [] ++ lib.optional (stdenv.hostPlatform == stdenv.buildPlatform) papirus-icon-theme
-  );
-
   # Sound
   hardware.pulseaudio.enable = false;
   services.pipewire = {
@@ -58,25 +53,6 @@
     pulse.enable = true;
     jack.enable = true;
   };
-
-  # i18n
-  i18n.inputMethod = {
-    enable = !pkgs.stdenv.hostPlatform.isRiscV64;
-    type = "ibus";
-    ibus.engines = with pkgs.ibus-engines; [ mozc ];
-  };
-
-  environment.variables = lib.mkIf (config.i18n.inputMethod.enable) {
-    GTK_IM_MODULE = "ibus";
-    QT_IM_MODULE = "ibus";
-    XMODIFIERS = "@im=ibus";
-    INPUT_METHOD = "ibus";
-    XIM = "ibus";
-    XIM_PROGRAM = "ibus";
-    SDL_IM_MODULE = "ibus";
-    GLFW_IM_MODULE = "ibus";
-  };
-  environment.sessionVariables.NIXOS_OZONE_WL = "1";
 
   # Enable CUPS
   services.printing = {
@@ -101,11 +77,6 @@
 
   environment.sessionVariables.XDG_DATA_DIRS = ["/var/lib/flatpak/exports/share"];
 
-  programs.gnupg.agent = {
-    enable = true;
-    enableSSHSupport = true;
-  };
-
   # Graphics
   services.colord.enable = pkgs.stdenv.buildPlatform == pkgs.stdenv.hostPlatform;
   services.gnome.at-spi2-core.enable = true;
@@ -118,7 +89,6 @@
   # Applications & Services
   services.flatpak.enable = true;
   services.upower.enable = true;
-  programs.dconf.enable = true;
 
   fonts.packages = with pkgs; [
     corefonts
@@ -144,10 +114,6 @@
       TimeoutStopSec = 10;
     };
   };
-
-  programs.adb.enable = !pkgs.stdenv.hostPlatform.isRiscV64;
-
-  programs.firefox.enable = true;
 
   services.dbus.enable = true;
 
