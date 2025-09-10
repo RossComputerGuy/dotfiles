@@ -66,9 +66,7 @@
   hardware.asahi = {
     extractPeripheralFirmware = true;
     peripheralFirmwareDirectory = ./firmware;
-    useExperimentalGPUDriver = true;
     setupAsahiSound = true;
-    experimentalGPUInstallMode = "overlay";
   };
 
   boot.extraModprobeConfig = ''
