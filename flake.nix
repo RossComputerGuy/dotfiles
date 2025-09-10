@@ -37,6 +37,13 @@
     nixos-hardware.url = "github:NixOS/nixos-hardware";
     disko.url = "github:nix-community/disko";
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
+    nixvim = {
+      url = "github:nix-community/nixvim";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        systems.follows = "systems";
+      };
+    };
   };
 
   nixConfig = rec {
@@ -69,6 +76,7 @@
       nixos-hardware,
       disko,
       determinate,
+      nixvim,
       ...
     }@inputs:
     let
@@ -79,8 +87,6 @@
         apple-silicon = nixos-apple-silicon.overlays.default;
         default = (
           final: prev: {
-            path = nixpkgs;
-
             shuba-cursors = final.stdenv.mkDerivation {
               pname = "shuba-cursors";
               version = "git-${inputs.shuba-cursors.shortRev or "dirty"}";
@@ -94,83 +100,6 @@
               '';
             };
 
-            bazel_7 = prev.bazel_7.override { enableNixHacks = false; };
-            bazel = prev.bazel.override { enableNixHacks = false; };
-
-            tokyonight-gtk-theme = prev.tokyonight-gtk-theme.override {
-              gnome-shell = final.writeShellScriptBin "gnome-shell" ''
-                echo "GNOME Shell ${final.gnome-shell.version}"
-              '';
-            };
-
-            openexr = prev.openexr.overrideAttrs (
-              f: p: {
-                doCheck = p.doCheck && !final.stdenv.hostPlatform.isRiscV64;
-              }
-            );
-
-            ripgrep = prev.ripgrep.overrideAttrs (
-              f: p: {
-                doCheck = p.doCheck && !final.stdenv.hostPlatform.isRiscV64;
-              }
-            );
-
-            pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
-              (pythonFinal: pythonPrev: {
-                hypothesis = pythonPrev.hypothesis.overrideAttrs (
-                  f: p: {
-                    doCheck = p.doCheck && !final.stdenv.hostPlatform.isRiscV64;
-                  }
-                );
-              })
-            ];
-
-            libadwaita = prev.libadwaita.overrideAttrs (
-              f: p: {
-                doCheck = p.doCheck && !final.stdenv.hostPlatform.isRiscV64;
-              }
-            );
-
-            libjxl = prev.libjxl.overrideAttrs (
-              f: p: {
-                doCheck = p.doCheck && !final.stdenv.hostPlatform.isRiscV64;
-              }
-            );
-
-            tcp_wrappers = prev.tcp_wrappers.overrideAttrs (
-              f: p: {
-                patches =
-                  p.patches
-                  ++ lib.optional (final.stdenv.cc.isClang) ./pkgs/by-name/tc/tcp_wrappers/clang.diff;
-              }
-            );
-
-            keyutils =
-              if final.stdenv.hostPlatform.useLLVM then
-                prev.keyutils.overrideAttrs (
-                  f: p: {
-                    NIX_LDFLAGS = "--undefined-version";
-                  }
-                )
-              else
-                prev.keyutils;
-
-            util-linux = prev.util-linux.overrideAttrs (
-              f: p: {
-                configureFlags =
-                  p.configureFlags
-                  ++ lib.optional final.stdenv.hostPlatform.useLLVM "LDFLAGS=-Wl,--undefined-version";
-              }
-            );
-
-            nfs-utils = prev.nfs-utils.overrideAttrs (
-              f: p: {
-                configureFlags =
-                  p.configureFlags
-                  ++ lib.optional final.stdenv.hostPlatform.useLLVM "CFLAGS=-Wno-format-nonliteral";
-              }
-            );
-
             obs-studio-plugins = prev.obs-studio-plugins // {
               wlrobs = prev.obs-studio-plugins.wlrobs.overrideAttrs (f: p: {
                 meta = p.meta // {
@@ -183,92 +112,6 @@
                 };
               });
             };
-
-            systemd =
-              if final.stdenv.hostPlatform.useLLVM then
-                prev.systemd.override {
-                  withHomed = false;
-                  withCryptsetup = false;
-                  withRepart = false;
-                  withFido2 = false;
-                }
-              else
-                prev.systemd;
-
-            xonsh = if final.stdenv.hostPlatform.isRiscV64 then final.emptyDirectory else prev.xonsh;
-
-            nodejs_22 =
-              if final.stdenv.hostPlatform.isRiscV64 then
-                (prev.callPackage "${nixpkgs}/pkgs/development/web/nodejs/nodejs.nix"
-                  {
-                    python = final.python3;
-                  }
-                  {
-                    version = "22.13.1";
-                    sha256 = "cfce282119390f7e0c2220410924428e90dadcb2df1744c0c4a0e7baae387cc2";
-                    patches = [
-                      "${nixpkgs}/pkgs/development/web/nodejs/configure-emulator.patch"
-                      "${nixpkgs}/pkgs/development/web/nodejs/configure-armv6-vfpv2.patch"
-                      "${nixpkgs}/pkgs/development/web/nodejs/disable-darwin-v8-system-instrumentation-node19.patch"
-                      "${nixpkgs}/pkgs/development/web/nodejs/bypass-darwin-xcrun-node16.patch"
-                      "${nixpkgs}/pkgs/development/web/nodejs/node-npm-build-npm-package-logic.patch"
-                      "${nixpkgs}/pkgs/development/web/nodejs/use-correct-env-in-tests.patch"
-                      "${nixpkgs}/pkgs/development/web/nodejs/bin-sh-node-run-v22.patch"
-                      # Those reverts are due to a mismatch with the libuv version used upstream
-                      (final.fetchpatch2 {
-                        url = "https://github.com/nodejs/node/commit/84fe809535b0954bbfed8658d3ede8a2f0e030db.patch?full_index=1";
-                        hash = "sha256-C1xG2K9Ejofqkl/vKWLBz3vE0mIPBjCdfA5GX2wlS0I=";
-                        revert = true;
-                      })
-                      (final.fetchpatch2 {
-                        url = "https://github.com/nodejs/node/commit/dcbc5fbe65b068a90c3d0970155d3a68774caa38.patch?full_index=1";
-                        hash = "sha256-Q7YrooolMjsGflTQEj5ra6hRVGhMP6APaydf1MGH54Q=";
-                        revert = true;
-                        excludes = [ "doc/*" ];
-                      })
-                      (final.fetchpatch2 {
-                        url = "https://github.com/nodejs/node/commit/ec867ac7ce4e4913a8415eda48a7af9fc226097d.patch?full_index=1";
-                        hash = "sha256-zfnHxC7ZMZAiu0/6PsX7RFasTevHMETv+azhTZnKI64=";
-                        revert = true;
-                        excludes = [ "doc/*" ];
-                      })
-                      (final.fetchpatch2 {
-                        url = "https://github.com/nodejs/node/commit/f97865fab436fba24b46dad14435ec4b482243a2.patch?full_index=1";
-                        hash = "sha256-o5aPQqUXubtJKMX28jn8LdjZHw37/BqENkYt6RAR3kY=";
-                        revert = true;
-                      })
-                      (final.fetchpatch2 {
-                        url = "https://github.com/nodejs/node/commit/54d55f2337ebe04451da770935ad453accb147f9.patch?full_index=1";
-                        hash = "sha256-gmIyiSyNzC3pClL1SM2YicckWM+/2tsbV1xv2S3d5G0=";
-                        revert = true;
-                      })
-                      # FIXME: remove after a minor point release
-                      (final.fetchpatch2 {
-                        url = "https://github.com/nodejs/node/commit/49acdc8748fe9fe83bc1b444e24c456dff00ecc5.patch?full_index=1";
-                        hash = "sha256-iK7bj4KswTeQ9I3jJ22ZPTsvCU8xeGGXEOo43dxg3Mk=";
-                      })
-                      (final.fetchpatch2 {
-                        url = "https://github.com/nodejs/node/commit/d0ff34f4b690ad49c86b6df8fd424f39d183e1a6.patch?full_index=1";
-                        hash = "sha256-ezcCrg7UwK091pqYxXJn4ay9smQwsrYeMO/NBE7VaM8=";
-                      })
-                      # test-icu-env is failing on ICU 74.2
-                      # FIXME: remove once https://github.com/nodejs/node/pull/56661 is included in a next release
-                      (final.fetchpatch2 {
-                        url = "https://github.com/nodejs/node/commit/a364ec1d1cbbd5a6d20ee54d4f8648dd7592ebcd.patch?full_index=1";
-                        hash = "sha256-EL1NgCBzz5O1spwHgocLm5mkORAiqGFst0N6pc3JvFg=";
-                        revert = true;
-                      })
-                    ];
-                  }
-                ).overrideAttrs
-                  (
-                    f: p: {
-                      doCheck = false;
-                      doInstallCheck = false;
-                    }
-                  )
-              else
-                prev.nodejs_22;
           }
         );
       };
@@ -344,6 +187,7 @@
       forAllDarwinMachines = func: lib.mapAttrs func darwinMachines;
 
       homeManagerModules = [
+        nixvim.homeModules.nixvim
       ];
 
       mkMachine =
@@ -372,6 +216,7 @@
               ./devices/${machine}/default.nix
               nixos-cosmic.nixosModules.default
               determinate.nixosModules.default
+              nixvim.nixosModules.nixvim
             ]
             ++ (cfg.extraModules or [ ])
             ++ extraModules;

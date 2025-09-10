@@ -29,7 +29,6 @@ in
   xdg.configFile."alacritty/alacritty-device.toml".source = ./config/alacritty/alacritty-linux.toml;
   xdg.configFile."electron-flags.conf".source = ./config/electron-flags.conf;
   xdg.configFile."mimeapps.list".source = ./config/mimeapps.list;
-  xdg.configFile."nvim/lua/init.lua".source = ./config/nvim/lua/init.lua;
   fonts.fontconfig.enable = lib.mkForce (pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform);
   home.file."Pictures/wallpaper.jpg".source = ./pictures/wallpaper.jpg;
   home.file.".gdbinit".source = pkgs.fetchurl {
