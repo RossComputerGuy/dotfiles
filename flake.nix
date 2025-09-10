@@ -177,6 +177,11 @@
                   platforms = [ "aarch64-linux" "x86_64-linux" ];
                 };
               });
+              obs-urlsource = prev.obs-studio-plugins.obs-urlsource.overrideAttrs (f: p: {
+                meta = p.meta // {
+                  platforms = [ "aarch64-linux" "x86_64-linux" ];
+                };
+              });
             };
 
             systemd =

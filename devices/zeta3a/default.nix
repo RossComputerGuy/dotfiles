@@ -11,7 +11,7 @@
     package = pkgs.obs-studio.override {
       cudaSupport = true;
     };
-    plugins = with pkgs.obs-studio-plugins; [ wlrobs obs-webkitgtk ];
+    plugins = with pkgs.obs-studio-plugins; [ wlrobs obs-urlsource ];
   };
 
   # allow matthewcroughan to do remote builds
