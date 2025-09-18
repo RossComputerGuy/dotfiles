@@ -11,7 +11,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nixos-cosmic = {
-      url = "github:lilyinstarlight/nixos-cosmic?ref=pull/863/head";
+      url = "github:ninelore/nixpkgs-cosmic-unstable?ref=pull/27/head";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     shuba-cursors = {
