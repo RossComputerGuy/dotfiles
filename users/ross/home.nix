@@ -9,7 +9,7 @@ in
     neofetch
     tree-sitter
     gcc
-  ] ++ lib.optional (pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform) pkgs.nodePackages.dockerfile-language-server-nodejs;
+  ];
   home.stateVersion = "24.05";
   home.sessionVariables.EDITOR = "nvim";
   programs.home-manager.enable = true;
