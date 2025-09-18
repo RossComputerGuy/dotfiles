@@ -520,11 +520,11 @@
     },
     "nixpkgs-unstable": {
       "locked": {
-        "lastModified": 1758154695,
-        "narHash": "sha256-tIKuclzXQhvWo2HWvCpOS3pFLZyc3yqVEeOszCmrMnA=",
+        "lastModified": 1758155872,
+        "narHash": "sha256-KEwDIavsoEMJ06dEsLDvvlnVVYcv+TXhvolNok+wcAY=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "e786562a4f925ee993f4a9b4f86ff7fb77fc0fe3",
+        "rev": "d103a7576ba50824cd4db80835ba80ae1db6fa8f",
         "type": "github"
       },
       "original": {
@@ -583,7 +583,7 @@
       "inputs": {
         "flake-parts": "flake-parts_3",
         "nixpkgs": [
-          "nixpkgs"
+          "nixpkgs-unstable"
         ],
         "nuschtosSearch": "nuschtosSearch",
         "systems": [
