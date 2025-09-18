@@ -2,8 +2,7 @@
   description = "A Flake of my NixOS machines";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
-    nixpkgs-unstable.url = "github:NixOS/nixpkgs";
+    nixpkgs.url = "github:NixOS/nixpkgs";
     # <https://github.com/nix-systems/nix-systems>
     systems.url = "github:nix-systems/default-linux";
     nur = {
@@ -23,12 +22,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     home-manager = {
-      url = "github:nix-community/home-manager/release-25.05";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    home-manager-unstable = {
       url = "github:nix-community/home-manager";
-      inputs.nixpkgs.follows = "nixpkgs-unstable";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     darwin = {
       url = "github:lnl7/nix-darwin/master";
@@ -40,7 +35,7 @@
     nixvim = {
       url = "github:nix-community/nixvim";
       inputs = {
-        nixpkgs.follows = "nixpkgs-unstable";
+        nixpkgs.follows = "nixpkgs";
         systems.follows = "systems";
       };
     };
@@ -67,8 +62,6 @@
       nur,
       home-manager,
       nixpkgs,
-      nixpkgs-unstable,
-      home-manager-unstable,
       darwin,
       nixos-apple-silicon,
       nixos-cosmic,
@@ -101,17 +94,65 @@
             };
 
             obs-studio-plugins = prev.obs-studio-plugins // {
-              wlrobs = prev.obs-studio-plugins.wlrobs.overrideAttrs (f: p: {
-                meta = p.meta // {
-                  platforms = [ "aarch64-linux" "x86_64-linux" ];
-                };
-              });
-              obs-urlsource = prev.obs-studio-plugins.obs-urlsource.overrideAttrs (f: p: {
-                meta = p.meta // {
-                  platforms = [ "aarch64-linux" "x86_64-linux" ];
-                };
-              });
+              wlrobs = prev.obs-studio-plugins.wlrobs.overrideAttrs (
+                f: p: {
+                  meta = p.meta // {
+                    platforms = [
+                      "aarch64-linux"
+                      "x86_64-linux"
+                    ];
+                  };
+                }
+              );
+              obs-urlsource = prev.obs-studio-plugins.obs-urlsource.overrideAttrs (
+                f: p: {
+                  meta = p.meta // {
+                    platforms = [
+                      "aarch64-linux"
+                      "x86_64-linux"
+                    ];
+                  };
+                }
+              );
             };
+
+            llvmPackages =
+              prev.llvmPackages
+              // (
+                let
+                  libraries = prev.llvmPackages.libraries.extend (
+                    f: p: {
+                      compiler-rt-no-libc = p.compiler-rt-no-libc.overrideAttrs (
+                        f: p: {
+                          cmakeFlags =
+                            p.cmakeFlags
+                            ++ lib.optional (final.stdenv.hostPlatform.isAarch64 && final.stdenv.hostPlatform.useLLVM) (
+                              lib.cmakeBool "COMPILER_RT_DISABLE_AARCH64_FMV" true
+                            );
+                        }
+                      );
+                    }
+                  );
+                in
+                libraries // { inherit libraries; }
+              );
+
+            libdrm = prev.libdrm.override {
+              withValgrind =
+                !final.stdenv.hostPlatform.useLLVM
+                && lib.meta.availableOn final.stdenv.hostPlatform final.valgrind-light;
+            };
+
+            linux-pam = prev.linux-pam.overrideAttrs (
+              f: p: {
+                env =
+                  lib.optionalAttrs
+                    (final.stdenv.cc.bintools.isLLVM && lib.versionAtLeast final.stdenv.cc.bintools.version "17")
+                    {
+                      NIX_LDFLAGS = "--undefined-version";
+                    };
+              }
+            );
           }
         );
       };
@@ -151,24 +192,7 @@
         };
       };
 
-      machineConfig = {
-        jegan = {
-          nixpkgs = nixpkgs-unstable;
-          home-manager = home-manager-unstable;
-        };
-        hizack-b = {
-          nixpkgs = nixpkgs-unstable;
-          home-manager = home-manager-unstable;
-        };
-        zeta3a = {
-          nixpkgs = nixpkgs-unstable;
-          home-manager = home-manager-unstable;
-        };
-        jeda = {
-          nixpkgs = nixpkgs-unstable;
-          home-manager = home-manager-unstable;
-        };
-      };
+      machineConfig = { };
 
       users = [ "ross" ];
       forAllUsers =
@@ -199,27 +223,26 @@
           specialArgs = {
             inherit inputs;
           };
-          modules =
-            [
-              {
-                documentation.nixos.enable = false;
-                home-manager.sharedModules = homeManagerModules;
-                nixpkgs = {
-                  overlays = (builtins.attrValues overlays);
-                  inherit crossSystem localSystem;
-                  config.allowUnfree = true;
-                };
-              }
-              (cfg.home-manager or inputs.home-manager).nixosModules.default
-              ./system/default.nix
-              ./system/linux/default.nix
-              ./devices/${machine}/default.nix
-              nixos-cosmic.nixosModules.default
-              determinate.nixosModules.default
-              nixvim.nixosModules.nixvim
-            ]
-            ++ (cfg.extraModules or [ ])
-            ++ extraModules;
+          modules = [
+            {
+              documentation.nixos.enable = false;
+              home-manager.sharedModules = homeManagerModules;
+              nixpkgs = {
+                overlays = (builtins.attrValues overlays);
+                inherit crossSystem localSystem;
+                config.allowUnfree = true;
+              };
+            }
+            (cfg.home-manager or inputs.home-manager).nixosModules.default
+            ./system/default.nix
+            ./system/linux/default.nix
+            ./devices/${machine}/default.nix
+            nixos-cosmic.nixosModules.default
+            determinate.nixosModules.default
+            nixvim.nixosModules.nixvim
+          ]
+          ++ (cfg.extraModules or [ ])
+          ++ extraModules;
         };
     in
     {
@@ -253,7 +276,8 @@
           modules = [
             ./users/${user}/home.nix
             ./users/${user}/home-${pkgs.targetPlatform.parsed.kernel.name}.nix
-          ] ++ homeManagerModules;
+          ]
+          ++ homeManagerModules;
         })
       );
 

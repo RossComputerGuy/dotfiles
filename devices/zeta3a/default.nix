@@ -1,4 +1,10 @@
-{ config, pkgs, lib, inputs, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  inputs,
+  ...
+}:
 {
   imports = [
     ../../system/linux/desktop.nix
@@ -11,7 +17,10 @@
     package = pkgs.obs-studio.override {
       cudaSupport = true;
     };
-    plugins = with pkgs.obs-studio-plugins; [ wlrobs obs-urlsource ];
+    plugins = with pkgs.obs-studio-plugins; [
+      wlrobs
+      obs-urlsource
+    ];
   };
 
   # allow matthewcroughan to do remote builds
@@ -34,6 +43,8 @@
   boot.supportedFilesystems = [ "zfs" ];
   boot.zfs.devNodes = "/dev/";
 
+  boot.kernelPackages = pkgs.pkgsLLVM.linuxPackages;
+
   boot.kernelPatches = [
     {
       name = "perf";
@@ -41,6 +52,13 @@
       structuredExtraConfig = with lib.kernel; {
         ARM64_64K_PAGES = yes;
         HZ_100 = yes;
+      };
+    }
+    {
+      name = "fixes";
+      patch = null;
+      structuredExtraConfig = with lib.kernel; {
+        COMPAT_VDSO = no;
       };
     }
   ];
@@ -56,7 +74,16 @@
   ];
 
   # Initrd
-  boot.initrd.availableKernelModules = [ "nvme" "xhci_pci" "ahci" "usbhid" "uas" "usb_storage" "sd_mod" "nvidia" ];
+  boot.initrd.availableKernelModules = [
+    "nvme"
+    "xhci_pci"
+    "ahci"
+    "usbhid"
+    "uas"
+    "usb_storage"
+    "sd_mod"
+    "nvidia"
+  ];
 
   # Networking
   networking.hostName = "zeta3a";
@@ -68,7 +95,37 @@
   services.xserver.enable = true;
   services.xserver.videoDrivers = [ "nvidia" ];
 
-  hardware.nvidia.open = true;
+  hardware.nvidia = {
+    open = true;
+    package = config.boot.kernelPackages.nvidiaPackages.stable.overrideAttrs (
+      f: p:
+      let
+        inherit (config.boot.kernelPackages) kernel;
+      in
+      {
+        passthru = p.passthru // {
+          open = p.passthru.open.overrideAttrs (
+            f: p: {
+              makeFlags = [
+                "SYSSRC=${kernel.dev}/lib/modules/${kernel.modDirVersion}/source"
+                "SYSOUT=${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
+                "MODLIB=$(out)/lib/modules/${kernel.modDirVersion}"
+                "DATE="
+                "TARGET_ARCH=aarch64"
+              ];
+            }
+          );
+          settings = p.passthru.settings.overrideAttrs (
+            f: p: {
+              makeFlags = p.makeFlags ++ [
+                "STRIP_CMD=${lib.getExe' pkgs.pkgsLLVM.stdenv.cc.bintools "${pkgs.pkgsLLVM.stdenv.cc.targetPrefix}strip"}"
+              ];
+            }
+          );
+        };
+      }
+    );
+  };
 
   # Services
   services.irqbalance.enable = true;
@@ -93,34 +150,34 @@
 
   # Filesystems
 
-  fileSystems."/" =
-    { device = "zpool/root";
-      fsType = "zfs";
-      options = [ "zfsutil" ];
-    };
+  fileSystems."/" = {
+    device = "zpool/root";
+    fsType = "zfs";
+    options = [ "zfsutil" ];
+  };
 
-  fileSystems."/boot" =
-    { device = "/dev/disk/by-label/boot";
-      fsType = "vfat";
-    };
+  fileSystems."/boot" = {
+    device = "/dev/disk/by-label/boot";
+    fsType = "vfat";
+  };
 
-  fileSystems."/nix" =
-    { device = "zpool/nix";
-      fsType = "zfs";
-      options = [ "zfsutil" ];
-    };
+  fileSystems."/nix" = {
+    device = "zpool/nix";
+    fsType = "zfs";
+    options = [ "zfsutil" ];
+  };
 
-  fileSystems."/home" =
-    { device = "zpool/home";
-      fsType = "zfs";
-      options = [ "zfsutil" ];
-    };
+  fileSystems."/home" = {
+    device = "zpool/home";
+    fsType = "zfs";
+    options = [ "zfsutil" ];
+  };
 
-  fileSystems."/var" =
-    { device = "zpool/var";
-      fsType = "zfs";
-      options = [ "zfsutil" ];
-    };
+  fileSystems."/var" = {
+    device = "zpool/var";
+    fsType = "zfs";
+    options = [ "zfsutil" ];
+  };
 
   # Users
   home-manager.users.ross.xdg.configFile."kanshi/config".source = ./config/kanshi/config;
