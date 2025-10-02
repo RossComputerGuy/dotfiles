@@ -116,27 +116,6 @@
               );
             };
 
-            llvmPackages =
-              prev.llvmPackages
-              // (
-                let
-                  libraries = prev.llvmPackages.libraries.extend (
-                    f: p: {
-                      compiler-rt-no-libc = p.compiler-rt-no-libc.overrideAttrs (
-                        f: p: {
-                          cmakeFlags =
-                            p.cmakeFlags
-                            ++ lib.optional (final.stdenv.hostPlatform.isAarch64 && final.stdenv.hostPlatform.useLLVM) (
-                              lib.cmakeBool "COMPILER_RT_DISABLE_AARCH64_FMV" true
-                            );
-                        }
-                      );
-                    }
-                  );
-                in
-                libraries // { inherit libraries; }
-              );
-
             libdrm = prev.libdrm.override {
               withValgrind =
                 !final.stdenv.hostPlatform.useLLVM
