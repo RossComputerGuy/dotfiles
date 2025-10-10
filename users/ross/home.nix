@@ -101,7 +101,7 @@ in
   };
   programs.git = {
     enable = true;
-    userEmail = "tristan.ross@midstall.com";
+    userEmail = "tristan.ross@determinate.systems";
     userName = "Tristan Ross";
     extraConfig = lib.mkIf (pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform) {
       core.pager = "nvimpager";
