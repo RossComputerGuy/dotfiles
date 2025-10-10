@@ -193,6 +193,7 @@
         jegan = "riscv64-linux";
         age = "aarch64-linux";
         jeda = "aarch64-linux";
+        regz = "x86_64-linux";
       };
       forAllMachines = func: lib.mapAttrs func machines;
 
