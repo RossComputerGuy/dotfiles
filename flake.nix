@@ -9,10 +9,6 @@
       url = "github:nix-community/NUR";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    nixos-cosmic = {
-      url = "github:ninelore/nixpkgs-cosmic-unstable?ref=pull/27/head";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     shuba-cursors = {
       url = "github:RossComputerGuy/shuba-cursors";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -64,7 +60,6 @@
       nixpkgs,
       darwin,
       nixos-apple-silicon,
-      nixos-cosmic,
       shuba-cursors,
       nixos-hardware,
       disko,
@@ -104,16 +99,6 @@
                   };
                 }
               );
-              obs-urlsource = prev.obs-studio-plugins.obs-urlsource.overrideAttrs (
-                f: p: {
-                  meta = p.meta // {
-                    platforms = [
-                      "aarch64-linux"
-                      "x86_64-linux"
-                    ];
-                  };
-                }
-              );
             };
 
             libdrm = prev.libdrm.override {
@@ -130,6 +115,55 @@
                     {
                       NIX_LDFLAGS = "--undefined-version";
                     };
+              }
+            );
+
+            cxxopts = prev.cxxopts.overrideAttrs (
+              f: p: {
+                version = "3.3.1";
+
+                src = final.fetchFromGitHub {
+                  owner = "jarro2783";
+                  repo = "cxxopts";
+                  rev = "v${f.version}";
+                  hash = "sha256-baM6EX9D0yfrKxuPXyUUV9RqdrVLyygeG6x57xN8lc4=";
+                };
+
+                propagatedBuildInputs = f.buildInputs;
+
+                postPatch = p.postPatch + ''
+                  sed -i 's/icu-cu/icu-uc/g' cmake/cxxopts.cmake
+                '';
+              }
+            );
+
+            slop = prev.slop.overrideAttrs (
+              f: p: {
+                version = "7.7";
+
+                src = final.fetchFromGitHub {
+                  owner = "naelstrof";
+                  repo = "slop";
+                  rev = "v${f.version}";
+                  hash = "sha256-oUvzkIGrUTLVLR9Jf//Wh7AmnaNS2JLC3vXWg+w5W6g=";
+                };
+
+                patches = [];
+              }
+            );
+
+            maim = prev.maim.overrideAttrs (
+              f: p: {
+                version = "5.8.1";
+
+                src = final.fetchFromGitHub {
+                  owner = "naelstrof";
+                  repo = "maim";
+                  rev = "v${f.version}";
+                  hash = "sha256-bbjV3+41cxAlKCEd1/nvnZ19GhctWOr5Lu4X+Vg3EAk=";
+                };
+
+                patches = [];
               }
             );
           }
@@ -216,7 +250,6 @@
             ./system/default.nix
             ./system/linux/default.nix
             ./devices/${machine}/default.nix
-            nixos-cosmic.nixosModules.default
             determinate.nixosModules.default
             nixvim.nixosModules.nixvim
           ]

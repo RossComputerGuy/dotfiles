@@ -19,7 +19,6 @@
     };
     plugins = with pkgs.obs-studio-plugins; [
       wlrobs
-      obs-urlsource
     ];
   };
 
