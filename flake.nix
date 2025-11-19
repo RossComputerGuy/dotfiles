@@ -118,7 +118,7 @@
               }
             );
 
-            cxxopts = prev.cxxopts.overrideAttrs (
+            /*cxxopts = prev.cxxopts.overrideAttrs (
               f: p: {
                 version = "3.3.1";
 
@@ -129,43 +129,13 @@
                   hash = "sha256-baM6EX9D0yfrKxuPXyUUV9RqdrVLyygeG6x57xN8lc4=";
                 };
 
-                propagatedBuildInputs = f.buildInputs;
+                propagatedBuildInputs = f.buildInputs or [];
 
                 postPatch = p.postPatch + ''
                   sed -i 's/icu-cu/icu-uc/g' cmake/cxxopts.cmake
                 '';
               }
-            );
-
-            slop = prev.slop.overrideAttrs (
-              f: p: {
-                version = "7.7";
-
-                src = final.fetchFromGitHub {
-                  owner = "naelstrof";
-                  repo = "slop";
-                  rev = "v${f.version}";
-                  hash = "sha256-oUvzkIGrUTLVLR9Jf//Wh7AmnaNS2JLC3vXWg+w5W6g=";
-                };
-
-                patches = [];
-              }
-            );
-
-            maim = prev.maim.overrideAttrs (
-              f: p: {
-                version = "5.8.1";
-
-                src = final.fetchFromGitHub {
-                  owner = "naelstrof";
-                  repo = "maim";
-                  rev = "v${f.version}";
-                  hash = "sha256-bbjV3+41cxAlKCEd1/nvnZ19GhctWOr5Lu4X+Vg3EAk=";
-                };
-
-                patches = [];
-              }
-            );
+            );*/
           }
         );
       };
@@ -254,7 +224,7 @@
             ./devices/${machine}/default.nix
             nixvim.nixosModules.nixvim
           ]
-          ++ lib.optional (crossSystem.system != "riscv64-linux") determinate.nixosModules.default
+          ++ lib.optional ((crossSystem.system or null) != "riscv64-linux") determinate.nixosModules.default
           ++ (cfg.extraModules or [ ])
           ++ extraModules;
         };

@@ -59,10 +59,10 @@ in
     dejavu_fonts
   ] ++ lib.optionals (!pkgs.stdenv.hostPlatform.isRiscV64) [
     (prismlauncher.override {
-      glfw3-minecraft = pkgs.glfw-wayland-minecraft;
+      glfw3-minecraft = pkgs.glfw3-minecraft;
     })
     pamixer
-    noto-fonts-emoji
+    noto-fonts-color-emoji
   ] ++ lib.optionals (pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform) [
     pkgs.papirus-icon-theme
     pkgs.nvimpager
@@ -89,7 +89,7 @@ in
       name = "Migu 1P Regular";
     };
     theme = {
-      package = pkgs.tokyo-night-gtk;
+      package = pkgs.tokyonight-gtk-theme;
       name = "Tokyonight-Dark";
     };
     gtk3.extraConfig = {
