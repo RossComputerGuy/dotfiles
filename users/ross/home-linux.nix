@@ -74,7 +74,8 @@ in
   };
 
   gtk = {
-    enable = true;
+    # Prevents mass rebuild
+    enable = pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform;
     cursorTheme = {
       package = pkgs.shuba-cursors;
       name = "Shuba";

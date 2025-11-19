@@ -89,11 +89,14 @@ in
       }
     ];
     lsp.servers = {
+      cssls.enable = !pkgs.stdenv.hostPlatform.isRiscV;
+      eslint.enable = !pkgs.stdenv.hostPlatform.isRiscV;
       zls.enable = true;
-      html.enable = true;
+      html.enable = !pkgs.stdenv.hostPlatform.isRiscV;
       clangd.enable = true;
-      jsonls.enable = true;
+      jsonls.enable = !pkgs.stdenv.hostPlatform.isRiscV;
     };
+    enableMan = !pkgs.stdenv.hostPlatform.isRiscV;
   };
   programs.bash = {
     enable = true;

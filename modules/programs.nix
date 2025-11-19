@@ -12,16 +12,16 @@ in
       enableSSHSupport = true;
     };
     adb.enable = !pkgs.stdenv.hostPlatform.isRiscV64;
-    firefox.enable = true;
+    firefox.enable = !pkgs.stdenv.hostPlatform.isRiscV;
   };
 
   environment.systemPackages = with pkgs; [
     lm_sensors
-    fwupd-efi
     nixpkgs-review
   ] ++ lib.optionals (!pkgs.stdenv.hostPlatform.isRiscV64) [
     pkgs.nix-output-monitor
     pkgs.nix-diff
     pkgs.nixfmt-rfc-style
+    pkgs.fwupd-efi
   ] ++ lib.optional (stdenv.hostPlatform == stdenv.buildPlatform && profile == "desktop") papirus-icon-theme;
 }

@@ -194,6 +194,7 @@
         age = "aarch64-linux";
         jeda = "aarch64-linux";
         regz = "x86_64-linux";
+        mu-gundam = "riscv64-linux";
       };
       forAllMachines = func: lib.mapAttrs func machines;
 
@@ -251,9 +252,9 @@
             ./system/default.nix
             ./system/linux/default.nix
             ./devices/${machine}/default.nix
-            determinate.nixosModules.default
             nixvim.nixosModules.nixvim
           ]
+          ++ lib.optional (crossSystem.system != "riscv64-linux") determinate.nixosModules.default
           ++ (cfg.extraModules or [ ])
           ++ extraModules;
         };
