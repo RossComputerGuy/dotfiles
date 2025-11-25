@@ -43,7 +43,6 @@ in
     xdg-user-dirs
     alacritty
     #solaar
-    dunst
     playerctl
     grim
     slurp

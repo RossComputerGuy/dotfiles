@@ -211,6 +211,7 @@
 
   disko = {
     imageBuilder = {
+      enableBinfmt = true;
       kernelPackages = lib.mkForce pkgs.buildPackages.linuxPackages;
       pkgs = pkgs.buildPackages;
     };
@@ -225,7 +226,7 @@
           partitions = {
             esp = {
               type = "EF00";
-              start = "32M";
+              size = "1G";
               content = {
                 type = "filesystem";
                 format = "vfat";
@@ -244,6 +245,9 @@
         };
       };
       zpool.zpool = {
+        preCreateHook = ''
+          ls -ahl
+        '';
         type = "zpool";
         rootFsOptions = {
           mountpoint = "none";
@@ -274,5 +278,8 @@
     };
   };
 
-  virtualisation.libvirtd.enable = lib.mkForce false;
+  virtualisation = {
+    docker.enable = lib.mkForce false;
+    libvirtd.enable = lib.mkForce false;
+  };
 }

@@ -118,24 +118,17 @@
               }
             );
 
-            /*cxxopts = prev.cxxopts.overrideAttrs (
-              f: p: {
-                version = "3.3.1";
-
-                src = final.fetchFromGitHub {
-                  owner = "jarro2783";
-                  repo = "cxxopts";
-                  rev = "v${f.version}";
-                  hash = "sha256-baM6EX9D0yfrKxuPXyUUV9RqdrVLyygeG6x57xN8lc4=";
-                };
-
-                propagatedBuildInputs = f.buildInputs or [];
-
-                postPatch = p.postPatch + ''
-                  sed -i 's/icu-cu/icu-uc/g' cmake/cxxopts.cmake
-                '';
+            nettle = prev.nettle.overrideAttrs (
+              lib.optionalAttrs final.stdenv.hostPlatform.isStatic {
+                CCPIC = "-fPIC";
               }
-            );*/
+            );
+
+            qemu-user = prev.qemu-user.overrideAttrs (f: p:
+              lib.optionalAttrs final.stdenv.hostPlatform.isStatic {
+                configureFlags = p.configureFlags ++ [ "--disable-pie" ];
+              }
+            );
           }
         );
       };
