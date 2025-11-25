@@ -10,6 +10,19 @@
     inputs.disko.nixosModules.default
   ];
 
+  hardware = {
+    deviceTree = {
+      enable = true;
+      name = "eswin/eic7702-deepcomputing-fml13v03.dtb";
+    };
+    firmware = [
+      (pkgs.runCommand "firmware-fml13v03" {} ''
+        mkdir -p $out/lib/firmware
+        cp ${config.system.build.secboot}/*.bin $out/lib/firmware
+      '')
+    ];
+  };
+
   boot.kernelPackages = lib.mkDefault (pkgs.linuxPackagesFor (
     pkgs.buildLinux rec {
       version = "6.6.18";
