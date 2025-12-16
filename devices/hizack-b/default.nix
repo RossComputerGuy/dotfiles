@@ -73,6 +73,17 @@
     options hid_apple iso_layout=0
   '';
 
+  # temporary mesa downgrade
+  hardware.graphics.package = let
+    oldMesa = (import (fetchTarball {
+      url = "https://github.com/NixOS/nixpkgs/archive/c5ae371f1a6a7fd27823bc500d9390b38c05fa55.tar.gz";
+      sha256 = "sha256-4PqRErxfe+2toFJFgcRKZ0UI9NSIOJa+7RXVtBhy4KE=";
+    }) { localSystem = pkgs.stdenv.hostPlatform; }).mesa;
+  in
+    if pkgs.mesa.version >= "25.3.0"
+    then oldMesa
+    else pkgs.mesa;
+
   fileSystems."/" = {
     device = "/dev/nvme0n1p5";
     fsType = "ext4";
