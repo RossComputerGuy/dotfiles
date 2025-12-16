@@ -10,21 +10,24 @@ in
     supportedLocales = [ "en_US.UTF-8/UTF-8" "ja_JP.UTF-8/UTF-8" ];
     inputMethod = lib.mkIf (profile == "desktop") {
       enable = !pkgs.stdenv.hostPlatform.isRiscV64;
-      type = "ibus";
-      ibus.engines = with pkgs.ibus-engines; [ mozc ];
+      type = "fcitx5";
+      fcitx5 = {
+        waylandFrontend = true;
+        addons = with pkgs; [ fcitx5-mozc ];
+      };
     };
   };
 
   environment = {
     variables = lib.mkIf (config.i18n.inputMethod.enable) {
-      GTK_IM_MODULE = "ibus";
-      QT_IM_MODULE = "ibus";
-      XMODIFIERS = "@im=ibus";
-      INPUT_METHOD = "ibus";
-      XIM = "ibus";
-      XIM_PROGRAM = "ibus";
-      SDL_IM_MODULE = "ibus";
-      GLFW_IM_MODULE = "ibus";
+      GTK_IM_MODULE = "fcitx";
+      QT_IM_MODULE = "fcitx";
+      XMODIFIERS = "@im=fcitx";
+      INPUT_METHOD = "fcitx";
+      XIM = "fcitx";
+      XIM_PROGRAM = "fcitx";
+      SDL_IM_MODULE = "fcitx";
+      GLFW_IM_MODULE = "fcitx";
     };
     sessionVariables.NIXOS_OZONE_WL = "1";
   };
