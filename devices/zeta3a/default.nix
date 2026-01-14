@@ -94,8 +94,13 @@
   services.xserver.enable = true;
   services.xserver.videoDrivers = [ "nvidia" ];
 
+  boot.kernelParams = [
+    "nvidia-drm.modeset=1"
+  ];
+
   hardware.nvidia = {
     open = true;
+    modesetting.enable = false;
     package = config.boot.kernelPackages.nvidiaPackages.stable.overrideAttrs (
       f: p:
       let

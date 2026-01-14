@@ -58,7 +58,20 @@ in
     dejavu_fonts
   ] ++ lib.optionals (!pkgs.stdenv.hostPlatform.isRiscV64) [
     (prismlauncher.override {
-      glfw3-minecraft = pkgs.glfw3-minecraft;
+      glfw3-minecraft = pkgs.glfw3-minecraft.overrideAttrs (f: p: {
+        patches = [
+          (builtins.elemAt p.patches 0)
+        ];
+
+        prePatch = ''
+          patches+=(${pkgs.fetchFromGitHub {
+            owner = "diniamo";
+            repo = "glfw-wayland";
+            rev = "8c52ae47f406ba455fd19b7539c6f895652c558d";
+            hash = "sha256-7FnfxWeJIndHBPtpoguWUBOAE/d/oLDFQlddugfkg5c=";
+          }}/patches/*.patch)
+        '';
+      });
     })
     pamixer
     noto-fonts-color-emoji

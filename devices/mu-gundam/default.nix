@@ -16,76 +16,78 @@
       name = "eswin/eic7702-deepcomputing-fml13v03.dtb";
     };
     firmware = [
-      (pkgs.runCommand "firmware-fml13v03" {} ''
+      (pkgs.runCommand "firmware-fml13v03" { } ''
         mkdir -p $out/lib/firmware
         cp ${config.system.build.secboot}/*.bin $out/lib/firmware
       '')
     ];
   };
 
-  boot.kernelPackages = lib.mkDefault (pkgs.linuxPackagesFor (
-    pkgs.buildLinux rec {
-      version = "6.6.18";
-      modDirVersion = version;
-      src = pkgs.fetchFromGitHub {
-        owner = "DC-DeepComputing";
-        repo = "fml13v03_linux";
-        rev = "7842fe7eb2ccc33fc7002dd2a04e575831b921c3";
-        hash = "sha256-/ysRPYqIW1CJ0Itp1cVkQk5d3mzqqXYI4rleCIDY6yE=";
-      };
-      defconfig = "fml13v03_defconfig";
-      kernelPatches = [
-        {
-          name = "fix-eswin-ai-dsp";
-          patch = ./linux-fix-eswin-ai-dsp.patch;
-        }
-        {
-          name = "fix-eswin-media-ext";
-          patch = ./linux-fix-eswin-media-ext.patch;
-        }
-        {
-          name = "fix-ap12275";
-          patch = ./linux-fix-ap12275.patch;
-        }
-        {
-          name = "fix-eswin-mem";
-          patch = ./linux-fix-eswin-mem.patch;
-        }
-        {
-          name = "fix-eswin-headers";
-          patch = ./linux-fix-eswin-headers.patch;
-        }
-        {
-          name = "fix-eswin-dev-buff";
-          patch = ./linux-fix-eswin-dev-buff.patch;
-        }
-        {
-          name = "fix-eswin-codec-conflict";
-          patch = ./linux-fix-eswin-codec-conflict.patch;
-        }
-        {
-          name = "fix-eswin-sysfs";
-          patch = ./linux-fix-eswin-sysfs.patch;
-        }
-      ];
-      structuredExtraConfig =
-        (import "${pkgs.path}/pkgs/os-specific/linux/kernel/common-config.nix" {
-          inherit (pkgs) stdenv;
-          inherit lib version;
-          rustAvailable = lib.meta.availableOn pkgs.stdenv.hostPlatform pkgs.rustc-unwrapped;
-          features = {
-            efiBootStub = true;
-            netfilterRPFilter = true;
-            ia32Emulation = true;
-          };
-        })
-        // (with lib.kernel; {
-          DWC_MIPI_TC_DPHY_GEN3 = no;
-          DEBUG_INFO_BTF = no;
-        });
-      enableCommonConfig = false;
-    }
-  ));
+  boot.kernelPackages = lib.mkDefault (
+    pkgs.linuxPackagesFor (
+      pkgs.buildLinux rec {
+        version = "6.6.18";
+        modDirVersion = version;
+        src = pkgs.fetchFromGitHub {
+          owner = "DC-DeepComputing";
+          repo = "fml13v03_linux";
+          rev = "7842fe7eb2ccc33fc7002dd2a04e575831b921c3";
+          hash = "sha256-/ysRPYqIW1CJ0Itp1cVkQk5d3mzqqXYI4rleCIDY6yE=";
+        };
+        defconfig = "fml13v03_defconfig";
+        kernelPatches = [
+          {
+            name = "fix-eswin-ai-dsp";
+            patch = ./linux-fix-eswin-ai-dsp.patch;
+          }
+          {
+            name = "fix-eswin-media-ext";
+            patch = ./linux-fix-eswin-media-ext.patch;
+          }
+          {
+            name = "fix-ap12275";
+            patch = ./linux-fix-ap12275.patch;
+          }
+          {
+            name = "fix-eswin-mem";
+            patch = ./linux-fix-eswin-mem.patch;
+          }
+          {
+            name = "fix-eswin-headers";
+            patch = ./linux-fix-eswin-headers.patch;
+          }
+          {
+            name = "fix-eswin-dev-buff";
+            patch = ./linux-fix-eswin-dev-buff.patch;
+          }
+          {
+            name = "fix-eswin-codec-conflict";
+            patch = ./linux-fix-eswin-codec-conflict.patch;
+          }
+          {
+            name = "fix-eswin-sysfs";
+            patch = ./linux-fix-eswin-sysfs.patch;
+          }
+        ];
+        structuredExtraConfig =
+          (import "${pkgs.path}/pkgs/os-specific/linux/kernel/common-config.nix" {
+            inherit (pkgs) stdenv;
+            inherit lib version;
+            rustAvailable = lib.meta.availableOn pkgs.stdenv.hostPlatform pkgs.rustc-unwrapped;
+            features = {
+              efiBootStub = true;
+              netfilterRPFilter = true;
+              ia32Emulation = true;
+            };
+          })
+          // (with lib.kernel; {
+            DWC_MIPI_TC_DPHY_GEN3 = no;
+            DEBUG_INFO_BTF = no;
+          });
+        enableCommonConfig = false;
+      }
+    )
+  );
 
   system.build = {
     uboot = pkgs.buildUBoot {
@@ -229,66 +231,68 @@
       pkgs = pkgs.buildPackages;
     };
     memSize = lib.mkDefault 4096;
-    devices = {
-      disk.nvme = {
-        device = "/dev/nvme0n1";
-        type = "disk";
-        imageSize = "12G";
-        content = {
-          type = "gpt";
-          partitions = {
-            esp = {
-              type = "EF00";
-              size = "1G";
-              content = {
-                type = "filesystem";
-                format = "vfat";
-                mountpoint = "/boot";
-                mountOptions = [ "umask=0022" ];
+    devices =
+      let
+        poolName =
+          if pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform then "zpool" else "zpool-install";
+      in
+      {
+        disk.nvme = {
+          device = "/dev/nvme0n1";
+          type = "disk";
+          imageSize = "12G";
+          content = {
+            type = "gpt";
+            partitions = {
+              esp = {
+                type = "EF00";
+                size = "1G";
+                content = {
+                  type = "filesystem";
+                  format = "vfat";
+                  mountpoint = "/boot";
+                  mountOptions = [ "umask=0022" ];
+                };
+              };
+              root = {
+                size = "100%";
+                content = {
+                  type = "zfs";
+                  pool = poolName;
+                };
               };
             };
+          };
+        };
+        zpool."${poolName}" = {
+          type = "zpool";
+          rootFsOptions = {
+            mountpoint = "none";
+            compression = "zstd";
+          };
+          datasets = {
             root = {
-              size = "100%";
-              content = {
-                type = "zfs";
-                pool = "zpool";
-              };
+              type = "zfs_fs";
+              mountpoint = "/";
+            };
+            nix = {
+              type = "zfs_fs";
+              options.mountpoint = "/nix";
+              mountpoint = "/nix";
+            };
+            home = {
+              type = "zfs_fs";
+              options.mountpoint = "/home";
+              mountpoint = "/home";
+            };
+            var = {
+              type = "zfs_fs";
+              options.mountpoint = "/var";
+              mountpoint = "/var";
             };
           };
         };
       };
-      zpool.zpool = {
-        preCreateHook = ''
-          ls -ahl
-        '';
-        type = "zpool";
-        rootFsOptions = {
-          mountpoint = "none";
-          compression = "zstd";
-        };
-        datasets = {
-          root = {
-            type = "zfs_fs";
-            mountpoint = "/";
-          };
-          nix = {
-            type = "zfs_fs";
-            options.mountpoint = "/nix";
-            mountpoint = "/nix";
-          };
-          home = {
-            type = "zfs_fs";
-            options.mountpoint = "/home";
-            mountpoint = "/home";
-          };
-          var = {
-            type = "zfs_fs";
-            options.mountpoint = "/var";
-            mountpoint = "/var";
-          };
-        };
-      };
-    };
   };
 
   virtualisation = {
