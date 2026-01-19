@@ -35,6 +35,10 @@
         systems.follows = "systems";
       };
     };
+    lanzaboote = {
+      url = "github:nix-community/lanzaboote";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   nixConfig = rec {
@@ -65,6 +69,7 @@
       disko,
       determinate,
       nixvim,
+      lanzaboote,
       ...
     }@inputs:
     let
@@ -282,6 +287,7 @@
             ./system/linux/default.nix
             ./devices/${machine}/default.nix
             nixvim.nixosModules.nixvim
+            lanzaboote.nixosModules.lanzaboote
           ]
           ++ lib.optional ((crossSystem.system or null) != "riscv64-linux") determinate.nixosModules.default
           ++ (cfg.extraModules or [ ])

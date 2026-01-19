@@ -10,7 +10,7 @@
     ../../system/linux/desktop.nix
   ];
 
-  environment.systemPackages = with pkgs; [ vlc ];
+  environment.systemPackages = with pkgs; [ vlc sbctl ];
 
   programs.obs-studio = {
     enable = true;
@@ -38,9 +38,13 @@
 
   # Bootloader
   boot.loader.efi.canTouchEfiVariables = true;
-  boot.loader.systemd-boot.enable = true;
   boot.supportedFilesystems = [ "zfs" ];
   boot.zfs.devNodes = "/dev/";
+
+  boot.lanzaboote = {
+    enable = true;
+    pkiBundle = "/var/lib/sbctl";
+  };
 
   boot.kernelPackages = pkgs.pkgsLLVM.linuxPackages;
 
