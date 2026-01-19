@@ -15,7 +15,7 @@ in
   programs.home-manager.enable = true;
   programs.ghostty = {
     enableZshIntegration = true;
-    enable = true;
+    enable = pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform;
     settings.theme = "tokyonight";
     themes.tokyonight = {
       background = "#1a1b26";

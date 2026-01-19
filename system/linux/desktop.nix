@@ -87,7 +87,8 @@
   services.power-profiles-daemon.enable = lib.mkForce (pkgs.stdenv.buildPlatform == pkgs.stdenv.hostPlatform);
 
   # Applications & Services
-  services.flatpak.enable = true;
+  services.gvfs.enable = pkgs.stdenv.buildPlatform == pkgs.stdenv.hostPlatform;
+  services.flatpak.enable = pkgs.stdenv.buildPlatform == pkgs.stdenv.hostPlatform;
   services.upower.enable = true;
 
   fonts.packages = with pkgs; [

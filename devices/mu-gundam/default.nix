@@ -8,6 +8,7 @@
 {
   imports = [
     inputs.disko.nixosModules.default
+    ../../system/linux/desktop.nix
   ];
 
   hardware = {
@@ -16,14 +17,92 @@
       name = "eswin/eic7702-deepcomputing-fml13v03.dtb";
     };
     firmware = [
-      (pkgs.runCommand "firmware-fml13v03" { } ''
+      (pkgs.runCommand "firmware-fml13v03" {
+        src = pkgs.fetchFromGitHub {
+          owner = "DC-DeepComputing";
+          repo = "fml13v03";
+          rev = "00a79b2c3409366b11469637421661e476563caf";
+          hash = "sha256-Ud08z964Qoqqxkkf0wMy0VSGkdy+khJpj0VpJx+tOmg=";
+        };
+      } ''
+        runPhase unpackPhase
+
         mkdir -p $out/lib/firmware
         cp ${config.system.build.secboot}/*.bin $out/lib/firmware
+        cp -r source/mkimg-eswin/firmware $out/lib/firmware/eic7x
       '')
     ];
+    graphics.package = let
+      src = pkgs.fetchFromGitLab {
+        domain = "gitlab.freedesktop.org";
+        owner = "StaticRocket";
+        repo = "mesa";
+        rev = "68af6a102c2298569e77d1aa8bccc1ff61438b3e";
+        hash = "sha256-UI/nKt2s5dZjTKPyuKbIASSX99uQ1R3/qmOsiJW0lqo=";
+      };
+    in (pkgs.mesa.override {
+      llvmPackages = pkgs.llvmPackages_18;
+
+      mesa-gl-headers = pkgs.mesa-gl-headers.overrideAttrs (f: p: {
+        version = "24.0.1";
+
+        inherit src;
+      });
+
+      galliumDrivers = [
+        "pvr"
+        "nouveau"
+        "swrast"
+        "zink"
+      ];
+
+      vulkanDrivers = [
+        "imagination-experimental"
+        "pvr"
+        "swrast"
+      ];
+
+      vulkanLayers = [
+        "device-select"
+        "intel-nullhw"
+        "overlay"
+      ];
+    }).overrideAttrs (f: p: {
+      version = "24.0.1";
+
+      inherit src;
+
+      patches = [
+        (pkgs.fetchpatch {
+          url = "https://github.com/NixOS/nixpkgs/raw/abd1d7f93319df76c6fee7aee7ecd39ec6136d62/pkgs/development/libraries/mesa/opencl.patch";
+          hash = "sha256-csxRQZb5fhGcUFaB18K/8lFyosTQD/P2z7jSSEF7UJs=";
+        })
+      ];
+
+      mesonFlags = lib.lists.filter (name:
+        !lib.hasPrefix "-Dlibgbm-external" name
+        && !lib.hasPrefix "-Dglvnd" name
+        && !lib.hasPrefix "-Dteflon" name
+        && !lib.hasPrefix "-Dfreedreno-kmds" name
+        && !lib.hasPrefix "-Damdgpu-virtio" name
+        && !lib.hasPrefix "-Dgallium-rusticl-enable-drivers" name
+        && !lib.hasPrefix "-Dintel-rt" name
+        && !lib.hasPrefix "-Dgallium-mediafoundation" name
+        && !lib.hasPrefix "-Dmesa-clc" name
+        && !lib.hasPrefix "-Dprecomp-compiler" name
+      ) p.mesonFlags ++ [
+        "-Dglvnd=true"
+        "-Dfreedreno-kmds=msm,kgsl,virtio"
+        "-Dimagination-srv=true"
+      ];
+
+      buildInputs = p.buildInputs ++ [
+        pkgs.libvdpau
+      ];
+    });
   };
 
-  boot.kernelPackages = lib.mkDefault (
+  boot.kernelPackages = lib.mkForce (
     pkgs.linuxPackagesFor (
       pkgs.buildLinux rec {
         version = "6.6.18";
@@ -69,22 +148,10 @@
             patch = ./linux-fix-eswin-sysfs.patch;
           }
         ];
-        structuredExtraConfig =
-          (import "${pkgs.path}/pkgs/os-specific/linux/kernel/common-config.nix" {
-            inherit (pkgs) stdenv;
-            inherit lib version;
-            rustAvailable = lib.meta.availableOn pkgs.stdenv.hostPlatform pkgs.rustc-unwrapped;
-            features = {
-              efiBootStub = true;
-              netfilterRPFilter = true;
-              ia32Emulation = true;
-            };
-          })
-          // (with lib.kernel; {
-            DWC_MIPI_TC_DPHY_GEN3 = no;
-            DEBUG_INFO_BTF = no;
-          });
-        enableCommonConfig = false;
+        structuredExtraConfig = with lib.kernel; {
+          DWC_MIPI_TC_DPHY_GEN3 = no;
+          DEBUG_INFO_BTF = lib.mkForce no;
+        };
       }
     )
   );
@@ -167,8 +234,8 @@
         src = pkgsx86_64.fetchFromGitHub {
           owner = "DC-DeepComputing";
           repo = "fml13v03";
-          rev = "e93f8903f9eb9fc34e9130881f56d6f2a08205c2";
-          hash = "sha256-bMAYGA9/Ml5a0Eynmvcl+JGMZRf+1Uka43qCjxswO/s=";
+          rev = "00a79b2c3409366b11469637421661e476563caf";
+          hash = "sha256-Ud08z964Qoqqxkkf0wMy0VSGkdy+khJpj0VpJx+tOmg=";
         };
 
         sourceRoot = "${finalAttrs.src.name}/source";
@@ -299,4 +366,9 @@
     docker.enable = lib.mkForce false;
     libvirtd.enable = lib.mkForce false;
   };
+
+  environment.systemPackages = with pkgs; [
+    sway
+    mesa-demos
+  ];
 }
