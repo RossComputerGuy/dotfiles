@@ -129,69 +129,82 @@
               }
             );
 
-            qemu-user = prev.qemu-user.overrideAttrs (f: p:
+            qemu-user = prev.qemu-user.overrideAttrs (
+              f: p:
               lib.optionalAttrs final.stdenv.hostPlatform.isStatic {
                 configureFlags = p.configureFlags ++ [ "--disable-pie" ];
               }
             );
 
             # PR: https://github.com/NixOS/nixpkgs/pull/480532
-            pop-gtk-theme = (prev.pop-gtk-theme.override {
-              inherit (final.pkgsBuildBuild) inkscape optipng;
-            }).overrideAttrs (f: p: {
-              nativeBuildInputs = with final.buildPackages; [
-                meson
-                ninja
-                sassc
-                gtk3
-                python3
-              ];
+            pop-gtk-theme =
+              (prev.pop-gtk-theme.override {
+                inherit (final.pkgsBuildBuild) inkscape optipng;
+              }).overrideAttrs
+                (
+                  f: p: {
+                    nativeBuildInputs = with final.buildPackages; [
+                      meson
+                      ninja
+                      sassc
+                      gtk3
+                      python3
+                    ];
 
-              depsBuildBuild = with final.pkgsBuildBuild; [
-                inkscape
-                optipng
-              ];
+                    depsBuildBuild = with final.pkgsBuildBuild; [
+                      inkscape
+                      optipng
+                    ];
 
-              postPatch = ''
-                patchShebangs .
+                    postPatch = ''
+                      patchShebangs .
 
-                for file in $(find -name render-\*.sh); do
-                  substituteInPlace "$file" \
-                    --replace 'INKSCAPE="/usr/bin/inkscape"' \
-                              'INKSCAPE="${final.pkgsBuildBuild.inkscape}/bin/inkscape"' \
-                    --replace 'OPTIPNG="/usr/bin/optipng"' \
-                              'OPTIPNG="${final.pkgsBuildBuild.optipng}/bin/optipng"'
-                done
-              '';
-            });
+                      for file in $(find -name render-\*.sh); do
+                        substituteInPlace "$file" \
+                          --replace 'INKSCAPE="/usr/bin/inkscape"' \
+                                    'INKSCAPE="${final.pkgsBuildBuild.inkscape}/bin/inkscape"' \
+                          --replace 'OPTIPNG="/usr/bin/optipng"' \
+                                    'OPTIPNG="${final.pkgsBuildBuild.optipng}/bin/optipng"'
+                      done
+                    '';
+                  }
+                );
 
-            noto-fonts-color-emoji = (prev.noto-fonts-color-emoji.override {
-              inherit (final.pkgsBuildBuild) nototools;
-            }).overrideAttrs (f: p: {
-              nativeBuildInputs = with final.buildPackages; [
-                imagemagick
-                zopfli
-                pngquant
-                which
-                python3Packages.fonttools
-              ];
+            noto-fonts-color-emoji =
+              (prev.noto-fonts-color-emoji.override {
+                inherit (final.pkgsBuildBuild) nototools;
+              }).overrideAttrs
+                (
+                  f: p: {
+                    nativeBuildInputs = with final.buildPackages; [
+                      imagemagick
+                      zopfli
+                      pngquant
+                      which
+                      python3Packages.fonttools
+                    ];
 
-              depsBuildBuild = p.depsBuildBuild ++ (with final.pkgsBuildBuild; [
-                nototools
-              ]);
-            });
+                    depsBuildBuild =
+                      p.depsBuildBuild
+                      ++ (with final.pkgsBuildBuild; [
+                        nototools
+                      ]);
+                  }
+                );
 
-            thin-provisioning-tools = prev.thin-provisioning-tools.overrideAttrs (f: p: {
-              depsBuildBuild = with final.pkgsBuildBuild; [
-                pkg-config
-                lvm2
-                udev
-                rustPlatform.bindgenHook
-                stdenv.cc.libc
-              ];
+            thin-provisioning-tools = prev.thin-provisioning-tools.overrideAttrs (
+              f: p: {
+                depsBuildBuild = with final.pkgsBuildBuild; [
+                  pkg-config
+                  lvm2
+                  udev
+                  rustPlatform.bindgenHook
+                  stdenv.cc.libc
+                ];
 
-              nativeBuildInputs = lib.lists.remove 7 p.nativeBuildInputs;
-            });
+                nativeBuildInputs = lib.lists.remove 7 p.nativeBuildInputs;
+              }
+            );
 
             ostree = prev.ostree.override {
               withGjs = final.stdenv.hostPlatform == final.stdenv.buildPlatform;
@@ -200,6 +213,14 @@
             ostree-full = prev.ostree-full.override {
               withGjs = final.stdenv.hostPlatform == final.stdenv.buildPlatform;
             };
+
+            # PR: https://github.com/NixOS/nixpkgs/pull/494215
+            freetype = prev.freetype.overrideAttrs (
+              f: p:
+              lib.optionalAttrs (!final.stdenv.hostPlatform.isWindows && final.stdenv.cc.bintools.isLLVM) {
+                env.RC = "";
+              }
+            );
           }
         );
       };

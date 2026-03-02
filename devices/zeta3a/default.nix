@@ -66,9 +66,7 @@
     }
   ];
 
-  boot.extraModulePackages = with config.boot.kernelPackages; [ tt-kmd ];
-
-  boot.kernelModules = [ "tenstorrent" ];
+  #hardware.tenstorrent.enable = true;
 
   boot.binfmt.emulatedSystems = [
     "x86_64-linux"
@@ -154,8 +152,6 @@
     };
   };
 
-  i18n.inputMethod.enable = lib.mkForce false;
-
   # Filesystems
 
   fileSystems."/" = {
@@ -186,7 +182,4 @@
     fsType = "zfs";
     options = [ "zfsutil" ];
   };
-
-  # Users
-  home-manager.users.ross.xdg.configFile."kanshi/config".source = ./config/kanshi/config;
 }
