@@ -1,7 +1,7 @@
 { lib, pkgs, ... }@args:
 with lib;
 let
-  inherit (pkgs.targetPlatform) parsed;
+  inherit (pkgs.stdenv.targetPlatform) parsed;
 in
 rec {
   importHome = user: 

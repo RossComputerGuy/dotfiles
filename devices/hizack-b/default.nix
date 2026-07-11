@@ -26,6 +26,15 @@
     "i386-linux"
   ];
 
+  # 16 GB is this machine's bottleneck; compressed RAM swap stretches usable
+  # memory cheaply (zstd is ~free on the M1 Pro) and keeps the binary cache,
+  # unlike CPU tuning. systemd-oomd is already on by default as a backstop.
+  zramSwap = {
+    enable = true;
+    algorithm = "zstd";
+    memoryPercent = 100;
+  };
+
   environment = {
     etc."containers/policy.json".text = builtins.toJSON {
       default = [ { type = "insecureAcceptAnything"; } ];

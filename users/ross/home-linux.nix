@@ -14,6 +14,10 @@ let
       systemctl --user start pipewire pipewire-media-session xdg-desktop-portal xdg-desktop-portal-wlr xdg-desktop-portal-gtk
     '';
   };
+  gtkTheme = {
+    package = pkgs.tokyonight-gtk-theme;
+    name = "Tokyonight-Dark";
+  };
 in
 {
   imports = [
@@ -50,13 +54,12 @@ in
     migu
     maim
     xclip
-    swww
     brightnessctl
     kanshi
     corefonts
     noto-fonts
     dejavu_fonts
-  ] ++ lib.optionals (!pkgs.stdenv.hostPlatform.isRiscV64) [
+  ] ++ lib.optionals (!pkgs.stdenv.hostPlatform.isRiscV64 && pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform) [
     (prismlauncher.override {
       glfw3-minecraft = pkgs.glfw3-minecraft.overrideAttrs (f: p: {
         patches = [
@@ -75,6 +78,12 @@ in
     })
     pamixer
     noto-fonts-color-emoji
+    libreoffice
+    # Chat
+    signal-desktop
+    vesktop # Discord (no official aarch64 client)
+    fluffychat # Matrix
+    # Slack: ferdium SIGTRAPs on aarch64 (upstream bug); pending a web-app launcher.
   ] ++ lib.optionals (pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform) [
     pkgs.papirus-icon-theme
     pkgs.nvimpager
@@ -100,10 +109,9 @@ in
       package = pkgs.dejavu_fonts;
       name = "Migu 1P Regular";
     };
-    theme = {
-      package = pkgs.tokyonight-gtk-theme;
-      name = "Tokyonight-Dark";
-    };
+    theme = gtkTheme;
+    # Keep the pre-26.05 default of theming GTK4 apps with the GTK theme.
+    gtk4.theme = gtkTheme;
     gtk3.extraConfig = {
       gtk-application-prefer-dark-theme = true;
     };

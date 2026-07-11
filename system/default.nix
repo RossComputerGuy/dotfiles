@@ -5,7 +5,6 @@
   ];
 
   nix.settings = {
-    auto-optimise-store = true;
     auto-allocate-uids = true;
     experimental-features = [ "nix-command" "flakes" "auto-allocate-uids" "cgroups" ];
     system-features = [ "uid-range" ];
@@ -17,17 +16,10 @@
     # lazy-trees = true;
   };
 
-  nix.gc = {
-    automatic = true;
-    options = "--delete-older-than 30d";
-  };
-
   services.tailscale.enable = true;
 
   environment.systemPackages = with pkgs; [
     fd
     ripgrep
-    clang-tools
-    gcc
   ];
 }

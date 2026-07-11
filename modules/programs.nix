@@ -39,7 +39,7 @@ in
     ++ lib.optionals (!pkgs.stdenv.hostPlatform.isRiscV64) [
       pkgs.nix-output-monitor
       pkgs.nix-diff
-      pkgs.nixfmt-rfc-style
+      pkgs.nixfmt
       pkgs.fwupd-efi
       pkgs.android-tools
     ]

@@ -17,7 +17,6 @@
 
   system.defaults.spaces.spans-displays = false;
 
-  services.nix-daemon.enable = true;
   services.skhd = {
     enable = true;
     # CMD is Super
@@ -93,7 +92,6 @@
     };
   };
 
-  environment.loginShell = "${pkgs.zsh}/bin/zsh -l";
   environment.variables.SHELL = "${pkgs.zsh}/bin/zsh";
   environment.variables.LANG = "ja_JP.UTF-8";
 
@@ -107,6 +105,8 @@
     noto-fonts-color-emoji
     sketchybar
   ];
+
+  system.primaryUser = "ross";
 
   launchd.user.agents.sketchybar = with lib;
     let

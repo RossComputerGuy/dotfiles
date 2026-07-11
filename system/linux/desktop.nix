@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 {
   services.udev.extraRules = ''
     ## Steam
@@ -45,7 +50,7 @@
   '';
 
   # Sound
-  hardware.pulseaudio.enable = false;
+  services.pulseaudio.enable = false;
   services.pipewire = {
     enable = true;
     alsa.enable = true;
@@ -75,7 +80,7 @@
     export SSH_AUTH_SOCKET="/run/user/$UID/gnupg/S.gpg-agent.ssh"
   '';
 
-  environment.sessionVariables.XDG_DATA_DIRS = ["/var/lib/flatpak/exports/share"];
+  environment.sessionVariables.XDG_DATA_DIRS = [ "/var/lib/flatpak/exports/share" ];
 
   # Graphics
   services.colord.enable = pkgs.stdenv.buildPlatform == pkgs.stdenv.hostPlatform;
@@ -84,7 +89,9 @@
   hardware.graphics.enable = true;
   fonts.fontDir.enable = lib.mkForce (pkgs.stdenv.buildPlatform == pkgs.stdenv.hostPlatform);
 
-  services.power-profiles-daemon.enable = lib.mkForce (pkgs.stdenv.buildPlatform == pkgs.stdenv.hostPlatform);
+  services.power-profiles-daemon.enable = lib.mkForce (
+    pkgs.stdenv.buildPlatform == pkgs.stdenv.hostPlatform
+  );
 
   # Applications & Services
   services.gvfs.enable = pkgs.stdenv.buildPlatform == pkgs.stdenv.hostPlatform;
@@ -98,9 +105,12 @@
     dejavu_fonts
   ];
 
-  xdg.portal.extraPortals = lib.mkForce (with pkgs; [
-    xdg-desktop-portal-cosmic
-  ]);
+  xdg.portal.extraPortals = lib.mkForce (
+    with pkgs;
+    [
+      xdg-desktop-portal-cosmic
+    ]
+  );
 
   systemd.user.services.polkit-gnome-authentication-agent-1 = {
     description = "polkit-gnome-authentication-agent-1";
@@ -122,5 +132,6 @@
   services.desktopManager.cosmic.enable = true;
 
   # Users
-  users.groups.games = {};
+  users.groups.games = { };
+  users.groups.plugdev = { };
 }

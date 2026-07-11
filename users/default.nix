@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }@args:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}@args:
 with lib;
 with import ./common.nix args;
 {
