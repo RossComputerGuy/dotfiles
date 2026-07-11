@@ -169,6 +169,10 @@
             ostree-full = prev.ostree-full.override {
               withGjs = final.stdenv.hostPlatform == final.stdenv.buildPlatform;
             };
+
+            nixos-render-docs = prev.nixos-render-docs.overrideAttrs (f: p: {
+              patches = [ ];
+            });
           }
         );
       };

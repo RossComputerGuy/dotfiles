@@ -311,7 +311,7 @@ in
       dartls.enable = !pkgs.stdenv.hostPlatform.isRiscV;
       astro.enable = !pkgs.stdenv.hostPlatform.isRiscV;
     };
-    enableMan = !pkgs.stdenv.hostPlatform.isRiscV;
+    enableMan = false;
   };
   programs.bash = {
     enable = true;
