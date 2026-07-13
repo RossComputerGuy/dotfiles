@@ -173,6 +173,21 @@
             nixos-render-docs = prev.nixos-render-docs.overrideAttrs (f: p: {
               patches = [ ];
             });
+
+            libapparmor = prev.libapparmor.overrideAttrs (o: {
+              postPatch = (o.postPatch or "") + ''
+                substituteInPlace src/kernel.c \
+                  --replace-fail "char buff[total_size];" "char buff[sizeof(struct lsm_ctx) + 8];"
+              '';
+            });
+
+            pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
+              (pyfinal: pyprev: {
+                fonttools = pyprev.fonttools.overridePythonAttrs (_: {
+                  doCheck = false;
+                });
+              })
+            ];
           }
         );
       };

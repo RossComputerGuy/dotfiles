@@ -68,7 +68,9 @@ in
 
   services.llama-cpp = {
     enable = true;
-    package = pkgs.llama-cpp.override { cudaSupport = true; };
+    package = (pkgs.llama-cpp.override { cudaSupport = true; }).overrideAttrs (old: {
+      NVCC_APPEND_FLAGS = "-ccbin ${pkgs.gcc13}/bin/g++";
+    });
     settings = {
       host = "127.0.0.1";
       port = 5001;
@@ -199,9 +201,17 @@ in
   # so this is safe here and avoids a manual import after an unclean shutdown.
   boot.zfs.forceImportRoot = true;
 
+  boot.zfs.requestEncryptionCredentials = lib.mkForce [ ];
+
   boot.lanzaboote = {
     enable = true;
     pkiBundle = "/var/lib/sbctl";
+  };
+
+  boot.zfs.tzpfms = {
+    enable = true;
+    backends = [ "TPM2" ];
+    datasets = [ "zpool" ];
   };
 
   services.udev.packages = [ pkgs.dsview ];
@@ -250,6 +260,8 @@ in
     "usb_storage"
     "sd_mod"
     "nvidia"
+    "tpm_tis"
+    "tpm_crb"
   ];
 
   # Networking
