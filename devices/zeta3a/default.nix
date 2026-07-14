@@ -206,6 +206,8 @@ in
   boot.lanzaboote = {
     enable = true;
     pkiBundle = "/var/lib/sbctl";
+    autoGenerateKeys.enable = true;
+    autoEnrollKeys.enable = true;
   };
 
   boot.zfs.tzpfms = {
@@ -335,7 +337,6 @@ in
   fileSystems."/" = {
     device = "zpool/root";
     fsType = "zfs";
-    options = [ "zfsutil" ];
   };
 
   fileSystems."/boot" = {
@@ -346,18 +347,15 @@ in
   fileSystems."/nix" = {
     device = "zpool/nix";
     fsType = "zfs";
-    options = [ "zfsutil" ];
   };
 
   fileSystems."/home" = {
     device = "zpool/home";
     fsType = "zfs";
-    options = [ "zfsutil" ];
   };
 
   fileSystems."/var" = {
     device = "zpool/var";
     fsType = "zfs";
-    options = [ "zfsutil" ];
   };
 }
