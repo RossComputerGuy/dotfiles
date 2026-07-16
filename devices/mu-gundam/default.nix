@@ -105,16 +105,16 @@
   boot.kernelPackages = lib.mkForce (
     pkgs.linuxPackagesFor (
       pkgs.buildLinux rec {
-        version = "6.6.18";
+        version = "6.6.92";
         modDirVersion = version;
         src = pkgs.fetchFromGitHub {
           owner = "DC-DeepComputing";
           repo = "fml13v03_linux";
-          rev = "7842fe7eb2ccc33fc7002dd2a04e575831b921c3";
-          hash = "sha256-/ysRPYqIW1CJ0Itp1cVkQk5d3mzqqXYI4rleCIDY6yE=";
+          rev = "417741216c08b3718c5ed541cce3523eb7ab20e4";
+          hash = "sha256-lQYLKqhdQin0cydQJ22YK1Anzjsi4qI6SToYLH8/hPI=";
         };
         defconfig = "fml13v03_defconfig";
-        kernelPatches = [
+        /*kernelPatches = [
           {
             name = "fix-eswin-ai-dsp";
             patch = ./linux-fix-eswin-ai-dsp.patch;
@@ -147,7 +147,7 @@
             name = "fix-eswin-sysfs";
             patch = ./linux-fix-eswin-sysfs.patch;
           }
-        ];
+        ];*/
         structuredExtraConfig = with lib.kernel; {
           DWC_MIPI_TC_DPHY_GEN3 = no;
           DEBUG_INFO_BTF = lib.mkForce no;
