@@ -20,11 +20,69 @@ let
       batch-size = 1024;
       ubatch-size = 512;
     };
+    # GLM-5.2 744B: cpu-moe keeps the experts in RAM, but offloading every
+    # layer's attention overflows the 12GB 5070 (~15.4GB weight buffer). Decode
+    # is expert-bound on CPU, so GPU attention layers barely dent t/s, but they
+    # help prefill for free. Raise n-gpu-layers until VRAM is nearly full.
+    "glm5.2:744b-a40b" = {
+      n-gpu-layers = 20;
+      ctx-size = 32768;
+      batch-size = 512;
+      ubatch-size = 512;
+    };
+    # DeepSeek-V4-Flash: the 135k default ctx at 4096 ubatch wants a ~70GB CUDA
+    # compute buffer and OOMs the 12GB card. Cap it like GLM to get a clean
+    # load. cpu-moe keeps experts in RAM, so n-gpu-layers only offloads the MLA
+    # attention and dense gate (the "router in vram" bit). Start conservative,
+    # then raise n-gpu-layers and ctx once we see real VRAM headroom on load.
+    "deepseek-v4-flash:q4" = {
+      # DSpark speculative decoding. The trained drafter proposes a block of
+      # tokens, the target verifies them in one batched pass. Target decode is
+      # remote-NUMA latency-bound (~3.6 t/s), so amortizing many tokens over one
+      # verify is the whole lever. The drafter MUST run on GPU (spec-draft-ngl):
+      # on CPU it would read weights/token from remote RAM and lose.
+      # The drafter arch upstream expects is "dflash" (b10209 registers it);
+      # YanissAmz's bf16 GGUF uses that arch. It is 10.9GB, so give it the whole
+      # 12GB card: target n-gpu-layers=0 (cpu-moe already keeps experts in RAM,
+      # and decode is expert-bound, so GPU attention was not helping decode).
+      # NOTE: the DeepSeek-V4 target-side dspark port is not in master yet (PR
+      # 25683), so if the target fails to feed hidden states we pin YanissAmz's
+      # llama.cpp fork (dspark-dsv4 branch) instead.
+      # DSpark is not viable on this box (12GB 5070 + ARM CPU). See the
+      # zeta3a-dspark-dead-end memory. The only drafter is a DeepSeek-V4-backbone
+      # MoE: its experts are mxfp4 (10.4GB, will not fit the card next to the
+      # target) and its sparse-indexer + sinkhorn attention is too heavy for the
+      # ARM CPU. Every config lost badly to plain decode: mxfp4/GPU OOMs,
+      # mxfp4/CPU 0.18 t/s, and even after reformatting the experts to a
+      # CPU-fast Q4_K it was 0.19 (split) / 0.15 (all-CPU) t/s, because the
+      # bottleneck is the draft attention, not the expert kernel. Plain Q4.
+      # n-gpu-layers=0: the router keeps other models (e.g. GLM-4.7-Flash, ~9GB
+      # VRAM) resident, so DeepSeek must coexist on the 12GB card. Its decode is
+      # CPU-expert-bound (GPU attention only helped prefill), so give the GPU to
+      # the small fast models and run DeepSeek attention on CPU. Costs a bit of
+      # prefill, keeps decode ~3.6 t/s, and never OOMs against a resident GLM.
+      n-gpu-layers = 0;
+      ctx-size = 32768;
+      batch-size = 512;
+      ubatch-size = 512;
+    };
+  };
+  # These are per-model tunables, deliberately NOT in services.llama-cpp.settings.
+  # llama.cpp's router overlays its own CLI args on top of every child preset
+  # (server-models.cpp: preset.merge(base_preset)), so anything passed on the
+  # router CLI clobbers per-model INI values. Keeping them out of the router CLI
+  # and injecting them as preset defaults lets the per-model overrides above win.
+  llamaSharedDefaults = {
+    n-gpu-layers = 999;
+    ctx-size = 135168;
+    batch-size = 4096;
+    ubatch-size = 4096;
   };
   llamaModelsPreset = pkgs.writeText "llama-models.ini" (
     lib.generators.toINI { } (
       lib.mapAttrs (
-        name: m: m.preset // (llamaModelOverrides.${name} or { }) // { alias = name; }
+        name: m:
+        llamaSharedDefaults // m.preset // (llamaModelOverrides.${name} or { }) // { alias = name; }
       ) llamaModels
     )
   );
@@ -69,6 +127,20 @@ in
   services.llama-cpp = {
     enable = true;
     package = (pkgs.llama-cpp.override { cudaSupport = true; }).overrideAttrs (old: {
+      # Pinned past nixpkgs' 9925 to upstream b10209 (newest at the time). We
+      # briefly ran YanissAmz's dspark-dsv4 fork to try DSpark speculative
+      # decoding for DeepSeek-V4-Flash, but it is not viable on this box (see the
+      # zeta3a-dspark-dead-end memory), so we are back on stock upstream. The
+      # version bump moves the bundled webui npm lockfile (npmRoot=tools/ui), so
+      # npmDepsHash moves with it (prefetch-npm-deps on b10209 tools/ui lockfile).
+      version = "10209";
+      npmDepsHash = "sha256-B7uEynAG70a3xauBKc20RuFa9cnWaWzVBCh+LPLBnIM=";
+      src = pkgs.fetchFromGitHub {
+        owner = "ggml-org";
+        repo = "llama.cpp";
+        tag = "b10209";
+        hash = "sha256-5w9IyT2xBTfzea51zovg0TzsBDk6jL5Td3ax8pjYNjw=";
+      };
       NVCC_APPEND_FLAGS = "-ccbin ${pkgs.gcc13}/bin/g++";
     });
     settings = {
@@ -79,7 +151,18 @@ in
       flash-attn = "on";
       jinja = true;
       no-mmap = true;
-      threads = 128;
+      # Decode wants NUMA-node-aligned thread counts. llama-bench IQ1_S sweep:
+      # tg 16->1.05, 24->1.42, 32->1.57, 48->0.99 (1.5 nodes, misaligned), 64->1.61.
+      # Decode plateaus ~1.6 from 24-64, so it is NOT thread-bound past this, it
+      # is NUMA-remote-bound (experts scattered over 4 nodes, 197GB can't fit one
+      # node). 64 = 2 nodes ties 32 on decode but roughly doubles prefill, so use
+      # it. 128 (all 4 nodes) oversubscribes the barrier and craters to ~0.5.
+      # Keep the full 128 for prefill (compute-bound, scales with cores).
+      threads = 64;
+      threads-batch = 128;
+      # 4 NUMA nodes (32 cores each). Without this, threads read expert weights
+      # mostly from remote nodes and effective bandwidth (and t/s) craters.
+      numa = "distribute";
       reasoning = "on";
       api-key = "local";
       temp = 0.6;
@@ -87,10 +170,9 @@ in
       min-p = 0.0;
       top-k = 20;
       fit = "off";
-      batch-size = 4096;
-      ubatch-size = 4096;
-      ctx-size = 135168;
-      n-gpu-layers = 999;
+      # batch-size / ubatch-size / ctx-size / n-gpu-layers are set per-model in
+      # the preset INI (see llamaSharedDefaults / llamaModelOverrides). Passing
+      # them here would let the router override every child's per-model value.
       cpu-moe = true;
       tools = "read_file,file_glob_search,grep_search,get_datetime";
       ui-mcp-proxy = true;
