@@ -5,11 +5,19 @@ in
 {
   imports = [
     ./opencode.nix
+    ../../modules/theme.nix
   ];
+
+  # Stylix recolours gtksourceview and nixos-icons through nixpkgs.overlays.
+  # Home Manager ignores those here, because every configuration in this flake
+  # hands it a prebuilt pkgs (useGlobalPkgs on NixOS, an explicit pkgs for the
+  # standalone configurations), and it warns that setting them will soon be an
+  # error. The NixOS and nix-darwin modules apply the same overlays at the
+  # system level, where they do take effect, so nothing is lost.
+  stylix.overlays.enable = false;
 
   home.packages = with pkgs; [
     jq
-    btop
     fastfetch
     tree-sitter
     gcc
@@ -23,33 +31,6 @@ in
   programs.ghostty = {
     enableZshIntegration = true;
     enable = pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform && !pkgs.stdenv.hostPlatform.isRiscV64;
-    settings.theme = "tokyonight";
-    themes.tokyonight = {
-      background = "#1a1b26";
-      foreground = "#c0caf5";
-      selection-background = "#283457";
-      selection-foreground = "#c0caf5";
-      cursor-color = "#c0caf5";
-      cursor-text = "#1a1b26";
-      palette = [
-        "0=#15161e"
-        "1=#f7768e"
-        "2=#9ece6a"
-        "3=#e0af68"
-        "4=#7aa2f7"
-        "5=#bb9af7"
-        "6=#7dcfff"
-        "7=#a9b1d6"
-        "8=#414868"
-        "9=#f7768e"
-        "10=#9ece6a"
-        "11=#e0af68"
-        "12=#7aa2f7"
-        "13=#bb9af7"
-        "14=#7dcfff"
-        "15=#c0caf5"
-      ];
-    };
   };
   programs.nixvim = {
     enable = pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform;
@@ -57,8 +38,6 @@ in
     # flake input), and quiet the version-skew check since we track unstable.
     nixpkgs.source = pkgs.path;
     version.enableNixpkgsReleaseCheck = false;
-    colorschemes.tokyonight.enable = true;
-
     globals = {
       mapleader = " ";
       maplocalleader = " ";
@@ -96,10 +75,7 @@ in
       treesitter-context.enable = true;
       friendly-snippets.enable = true;
 
-      lualine = {
-        enable = true;
-        settings.options.theme = "tokyonight";
-      };
+      lualine.enable = true;
 
       bufferline.enable = true;
 
@@ -352,4 +328,5 @@ in
       };
     };
   };
+  programs.btop.enable = true;
 }

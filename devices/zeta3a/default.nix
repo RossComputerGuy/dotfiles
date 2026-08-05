@@ -348,6 +348,19 @@ in
     "tpm_crb"
   ];
 
+  # availableKernelModules only ships a module in the initrd, it never loads it.
+  # Plymouth's DRM renderer needs KMS live during stage 1, so force-load these.
+  boot.initrd.kernelModules = [
+    "nvidia"
+    "nvidia_modeset"
+    "nvidia_drm"
+  ];
+
+  # Firefox already had a profile here before Home Manager took over
+  # profiles.ini, so name it. Without this Firefox opens an empty profile.
+  ross.firefoxProfilePath = "8qp9adwe.default";
+  ross.firefoxConfigPath = ".config/mozilla/firefox";
+
   # Networking
   networking.hostName = "zeta3a";
   networking.hostId = "f174c9ca";
@@ -358,8 +371,11 @@ in
   services.xserver.enable = true;
   services.xserver.videoDrivers = [ "nvidia" ];
 
+  boot.plymouth.enable = true;
+
   boot.kernelParams = [
     "nvidia-drm.modeset=1"
+    "quiet"
   ];
 
   hardware.nvidia = {
@@ -397,7 +413,13 @@ in
 
   # Services
   services.irqbalance.enable = true;
-  services.ananicy.enable = true;
+  services.ananicy = {
+    enable = true;
+    package = pkgs.ananicy-cpp;
+    # rulesProvider is a separate option and still defaults to pkgs.ananicy,
+    # which nixpkgs removed. Setting only `package` leaves it dangling.
+    rulesProvider = pkgs.ananicy-cpp;
+  };
 
   services.zfs = {
     trim = {

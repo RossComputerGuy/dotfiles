@@ -4,6 +4,13 @@
     ../users/default.nix
   ];
 
+  # flake.nix puts stylix.homeModules.stylix in home-manager.sharedModules for
+  # every home-manager path, so stylix must not import it a second time.
+  # stylix.base16 is read-only and a second definition is a hard eval error.
+  # This file is imported by both mkMachine and darwinConfigurations, which is
+  # the only place that covers every configuration that gets a stylix OS module.
+  stylix.homeManagerIntegration.autoImport = false;
+
   nix.settings = {
     auto-allocate-uids = true;
     experimental-features = [ "nix-command" "flakes" "auto-allocate-uids" "cgroups" ];

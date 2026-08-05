@@ -18,7 +18,16 @@
     "apple_dcp.unstable_edid=1"
     "apple_dcp.show_notch=1"
     "appledrm.show_notch=1"
+    # boot.plymouth adds "splash" by itself, so only "quiet" belongs here.
+    "quiet"
   ];
+
+  boot.plymouth.enable = true;
+
+  # Firefox already had a profile here before Home Manager took over
+  # profiles.ini, so name it. This machine keeps it under ~/.mozilla, which is
+  # the ross.firefoxConfigPath default, unlike zeta3a.
+  ross.firefoxProfilePath = "1cf0ubjk.default-1710463219262";
 
   boot.binfmt.emulatedSystems = [
     "x86_64-linux"
@@ -46,6 +55,7 @@
     ];
   };
 
+  hardware.asahi.enable = true;
   hardware.bluetooth.enable = true;
   networking = {
     hostName = "hizack-b";

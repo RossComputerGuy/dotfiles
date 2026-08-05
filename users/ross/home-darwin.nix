@@ -1,8 +1,6 @@
 { config, lib, pkgs, ... }:
 with lib;
 {
-  home.file.".config/alacritty/alacritty.toml".source = ./config/alacritty/alacritty.toml;
-  home.file.".config/alacritty/alacritty-device.toml".source = ./config/alacritty/alacritty-darwin.toml;
   home.file.".config/sketchybar/plugins".source = ./config/sketchybar/plugins;
   home.file.".config/sketchybar/plugins".recursive = true;
   home.file.".config/sketchybar/sketchybarrc".source = ./config/sketchybar/sketchybarrc;

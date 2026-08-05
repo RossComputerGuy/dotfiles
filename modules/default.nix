@@ -1,6 +1,7 @@
 {
   imports = [
     ./programs.nix
+    ./theme.nix
     ./time-locale.nix
     ./profile.nix
     ./net.nix

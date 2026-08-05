@@ -43,6 +43,14 @@
       url = "github:astro/microvm.nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    stylix = {
+      url = "github:nix-community/stylix";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        nur.follows = "nur";
+        systems.follows = "systems";
+      };
+    };
   };
 
   nixConfig = rec {
@@ -74,6 +82,7 @@
       determinate,
       nixvim,
       lanzaboote,
+      stylix,
       ...
     }@inputs:
     let
@@ -249,6 +258,12 @@
 
       homeManagerModules = [
         nixvim.homeModules.nixvim
+        # Always present, on every home-manager path. Stylix's own auto import
+        # only fires when the OS level stylix is enabled, which leaves cross
+        # builds and nix-darwin without the module while modules/theme.nix
+        # still sets stylix options. system/default.nix turns the auto import
+        # off so this entry is never duplicated.
+        stylix.homeModules.stylix
       ];
 
       mkMachine =
@@ -276,6 +291,7 @@
             ./devices/${machine}/default.nix
             nixvim.nixosModules.nixvim
             lanzaboote.nixosModules.lanzaboote
+            stylix.nixosModules.stylix
           ]
           ++ lib.optional ((crossSystem.system or null) != "riscv64-linux") determinate.nixosModules.default
           ++ (cfg.extraModules or [ ])
@@ -446,6 +462,7 @@
               home-manager.sharedModules = homeManagerModules;
             }
             home-manager.darwinModules.default
+            stylix.darwinModules.stylix
             determinate.darwinModules.default
             ./system/default.nix
             ./system/darwin.nix

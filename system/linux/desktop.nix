@@ -83,6 +83,8 @@
   environment.sessionVariables.XDG_DATA_DIRS = [ "/var/lib/flatpak/exports/share" ];
 
   # Graphics
+  # hizack-b boots systemd-boot and zeta3a boots lanzaboote. Nothing here uses grub.
+  stylix.targets.grub.enable = false;
   services.colord.enable = pkgs.stdenv.buildPlatform == pkgs.stdenv.hostPlatform;
   services.gnome.at-spi2-core.enable = true;
   services.xserver.enable = true;

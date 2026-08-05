@@ -22,7 +22,7 @@
     # CMD is Super
     skhdConfig = ''
       cmd - s: screencapture -c
-      cmd - return : /Applications/Alacritty.app/Contents/MacOS/alacritty --working-directory ~
+      cmd - return : open -na Ghostty --args --working-directory=$HOME
 
       cmd - left : yabai -m window --focus west
       cmd - right : yabai -m window --focus east

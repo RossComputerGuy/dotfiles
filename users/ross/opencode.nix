@@ -13,8 +13,15 @@ let
   };
 in
 {
-  home.packages = lib.mkIf enable ([ pkgs.opencode ] ++ oc.lspPackages);
-  xdg.configFile."opencode/opencode.json" = lib.mkIf enable {
-    text = builtins.toJSON oc.settings;
+  # extraPackages only joins onto opencode's own wrapped PATH, it does not put
+  # anything in the profile. These are day to day tools as well (zig, dart,
+  # rust-analyzer and friends), so keep them on the real PATH the way the
+  # hand-written config did.
+  home.packages = lib.mkIf enable oc.lspPackages;
+
+  programs.opencode = {
+    inherit enable;
+    settings = oc.settings;
+    extraPackages = oc.lspPackages;
   };
 }

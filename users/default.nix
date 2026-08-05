@@ -13,6 +13,10 @@ with import ./common.nix args;
 
   home-manager.useGlobalPkgs = true;
   home-manager.useUserPackages = true;
+  # Home Manager refuses to replace a file it does not already own, which stops
+  # activation dead. Firefox's profiles.ini is the first such file here. Move
+  # the old one aside instead of aborting.
+  home-manager.backupFileExtension = "hm-bak";
 
   users.users = users;
 }

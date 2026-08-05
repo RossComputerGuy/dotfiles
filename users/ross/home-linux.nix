@@ -14,10 +14,6 @@ let
       systemctl --user start pipewire pipewire-media-session xdg-desktop-portal xdg-desktop-portal-wlr xdg-desktop-portal-gtk
     '';
   };
-  gtkTheme = {
-    package = pkgs.tokyonight-gtk-theme;
-    name = "Tokyonight-Dark";
-  };
 in
 {
   imports = [
@@ -29,8 +25,6 @@ in
     desktopFileUtilsPackage = lib.mkForce pkgs.pkgsBuildBuild.desktop-file-utils;
   };
 
-  xdg.configFile."alacritty/alacritty.toml".source = ./config/alacritty/alacritty.toml;
-  xdg.configFile."alacritty/alacritty-device.toml".source = ./config/alacritty/alacritty-linux.toml;
   xdg.configFile."electron-flags.conf".source = ./config/electron-flags.conf;
   xdg.configFile."mimeapps.list".source = ./config/mimeapps.list;
   fonts.fontconfig.enable = lib.mkForce (pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform);
@@ -45,7 +39,6 @@ in
   home.packages = with pkgs; [
     dbus-sway-environment
     xdg-user-dirs
-    alacritty
     #solaar
     playerctl
     grim
@@ -82,7 +75,8 @@ in
     # Chat
     signal-desktop
     vesktop # Discord (no official aarch64 client)
-    fluffychat # Matrix
+    # fluffychat (Matrix): meta.broken is set on every platform in this nixpkgs
+    # pin. Put it back when upstream unbreaks it.
     # Slack: ferdium SIGTRAPs on aarch64 (upstream bug); pending a web-app launcher.
   ] ++ lib.optionals (pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform) [
     pkgs.papirus-icon-theme
@@ -94,26 +88,90 @@ in
     PAGER = "nvimpager";
   };
 
+  i18n.inputMethod = {
+    enable = pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform && !pkgs.stdenv.hostPlatform.isRiscV64;
+    type = "fcitx5";
+    fcitx5 = {
+      waylandFrontend = true;
+      addons = [ pkgs.fcitx5-mozc ];
+
+      # fcitx5-configtool links KDE Frameworks 6.28, which now builds PySide6
+      # bindings, and pyside6 build-depends on qtwebengine. That is a multi hour
+      # Chromium build that no cache can supply, because this flake's overlay
+      # patches libdrm, libapparmor and fonttools. The profile is declared
+      # below, so the GUI is not needed.
+      fcitx5-with-addons = pkgs.qt6Packages.fcitx5-with-addons.override {
+        withConfigtool = false;
+      };
+
+      # Stylix's fcitx5 theme makes Home Manager own the whole ~/.config/fcitx5
+      # directory as a read only link, so a profile that fcitx5 wrote itself
+      # would be moved aside and could never come back. Declare it instead.
+      # This is the profile that was on disk before Home Manager took over.
+      settings.inputMethod = {
+        "Groups/0" = {
+          Name = "デフォルト";
+          "Default Layout" = "us";
+          DefaultIM = "mozc";
+        };
+        "Groups/0/Items/0".Name = "keyboard-us";
+        "Groups/0/Items/1".Name = "mozc";
+        GroupOrder."0" = "デフォルト";
+      };
+    };
+  };
+
   gtk = {
     # Prevents mass rebuild
     enable = pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform;
-    cursorTheme = {
-      package = pkgs.shuba-cursors;
-      name = "Shuba";
-    };
     iconTheme = lib.mkIf (pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform) {
       package = pkgs.papirus-icon-theme;
       name = "Papirus-Dark";
     };
-    font = {
-      package = pkgs.dejavu_fonts;
-      name = "Migu 1P Regular";
-    };
-    theme = gtkTheme;
-    # Keep the pre-26.05 default of theming GTK4 apps with the GTK theme.
-    gtk4.theme = gtkTheme;
     gtk3.extraConfig = {
       gtk-application-prefer-dark-theme = true;
     };
+  };
+
+  programs.firefox = {
+    enable = !pkgs.stdenv.hostPlatform.isRiscV;
+    package = pkgs.firefox.overrideAttrs (old: {
+      buildCommand = old.buildCommand + ''
+        mkdir -p $out/gmp-widevinecdm/system-installed
+        ln -s "${pkgs.widevine-cdm}/share/google/chrome/WidevineCdm/_platform_specific/linux_arm64/libwidevinecdm.so" $out/gmp-widevinecdm/system-installed/libwidevinecdm.so
+        ln -s "${pkgs.widevine-cdm}/share/google/chrome/WidevineCdm/manifest.json" $out/gmp-widevinecdm/system-installed/manifest.json
+        wrapProgram "$oldExe" \
+          --set MOZ_GMP_PATH "$out/gmp-widevinecdm/system-installed"
+      '';
+    });
+
+    # Both of these are per machine. Firefox names a profile it creates itself
+    # at random, and zeta3a keeps its profile under the XDG path while hizack-b
+    # keeps its own under ~/.mozilla. See modules/profile.nix.
+    #
+    # users/common.nix calls this file with the NixOS module arguments and hands
+    # the result to home-manager.users, so `config` here is the NixOS config on
+    # a machine and the Home Manager config in a standalone home configuration.
+    # The fallback covers the standalone case, which has no ross options.
+    configPath = config.ross.firefoxConfigPath or ".mozilla/firefox";
+
+    profiles.default = {
+      id = 0;
+      path = config.ross.firefoxProfilePath or "default";
+    };
+  };
+
+  # The desktop is COSMIC. Both of these auto enable on any Linux and would add
+  # an autostart entry that runs at every login, plus theme packages nothing
+  # reads. The gnome one runs gnome-extensions, the kde one runs
+  # plasma-apply-lookandfeel.
+  stylix.targets.gnome.enable = false;
+  stylix.targets.kde.enable = false;
+
+  stylix.targets.firefox = {
+    profileNames = [ "default" ];
+    # Without this you only get font preferences and reader-mode colors, not
+    # actual chrome theming.
+    firefoxGnomeTheme.enable = true;
   };
 }
