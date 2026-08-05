@@ -66,6 +66,21 @@ let
       batch-size = 512;
       ubatch-size = 512;
     };
+    # GLM-4.7-Flash: the fast daily model, kept resident on the GPU with all
+    # attention offloaded (n-gpu-layers=999 from the shared defaults). It uses
+    # MLA (kv_lora_rank 512, 47 layers), so llama.cpp stores a compressed KV
+    # cache of about 53 KiB per token. At the shared 135168 ctx that is ~7.3GB,
+    # and with the attention weights (~1.8GB), the 4096-ubatch compute buffer
+    # (1.68GB), and the desktop (~1.8GB) it overflows the 12GB card. It only
+    # loaded before because fit auto-shrank the context. fit is off now (the big
+    # cpu-moe models need it off), so this model must cap its own context. 65536
+    # holds ~3.6GB of KV and leaves headroom for the compute buffer and a second
+    # model. ubatch 2048 halves the compute buffer and keeps prefill fast.
+    "glm4.7-flash:30b-a3b" = {
+      ctx-size = 65536;
+      batch-size = 2048;
+      ubatch-size = 2048;
+    };
   };
   # These are per-model tunables, deliberately NOT in services.llama-cpp.settings.
   # llama.cpp's router overlays its own CLI args on top of every child preset

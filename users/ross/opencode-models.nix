@@ -65,8 +65,9 @@
     display = "GLM-4.7-Flash 30B-A3B";
     preset = {
       # 30B MoE, only ~3.6B active per token (GLM-family twin of the Qwen3.6
-      # A3B), so decode flies at ~15 t/s. Small enough that the global cpu-moe +
-      # numa distribute inherit fine, no per-model overrides. No MTP: it's a 10x
+      # A3B), so decode flies at ~15 t/s. It stays resident on the GPU, so its
+      # ctx and ubatch are capped in the zeta3a llamaModelOverrides (fit is off,
+      # the full 135k KV cache does not fit the 12GB card). No MTP: it's a 10x
       # throughput loss on this model per unsloth's own docs, same as GLM-5.2.
       hf-repo = "unsloth/GLM-4.7-Flash-GGUF";
       hf-file = "GLM-4.7-Flash-UD-Q5_K_XL.gguf";
