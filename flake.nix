@@ -65,11 +65,22 @@
       "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
       #"cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g="
       "cosmic.cachix.org-1:Dya9IyXD4xdBehWjrkPv6rtxpmMdRel02smYzA85dPE="
+      "argama-1:D/CZ1iVEV+tjTUcYklCVGGhOkxHtx6M8B5j6hBYuSEk="
     ];
     substituters = [
       "https://cache.nixos.org"
       #"https://cache.garnix.io"
       "https://cosmic.cachix.org"
+      # Plain HTTP on purpose. The Nix daemon needs a certificate authority in
+      # its trust store before it starts, and OpenBao gives a machine argama's
+      # authority long after that. TLS adds nothing here either, because every
+      # store path carries a signature which the key above checks. A changed
+      # byte on the wire fails that check, so the transport carries no trust.
+      #
+      # The name resolves through argama's own DNS only. A machine that cannot
+      # reach it logs a warning for each query and carries on, because fallback
+      # is true below.
+      "http://cache.argama.nix"
     ];
     trusted-substituters = substituters;
     fallback = true;

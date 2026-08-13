@@ -797,38 +797,192 @@ machine stops at that point and needs a console.
    `flake.nix`, and add `http://cache.argama.nix` to `substituters`.
 
 4. Make an AppRole for argama's own agents, then write the role ID and the
-   secret ID to the two paths in the table above.
+   secret ID to the two paths in the table above. Nothing on this machine can
+   read a secret until these two files exist, so every agent sits in a retry
+   loop and each service it feeds reports "Dependency failed".
+
+   The policy covers what argama's own templates ask for. `pki/issue/argama` is
+   a write, not a read, because Caddy asks the PKI to make it a certificate:
+
+   ```
+   bao auth enable approle
+
+   bao policy write argama - <<'EOF'
+   path "secret/data/argama/*" {
+     capabilities = ["read"]
+   }
+   path "pki/issue/argama" {
+     capabilities = ["create", "update"]
+   }
+   EOF
+
+   bao write auth/approle/role/argama \
+     token_policies=argama \
+     token_ttl=1h token_max_ttl=24h \
+     secret_id_num_uses=0 secret_id_ttl=0
+   ```
+
+   The secret ID must not expire or burn after one use. `secrets.nix` sets
+   `remove_secret_id_file_after_reading = false`, because the agent reads the
+   file again after every restart. A secret ID with a life on it works until
+   the first reboot and then stops the whole machine.
+
+   ```
+   install -d -m 0700 /var/lib/vault-agent
+
+   bao read -field=role_id auth/approle/role/argama/role-id \
+     > /var/lib/vault-agent/role-id
+   bao write -f -field=secret_id auth/approle/role/argama/secret-id \
+     > /var/lib/vault-agent/secret-id
+
+   chmod 0600 /var/lib/vault-agent/role-id /var/lib/vault-agent/secret-id
+   ```
+
+   The agents retry every 15 seconds, so they find these by themselves. Watch
+   one pick it up:
+
+   ```
+   journalctl -fu detsys-vaultAgent-caddy
+   ```
 
 5. Enroll the secure boot keys. `lanzaboote` makes and enrolls them, but the
-   firmware must be in secure boot setup mode first. Check the result with
-   `sbctl status`, the same as on zeta3a. These keys stay on disk, and the note
-   below says why the YubiKey does not hold them.
+   firmware must be in secure boot setup mode first. These keys stay on disk,
+   and the note below says why the YubiKey does not hold them.
+
+   Enrolling is only half of it. `sbctl status` can report `Setup Mode:
+   Disabled` and `Secure Boot: Disabled` together, which means the keys went in
+   but the firmware is not checking them. Turn Secure Boot on in the firmware
+   and read the status again:
+
+   ```
+   sbctl status      # want Secure Boot: ✓ Enabled
+   ```
+
+   **Do the PCR 7 bind in step 5 of the install only after this reads
+   Enabled.** PCR 7 measures the secure boot state, which covers the enrolled
+   keys **and** whether secure boot is switched on. Each of those two changes
+   moves PCR 7 and stops the TPM releasing the pool key. A pool bound while
+   secure boot is off stops booting the moment it is turned on, and the way
+   back is the installer.
+
+   Leave the Microsoft KEK and db entries where they are. On this board they
+   are what lets an add-in card run its option ROM, and removing them is a
+   known way to lose video or an HBA at POST.
 
 6. Build the certificate authority for the `.nix` zone. The root private key is
    made on the YubiKey and never leaves it. OpenBao holds an intermediate, so
    argama issues its own certificates every day and the root only comes out
    when the intermediate needs signing again.
 
+   PIV starts at the factory defaults, and all three of them are public. The
+   PIN is `123456` and the PUK is `12345678`, which are **different values**.
+   Three wrong PINs block the applet. Change all three first. `--protect` keeps
+   the new management key on the card behind the PIN, so there is no long hex
+   string to keep:
+
+   ```
+   ykman piv access change-management-key --generate --protect
+   ykman piv access change-pin      # from 123456
+   ykman piv access change-puk      # from 12345678
+   ```
+
+   gpg takes the reader whenever it wakes, and the PIV tools then fail with
+   "Error in PCSC call" or simply hang. Run this before each PIV command:
+
+   ```
+   gpgconf --kill scdaemon
+   ```
+
+   If the PIN does block, `ykman piv reset` costs nothing while PIV is empty.
+   It clears the PIV applet alone. The OpenPGP key that opens the pool escrow
+   and the OTP slot that answers the ZFS challenge are separate applets and do
+   not change.
+
    ```
    # Root key on the YubiKey, PIV slot 9c. This key cannot be exported.
+   # -V, or the root expires in 365 days.
    yubico-piv-tool -s 9c -a generate -o rootpub.pem
    yubico-piv-tool -s 9c -a verify-pin -a selfsign-certificate \
-     -S '/CN=argama .nix root/' -i rootpub.pem -o root.crt
+     -S '/CN=argama.nix Root/' -V 7300 -i rootpub.pem -o root.crt
 
    # OpenBao holds the intermediate that does the daily work.
    bao secrets enable pki
-   bao secrets tune -max-lease-ttl=8760h pki
+   bao secrets tune -max-lease-ttl=87600h pki
    bao write -field=csr pki/intermediate/generate/internal \
-     common_name="argama .nix intermediate" > inter.csr
+     common_name="argama.nix Intermediate" key_type=ec key_bits=384 > inter.csr
+   ```
 
-   # The YubiKey signs it. This is the only step that needs the key.
-   yubico-piv-tool -s 9c -a verify-pin -a request-certificate \
-     -i inter.csr -o inter.crt
+   Now the YubiKey signs that CSR. `yubico-piv-tool` cannot do this. Both
+   `selfsign-certificate` and `request-certificate` work on the card's **own**
+   key, so neither one signs somebody else's request. The tool has no action
+   that makes the card behave as a certificate authority.
 
+   OpenSSL does it through PKCS#11. `libykcs11.so` already ships in the
+   `yubico-piv-tool` package, and OpenSSL 3 reaches it through a provider:
+
+   ```
+   YKCS11=$(dirname $(dirname $(readlink -f $(command -v yubico-piv-tool))))/lib/libykcs11.so
+   nix shell nixpkgs#pkcs11-provider nixpkgs#openssl
+   gpgconf --kill scdaemon
+   ```
+
+   OpenSSL looks for a provider only below its own store path, and this one is
+   in another. `nix shell` sets PATH and changes nothing about `dlopen`, so
+   every command below needs `-provider-path`. Give it before `-provider`,
+   because the path must be known when the provider loads:
+
+   ```
+   PROV=$(nix build --no-link --print-out-paths nixpkgs#pkcs11-provider)
+   ls "$PROV/lib/ossl-modules"      # pkcs11.so
+   ```
+
+   Take `openssl` from the same `nix shell` as the provider. The provider is
+   built against one OpenSSL, and a pair that does not match fails in a way
+   that reads like a missing file.
+
+   Ask the card which objects it holds. Take the URI from this output rather
+   than writing one, because the name depends on the ykcs11 version:
+
+   ```
+   PKCS11_PROVIDER_MODULE=$YKCS11 openssl storeutl \
+     -provider-path "$PROV/lib/ossl-modules" \
+     -provider pkcs11 -provider default -keys 'pkcs11:'
+   ```
+
+   Slot 9c shows as something near "Private key for Digital Signature". Sign
+   with it. The extensions matter: a certificate with no `CA:TRUE` cannot sign,
+   and `pathlen:0` stops the intermediate making more authorities below it:
+
+   ```
+   cat > ca.ext <<'EOF'
+   basicConstraints=critical,CA:TRUE,pathlen:0
+   keyUsage=critical,keyCertSign,cRLSign
+   subjectKeyIdentifier=hash
+   EOF
+
+   PKCS11_PROVIDER_MODULE=$YKCS11 openssl x509 -req \
+     -provider-path "$PROV/lib/ossl-modules" \
+     -provider pkcs11 -provider default \
+     -in inter.csr -CA root.crt -CAkey '<the URI from storeutl>' \
+     -days 3650 -CAcreateserial -extfile ca.ext -out inter.crt
+   ```
+
+   ```
    bao write pki/intermediate/set-signed certificate=@inter.crt
    bao write pki/roles/argama allowed_domains=argama.nix \
      allow_subdomains=true allow_bare_domains=true max_ttl=720h
    ```
+
+   OpenBao can also make its own root, which needs no card and no PKCS#11:
+
+   ```
+   bao write -field=certificate pki/root/generate/internal \
+     common_name="argama.nix Root" ttl=87600h key_type=ec key_bits=384 > root.crt
+   ```
+
+   That gives up the part where the root key cannot be copied off the machine.
+   Swapping the root later costs one file on each client, because
+   `secret/argama/ca` is the only place they read it from.
 
 7. Put the root certificate into OpenBao, so the clients can fetch it:
 

@@ -5,11 +5,18 @@
   ...
 }:
 let
-  # Set these two after the first boot. argama answers its own zone with a
-  # different address on each side, so a LAN client takes the LAN path and a
-  # client away from home takes the tailnet.
-  lanAddress = "192.168.1.10";
-  tailnetAddress = "100.64.0.10";
+  # argama answers its own zone with a different address on each side, so a LAN
+  # client takes the LAN path and a client away from home takes the tailnet.
+  #
+  # blocky binds these, not only answers with them. An address that is not on
+  # the machine fails the bind, and the unit then dies and takes the loopback
+  # listener with it, so nothing on argama resolves either.
+  #
+  # The LAN address arrives by DHCP. Reserve it for this MAC on the router
+  # (48:21:0b:79:5b:5f, enP3p3s0f1), because a machine that serves DNS to the
+  # house must not change address when a lease moves.
+  lanAddress = "192.168.1.163";
+  tailnetAddress = "100.94.55.6";
 
   ports = import ./service-ports.nix;
 
@@ -102,6 +109,21 @@ in
       CapabilityBoundingSet = [ "CAP_NET_BIND_SERVICE" ];
     };
   };
+
+  # argama runs the resolver for the house, so it must use it as well. Without
+  # this, systemd-resolved sends every query to whatever address DHCP gave it,
+  # the router has never heard of the .nix zone, and argama cannot reach its own
+  # services by name even while blocky answers the rest of the house correctly.
+  #
+  # resolved stays on. Tailscale gives it the route for the tailnet names, and
+  # turning resolved off would take that away with it.
+  #
+  # "~." makes resolved send everything to the servers below instead of the ones
+  # DHCP puts on the link. Without it the per link servers win and the setting
+  # above does nothing. Tailscale registers its own domain, which is more exact
+  # than "~.", so the tailnet names still take the Tailscale path.
+  networking.nameservers = [ "127.0.0.1" ];
+  services.resolved.settings.Resolve.Domains = [ "~." ];
 
   # argama answers DNS for the whole house, so port 53 is open on every
   # interface. If this machine ever gets a public address, change these two
