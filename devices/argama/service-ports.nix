@@ -6,6 +6,9 @@
 # auth says how Caddy guards the name:
 #   "forward"  Authelia checks every request first. One login covers them all.
 #   "none"     The service does its own checking. Each one below says why.
+#
+# host is where Caddy sends the request. It is 127.0.0.1 unless a service says
+# otherwise, and only a service in another network namespace says otherwise.
 {
   # Reached over TLS on 443. Caddy passes each one to its port on the loopback.
   tls = {
@@ -53,7 +56,14 @@
       port = 9696;
       auth = "forward";
     };
+    # qBittorrent runs inside the mullvad network namespace, so it does not
+    # listen on argama's loopback at all. vpnNamespaces.mullvad.portMappings
+    # writes a DNAT rule, but only into PREROUTING, which sees traffic that
+    # arrives from another machine. Caddy runs on this machine, so its packets
+    # take OUTPUT instead and never meet that rule. Give Caddy the address in
+    # the namespace and no rule is needed.
     qbit = {
+      host = "192.168.15.1";
       port = 8080;
       auth = "forward";
     };
