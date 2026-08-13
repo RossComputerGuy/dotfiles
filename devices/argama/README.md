@@ -525,11 +525,46 @@ nixos-install --flake .#argama
 `networking.hostId` is `8564d4ac` in `default.nix`. ZFS refuses to import a pool
 whose host ID does not match, so leave it as it is.
 
-### 5. Give the pool keys to the TPM, and keep a way back
+**Do not reboot yet.** Step 5 comes first.
 
-Do this after the first boot, from the installed system. It replaces each
-passphrase with a key that the TPM holds, so stage 1 opens both pools without
-asking.
+### 5. Give the pool keys to the TPM, before the first boot
+
+Do this from the installer, while the pools are still imported and their keys
+are still loaded. It is not optional and it does not wait until later.
+
+`default.nix` sets `boot.zfs.requestEncryptionCredentials` to an empty list, so
+stage 1 emits no `zfs load-key` and never asks for a passphrase. The TPM is
+meant to hand the key over instead. A machine that reboots before the seal
+exists has no way at all to open its root pool: it drops to an emergency shell
+that no passphrase can reach, and the installer USB becomes the only way back.
+
+**No `-P` on this first seal.** lanzaboote enrolls the secure boot keys on the
+first boot, which moves PCR 7, and a key bound to PCR 7 now would refuse to open
+on the second boot. Press Enter at each passphrase prompt to leave it empty, so
+the seal opens whatever the firmware state turns out to be:
+
+```
+nix shell nixpkgs#tzpfms
+
+zfs-tpm2-change-key -b /mnt/root/zpool.key zpool
+zfs-tpm2-change-key -b /mnt/root/tank.key  tank
+
+zfs-tpm-list -a        # both pools, TPM2, COHERENT yes
+```
+
+`-b` writes to `/mnt/root` and not `/root`, because the installer's own `/root`
+is memory and goes at the reboot.
+
+Between now and step 6 the pools open on this TPM whatever the firmware does, so
+anyone holding the machine can read them. That window is while you stand at the
+machine, and step 6 closes it.
+
+Now reboot.
+
+### 6. Bind the seal to secure boot, and keep a way back
+
+Do this after the first boot, once `sbctl status` shows the keys enrolled. It
+adds the PCR binding the step above had to leave off, and a YubiKey fallback.
 
 Two flags matter here.
 
@@ -551,12 +586,22 @@ the paths above with them.
 keyboard. It runs under `sh -c` and its output becomes the passphrase. This ran
 on zeta3a and is the form to copy:
 
+The file names differ from step 5 on purpose. `-b` refuses a file that is already
+there, and step 5 left `/root/zpool.key` and `/root/tank.key` behind:
+
 ```
 sudo env TZPFMS_PASSPHRASE_HELPER='ykchalresp -2 argama-zpool-2026' \
-  zfs-tpm2-change-key -b /root/zpool.key -P sha256:7 -A zpool
+  zfs-tpm2-change-key -b /root/zpool-sealed.key -P sha256:7 -A zpool
 
 sudo env TZPFMS_PASSPHRASE_HELPER='ykchalresp -2 argama-tank-2026' \
-  zfs-tpm2-change-key -b /root/tank.key -P sha256:7 -A tank
+  zfs-tpm2-change-key -b /root/tank-sealed.key -P sha256:7 -A tank
+```
+
+This makes a **new** wrapping key for each pool, so the two files step 5 wrote
+open nothing from here on. Destroy them once the new ones are proved below:
+
+```
+sudo shred -u /root/zpool.key /root/tank.key
 ```
 
 Each prints `Key for <pool> changed` and asks nothing, because the helper
@@ -585,9 +630,9 @@ rather than encrypt to one, so say `--trust-model always` or set the trust once
 with `gpg --edit-key`, then `trust`, then `5`:
 
 ```
-sudo cat /root/zpool.key | gpg --encrypt --recipient 9F167124D5EC917E \
+sudo cat /root/zpool-sealed.key | gpg --encrypt --recipient 9F167124D5EC917E \
   --trust-model always --output ~/zpool.key.gpg
-sudo cat /root/tank.key  | gpg --encrypt --recipient 9F167124D5EC917E \
+sudo cat /root/tank-sealed.key  | gpg --encrypt --recipient 9F167124D5EC917E \
   --trust-model always --output ~/tank.key.gpg
 ```
 
@@ -604,7 +649,7 @@ Only then:
 
 ```
 chmod 600 ~/zpool.key.gpg ~/tank.key.gpg
-sudo shred -u /root/zpool.key /root/tank.key
+sudo shred -u /root/zpool-sealed.key /root/tank-sealed.key
 ```
 
 Now move both off argama. A copy that stays here protects against nothing,
@@ -680,15 +725,49 @@ machine stops at that point and needs a console.
 1. Initialize OpenBao with the unseal shares encrypted to the YubiKey, so no
    plain share ever reaches this disk:
 
+   You give OpenBao no key. It makes the unseal key and the root token itself.
+   What you give it is the **public** half of the YubiKey's OpenPGP key, and it
+   encrypts both results to that key before it prints them.
+
+   argama's root keyring starts empty, so fetch the public half first. The card
+   holds the private half only:
+
+   ```
+   curl -sL https://github.com/RossComputerGuy.gpg | gpg --import
+   gpg --list-keys      # 9F167124D5EC917E is the encryption subkey
+   ```
+
+   One share and a threshold of one, because every share would go to the same
+   key. Splitting a secret among one holder adds work and no safety:
+
    ```
    export BAO_ADDR=http://127.0.0.1:8200
-   gpg --export <your key id> | base64 > /tmp/yk.pub
+   gpg --export 001047CA0BF783D10AEB5EF20A5B20F0FB92F1B0 | base64 > /tmp/yk.pub
    bao operator init -key-shares=1 -key-threshold=1 \
      -pgp-keys=/tmp/yk.pub -root-token-pgp-key=/tmp/yk.pub
    ```
 
-   Put each encrypted share in `/var/lib/openbao/unseal-shares/` with an `.asc`
-   name. Then unseal with the YubiKey in the machine:
+   **Decode before you save.** `init` prints the share and the token as base64,
+   and inside that base64 is a binary PGP message. gpg reads the message but not
+   the base64 around it, so a file with the printed text in it fails to decrypt
+   and `argama-unseal` stops with a gpg error. The `.asc` name is only the
+   pattern the script globs for:
+
+   ```
+   echo '<Unseal Key 1>' | base64 -d > /var/lib/openbao/unseal-shares/1.asc
+   echo '<Initial Root Token>' | base64 -d > /root/root-token.gpg
+   chmod 600 /root/root-token.gpg
+   ```
+
+   Prove both open before you close the terminal that printed them. That output
+   is the only other copy:
+
+   ```
+   gpg --decrypt /var/lib/openbao/unseal-shares/1.asc | head -c 20; echo
+   gpg --decrypt /root/root-token.gpg
+   ```
+
+   Then unseal with the YubiKey in the machine:
 
    ```
    argama-unseal
