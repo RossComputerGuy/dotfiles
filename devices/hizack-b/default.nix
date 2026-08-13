@@ -55,6 +55,11 @@
     ];
   };
 
+  # Backup
+  # A laptop is away from home often, so it reaches argama over the tailnet.
+  # The split horizon in argama's dns.nix answers with the right address.
+  ross.backup.enable = true;
+
   hardware.asahi.enable = true;
   hardware.bluetooth.enable = true;
   networking = {
