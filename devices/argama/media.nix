@@ -69,10 +69,10 @@
   # route, so qBittorrent cannot fall back to the real connection.
   vpnNamespaces.mullvad = {
     enable = true;
-    # The Vault agent writes this file into the PrivateTmp of the mullvad unit.
-    # See vault.nix for the template and for the Vault path.
-    wireguardConfigFile =
-      config.detsys.vaultAgent.systemd.services.mullvad.secretFiles.files."wireguard.conf".path;
+    # The mullvad-key unit in secrets.nix copies this out of OpenBao into /run.
+    # It must not come from this unit's own PrivateTmp: a mount namespace on
+    # the mullvad unit stops "ip netns add" reaching the host. See secrets.nix.
+    wireguardConfigFile = "/run/mullvad-key/wireguard.conf";
     # The host and the tailnet reach into the namespace through a veth pair.
     accessibleFrom = [
       "127.0.0.1"
