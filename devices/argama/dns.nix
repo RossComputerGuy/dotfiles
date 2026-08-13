@@ -39,6 +39,11 @@ let
       # Caddy publishes the LAN instance as dns.argama.nix, and Prometheus
       # scrapes both, so each web interface binds the loopback.
       http = httpBind;
+      # Bind an address before it is on an interface. Both instances need it:
+      # the LAN address arrives by DHCP, and the tailnet address arrives when
+      # Tailscale comes up. Neither is there when blocky starts, and a plain
+      # bind then fails with "cannot assign requested address".
+      freeBind = true;
     };
     upstreams.groups.default = [ "127.0.0.1:5335" ];
     # blocky downloads the lists over HTTPS, and that download needs a resolver
@@ -86,6 +91,23 @@ in
   services.blocky = {
     enable = true;
     settings = blockySettings "127.0.0.1:53,${lanAddress}:53" "127.0.0.1:4000" lanAddress;
+  };
+
+  # The nixpkgs module gives blocky "Wants=network-online.target" and no
+  # matching After=. Wants pulls the target in but does not wait for it, so
+  # blocky starts before DHCP has put the address on the interface and the bind
+  # to the LAN address fails.
+  #
+  # Its Restart=on-failure then retries at the 100ms default, which spends
+  # systemd's five attempts in under a second and leaves the unit dead for
+  # good. Wait for the address, and retry slowly enough to be useful.
+  systemd.services.blocky = {
+    after = [
+      "network-online.target"
+      "unbound.service"
+    ];
+    unitConfig.StartLimitIntervalSec = 0;
+    serviceConfig.RestartSec = 5;
   };
 
   # The tailnet side. The NixOS module holds one instance only, so the second
