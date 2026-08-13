@@ -135,6 +135,10 @@ in
   environment.systemPackages = with pkgs; [
     vlc
     sbctl
+    # ykchalresp answers the passphrase on the pool's sealed TPM object. Without
+    # it on the machine, a rescue shell has no way to compute that answer and no
+    # network to fetch the tool. See the README.
+    yubikey-personalization
     nvtopPackages.nvidia
     dsview
   ];
