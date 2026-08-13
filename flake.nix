@@ -43,6 +43,13 @@
       url = "github:astro/microvm.nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    # Puts qBittorrent in a network namespace whose only route out is the
+    # Mullvad tunnel. It has no inputs of its own.
+    vpn-confinement.url = "github:Maroka-chan/VPN-Confinement";
+    nixos-vault-service = {
+      url = "github:DeterminateSystems/nixos-vault-service";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     stylix = {
       url = "github:nix-community/stylix";
       inputs = {
@@ -219,6 +226,7 @@
       );
 
       machines = {
+        argama = "aarch64-linux";
         zeta3a = "aarch64-linux";
         hizack-b = "aarch64-linux";
         jegan = "riscv64-linux";
@@ -238,7 +246,14 @@
         };
       };
 
-      machineConfig = { };
+      machineConfig = {
+        # Only argama confines a service to a VPN namespace. Every machine gets
+        # the Vault agent, because they all read their secrets from
+        # vault.argama.nix.
+        argama.extraModules = [
+          inputs.vpn-confinement.nixosModules.default
+        ];
+      };
 
       users = [ "ross" ];
       forAllUsers =
@@ -292,6 +307,7 @@
             nixvim.nixosModules.nixvim
             lanzaboote.nixosModules.lanzaboote
             stylix.nixosModules.stylix
+            inputs.nixos-vault-service.nixosModules.nixos-vault-service
           ]
           ++ lib.optional ((crossSystem.system or null) != "riscv64-linux") determinate.nixosModules.default
           ++ (cfg.extraModules or [ ])

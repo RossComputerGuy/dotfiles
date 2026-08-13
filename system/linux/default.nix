@@ -1,3 +1,4 @@
+{ lib, ... }:
 {
   imports = [
     ../../modules
@@ -10,5 +11,7 @@
     options = "--delete-older-than 30d";
   };
 
-  ross.profile = "desktop";
+  # Most machines here are desktops. A headless machine sets the standard
+  # profile in its own device file.
+  ross.profile = lib.mkDefault "desktop";
 }

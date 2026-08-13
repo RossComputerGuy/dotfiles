@@ -376,6 +376,15 @@ in
   ross.firefoxProfilePath = "8qp9adwe.default";
   ross.firefoxConfigPath = ".config/mozilla/firefox";
 
+  # Backup
+  ross.backup = {
+    enable = true;
+    paths = [
+      "/home"
+      "/var/lib"
+    ];
+  };
+
   # Networking
   networking.hostName = "zeta3a";
   networking.hostId = "f174c9ca";

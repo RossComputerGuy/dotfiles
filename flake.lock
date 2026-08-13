@@ -529,6 +529,26 @@
         "type": "github"
       }
     },
+    "nixos-vault-service": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1779897855,
+        "narHash": "sha256-E0ig/PtbZ1vcm76/3BIvtauGOSD4JamUslyHMFlqBiw=",
+        "owner": "DeterminateSystems",
+        "repo": "nixos-vault-service",
+        "rev": "8352586291aac308a4a1c034f81f56b6a4519110",
+        "type": "github"
+      },
+      "original": {
+        "owner": "DeterminateSystems",
+        "repo": "nixos-vault-service",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1782767157,
@@ -710,12 +730,14 @@
         "microvm": "microvm",
         "nixos-apple-silicon": "nixos-apple-silicon",
         "nixos-hardware": "nixos-hardware",
+        "nixos-vault-service": "nixos-vault-service",
         "nixpkgs": "nixpkgs_5",
         "nixvim": "nixvim",
         "nur": "nur",
         "shuba-cursors": "shuba-cursors",
         "stylix": "stylix",
-        "systems": "systems_2"
+        "systems": "systems_2",
+        "vpn-confinement": "vpn-confinement"
       }
     },
     "rust-overlay": {
@@ -904,6 +926,21 @@
       "original": {
         "owner": "tinted-theming",
         "repo": "base16-zed",
+        "type": "github"
+      }
+    },
+    "vpn-confinement": {
+      "locked": {
+        "lastModified": 1785142579,
+        "narHash": "sha256-WEPxDMiKt3uGVVu/aorHnIgYYW62mEq2Q+rlN3qH6bg=",
+        "owner": "Maroka-chan",
+        "repo": "VPN-Confinement",
+        "rev": "b3aa71a7edfe6af748c23729d1bdec3b499741ff",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Maroka-chan",
+        "repo": "VPN-Confinement",
         "type": "github"
       }
     }
