@@ -190,11 +190,23 @@
               patches = [ ];
             });
 
+            # libapparmor 5.0.2 puts a variable length array in a union at block
+            # scope, in self_syscall_enabled_init_once. GCC takes that as an
+            # extension. Clang refuses it and says the extension will never be
+            # supported. The replacement is the same constant the line above
+            # assigns to total_size, so this only folds the value in place and
+            # the code keeps its meaning.
+            #
+            # Only clang needs it. Applied to every compiler it rebuilds
+            # libapparmor and then dbus, pcsclite, libfido2 and openssh above
+            # it, none of which can come from a cache after that.
             libapparmor = prev.libapparmor.overrideAttrs (o: {
-              postPatch = (o.postPatch or "") + ''
-                substituteInPlace src/kernel.c \
-                  --replace-fail "char buff[total_size];" "char buff[sizeof(struct lsm_ctx) + 8];"
-              '';
+              postPatch =
+                (o.postPatch or "")
+                + lib.optionalString final.stdenv.cc.isClang ''
+                  substituteInPlace src/kernel.c \
+                    --replace-fail "char buff[total_size];" "char buff[sizeof(struct lsm_ctx) + 8];"
+                '';
             });
 
             pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [

@@ -65,6 +65,16 @@
       port = 3001;
       auth = "forward";
     };
+
+    # radicle-httpd is read only. It serves the browsing API and a git clone
+    # over HTTP, and git follows no login redirect, so a forward check would
+    # only break the clone. That is the same reason the binary cache and restic
+    # carry none. A write goes to the node on 8776 instead, which checks a
+    # signature and never sees this port. Hydra reads its jobsets from here.
+    radicle = {
+      port = 8081;
+      auth = "none";
+    };
     grafana = {
       port = 3002;
       auth = "forward";

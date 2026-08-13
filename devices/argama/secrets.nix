@@ -144,6 +144,7 @@
         "detsys-vaultAgent-harmonia-key"
         "detsys-vaultAgent-paperless-scheduler"
         "detsys-vaultAgent-grafana"
+        "detsys-vaultAgent-radicle-key"
       ]
       (_: {
         after = [ "openbao.service" ];
