@@ -1,4 +1,10 @@
-{ config, lib, pkgs, inputs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  inputs,
+  ...
+}:
 with lib;
 let
   dbus-sway-environment = pkgs.writeTextFile {
@@ -14,6 +20,22 @@ let
       systemctl --user start pipewire pipewire-media-session xdg-desktop-portal xdg-desktop-portal-wlr xdg-desktop-portal-gtk
     '';
   };
+
+  # users/common.nix calls this file with the NixOS module arguments, so `config`
+  # is the NixOS config on a machine. A standalone home configuration has no ross
+  # options, and every one of those is a desktop, so fall back to true there.
+  #
+  # Without this gate a headless machine still gets Firefox, LibreOffice, Mozc
+  # and the GTK stack. The flake overlay patches libdrm and fonttools, so no
+  # cache can supply anything above them and the machine builds Firefox itself.
+  #
+  # Read the profile only from this file, never from home.nix. common.nix merges
+  # home.nix into the result AND this file imports it, so Home Manager evaluates
+  # home.nix a second time with its own config, which has no ross options. The
+  # two evaluations would then disagree and the merge would stop.
+  desktop = (config.ross.profile or "desktop") == "desktop";
+
+  native = pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform;
 in
 {
   imports = [
@@ -27,7 +49,7 @@ in
 
   xdg.configFile."electron-flags.conf".source = ./config/electron-flags.conf;
   xdg.configFile."mimeapps.list".source = ./config/mimeapps.list;
-  fonts.fontconfig.enable = lib.mkForce (pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform);
+  fonts.fontconfig.enable = lib.mkForce (desktop && native);
   home.file."Pictures/wallpaper.jpg".source = ./pictures/wallpaper.jpg;
   home.file.".gdbinit".source = pkgs.fetchurl {
     url = "https://github.com/cyrus-and/gdb-dashboard/raw/05b31885798f16b1c1da9cb78f8c78746dd3557e/.gdbinit";
@@ -36,60 +58,69 @@ in
 
   home.username = "ross";
   home.homeDirectory = mkForce "/home/ross";
-  home.packages = with pkgs; [
-    dbus-sway-environment
-    xdg-user-dirs
-    #solaar
-    playerctl
-    grim
-    slurp
-    wl-clipboard
-    migu
-    maim
-    xclip
-    brightnessctl
-    kanshi
-    corefonts
-    noto-fonts
-    dejavu_fonts
-  ] ++ lib.optionals (!pkgs.stdenv.hostPlatform.isRiscV64 && pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform) [
-    (prismlauncher.override {
-      glfw3-minecraft = pkgs.glfw3-minecraft.overrideAttrs (f: p: {
-        patches = [
-          (builtins.elemAt p.patches 0)
-        ];
+  home.packages =
+    with pkgs;
+    lib.optionals desktop [
+      dbus-sway-environment
+      xdg-user-dirs
+      #solaar
+      playerctl
+      grim
+      slurp
+      wl-clipboard
+      migu
+      maim
+      xclip
+      brightnessctl
+      kanshi
+      corefonts
+      noto-fonts
+      dejavu_fonts
+    ]
+    ++ lib.optionals (desktop && !pkgs.stdenv.hostPlatform.isRiscV64 && native) [
+      (prismlauncher.override {
+        glfw3-minecraft = pkgs.glfw3-minecraft.overrideAttrs (
+          f: p: {
+            patches = [
+              (builtins.elemAt p.patches 0)
+            ];
 
-        prePatch = ''
-          patches+=(${pkgs.fetchFromGitHub {
-            owner = "diniamo";
-            repo = "glfw-wayland";
-            rev = "8c52ae47f406ba455fd19b7539c6f895652c558d";
-            hash = "sha256-7FnfxWeJIndHBPtpoguWUBOAE/d/oLDFQlddugfkg5c=";
-          }}/patches/*.patch)
-        '';
-      });
-    })
-    pamixer
-    noto-fonts-color-emoji
-    libreoffice
-    # Chat
-    signal-desktop
-    vesktop # Discord (no official aarch64 client)
-    # fluffychat (Matrix): meta.broken is set on every platform in this nixpkgs
-    # pin. Put it back when upstream unbreaks it.
-    # Slack: ferdium SIGTRAPs on aarch64 (upstream bug); pending a web-app launcher.
-  ] ++ lib.optionals (pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform) [
-    pkgs.papirus-icon-theme
-    pkgs.nvimpager
-  ];
+            prePatch = ''
+              patches+=(${
+                pkgs.fetchFromGitHub {
+                  owner = "diniamo";
+                  repo = "glfw-wayland";
+                  rev = "8c52ae47f406ba455fd19b7539c6f895652c558d";
+                  hash = "sha256-7FnfxWeJIndHBPtpoguWUBOAE/d/oLDFQlddugfkg5c=";
+                }
+              }/patches/*.patch)
+            '';
+          }
+        );
+      })
+      pamixer
+      noto-fonts-color-emoji
+      libreoffice
+      # Chat
+      signal-desktop
+      vesktop # Discord (no official aarch64 client)
+      # fluffychat (Matrix): meta.broken is set on every platform in this nixpkgs
+      # pin. Put it back when upstream unbreaks it.
+      # Slack: ferdium SIGTRAPs on aarch64 (upstream bug); pending a web-app launcher.
+    ]
+    ++ lib.optional (desktop && native) pkgs.papirus-icon-theme
+    # nvimpager is not a desktop program. home.nix makes it the git pager on every
+    # native machine, so a headless one still needs it. It stays after papirus so
+    # that a desktop keeps the order it had, and its store path does not move.
+    ++ lib.optional native pkgs.nvimpager;
 
-  home.sessionVariables = lib.mkIf (pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform) {
+  home.sessionVariables = lib.mkIf native {
     MANPAGER = "nvimpager";
     PAGER = "nvimpager";
   };
 
   i18n.inputMethod = {
-    enable = pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform && !pkgs.stdenv.hostPlatform.isRiscV64;
+    enable = desktop && native && !pkgs.stdenv.hostPlatform.isRiscV64;
     type = "fcitx5";
     fcitx5 = {
       waylandFrontend = true;
@@ -123,8 +154,8 @@ in
 
   gtk = {
     # Prevents mass rebuild
-    enable = pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform;
-    iconTheme = lib.mkIf (pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform) {
+    enable = desktop && native;
+    iconTheme = lib.mkIf (desktop && native) {
       package = pkgs.papirus-icon-theme;
       name = "Papirus-Dark";
     };
@@ -133,8 +164,16 @@ in
     };
   };
 
+  # home.nix enables ghostty on every native machine, because it cannot read the
+  # profile. Force it off where there is no screen.
+  #
+  # ghostty.terminfo is not an answer for a headless machine. It is an output of
+  # the same derivation, so it still builds ghostty and GTK 4. Send the terminfo
+  # over with "infocmp -x | ssh argama tic -x -" once instead.
+  programs.ghostty.enable = lib.mkForce (desktop && native && !pkgs.stdenv.hostPlatform.isRiscV64);
+
   programs.firefox = {
-    enable = !pkgs.stdenv.hostPlatform.isRiscV;
+    enable = desktop && !pkgs.stdenv.hostPlatform.isRiscV;
     package = pkgs.firefox.overrideAttrs (old: {
       buildCommand = old.buildCommand + ''
         mkdir -p $out/gmp-widevinecdm/system-installed
@@ -167,6 +206,11 @@ in
   # plasma-apply-lookandfeel.
   stylix.targets.gnome.enable = false;
   stylix.targets.kde.enable = false;
+
+  # The gtk target turns gtk.enable on by itself, which contradicts the gate
+  # above and stops the evaluation. It also brings in the theme, the icons and
+  # the cursors, which a machine with no screen does not read.
+  stylix.targets.gtk.enable = desktop && native;
 
   stylix.targets.firefox = {
     profileNames = [ "default" ];

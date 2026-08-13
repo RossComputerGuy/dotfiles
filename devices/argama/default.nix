@@ -92,7 +92,10 @@
   # prevents a manual import after an unclean shutdown.
   boot.zfs.forceImportRoot = true;
 
-  # The TPM releases the pool key, so stage 1 must not ask for a passphrase.
+  # The TPM releases the pool keys, so stage 1 must not ask for a passphrase.
+  # An empty list also generates no "zfs load-key" at all, so both pools have to
+  # be sealed to the TPM before the first boot. The README does that from the
+  # installer, before the reboot, for exactly this reason.
   boot.zfs.requestEncryptionCredentials = lib.mkForce [ ];
 
   boot.zfs.tzpfms = {
