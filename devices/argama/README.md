@@ -55,6 +55,7 @@ they cannot drift apart.
 | `qbit.argama.nix`       | qBittorrent | Authelia |
 | `hydra.argama.nix`      | Hydra       | Authelia |
 | `git.argama.nix`        | Forgejo     | Authelia |
+| `radicle.argama.nix`    | Radicle     | none     |
 | `grafana.argama.nix`    | Grafana     | Authelia |
 | `prometheus.argama.nix` | Prometheus  | Authelia |
 | `paperless.argama.nix`  | Paperless   | Authelia |
@@ -71,7 +72,7 @@ request first and passes the request on only when it says yes, so one login
 covers all of them. The second factor is the YubiKey, which is already in hand
 for the OpenBao unseal.
 
-Four names do their own checking, each for a reason:
+Five names do their own checking, each for a reason:
 
 - **Jellyfin.** A forward check works by sending a browser to a login page. A
   television, a phone application or a Chromecast cannot follow that, so
@@ -82,6 +83,9 @@ Four names do their own checking, each for a reason:
   answer before Authelia can start.
 - **harmonia.** The Nix daemon follows no login redirect. The cache needs no
   login either, since every store path carries a signature.
+- **Radicle.** `radicle-httpd` is read only. It serves the browsing API and a
+  git clone over HTTP, and git follows no redirect either. A write never touches
+  this name. It goes to the node on 8776, which checks a signature.
 
 Authelia's own secrets come from OpenBao. It reads them with `LoadCredential=`,
 so the `authelia-keys` unit copies them to `/run` first, the same way
@@ -111,11 +115,90 @@ changed byte on the wire fails that check.
 | 80    | every interface  | Caddy, for `cache.argama.nix`                |
 | 443   | every interface  | Caddy, for every other name                  |
 | 8200  | the tailnet only | OpenBao, the one exception below             |
+| 8776  | the tailnet only | The Radicle node, see below                  |
 
 OpenBao keeps a port of its own because trust has to start somewhere. A client's
 agent reads argama's certificate authority *from* OpenBao, so it cannot check a
 certificate signed by that authority until after it has read it. Tailscale
 encrypts that link.
+
+The Radicle node speaks its own protocol, not HTTP, so Caddy cannot carry it. A
+peer that seeds these repositories dials 8776 directly.
+
+## Radicle
+
+Radicle sits next to Forgejo. It does not replace it.
+
+| | Forgejo | Radicle |
+| --- | --- | --- |
+| Web interface | yes, behind Authelia | `rad` on the command line |
+| Login | Authelia | a keypair, no accounts |
+| Mirror from GitHub | yes, on a timer | no |
+| Large file storage | yes | no |
+| Clone over HTTPS | yes | read only |
+| Push | over HTTPS | over the node protocol |
+| Survives argama | no | yes |
+
+That last row is the whole reason it is here. A Forgejo repository lives on this
+one machine. A Radicle repository lives on every node that seeds it, so argama
+can burn and the repository still exists.
+
+Only argama seeds today. A second machine joins later with `rad auth` of its own
+and then `rad seed <rid>`. It finds argama at `argama:8776` over the tailnet.
+Nothing in this configuration has to change for that.
+
+To seed to the public internet instead, move 8776 from the tailnet rule to
+`networking.firewall.allowedTCPPorts` and give `node.externalAddresses` a name
+that resolves outside the tailnet.
+
+### Starting the node
+
+Radicle stays off until the node has an identity. `radicle.nix` holds an empty
+`publicKey`, and `services.radicle.enable` reads it, so the configuration builds
+today and the node starts on the day you fill it in.
+
+Make the identity on argama:
+
+```
+rad auth --alias argama
+```
+
+Press Enter at the passphrase prompt to leave it empty. The key must carry no
+passphrase, because the module asks systemd for that passphrase as a credential
+and the agent cannot supply a credential. The file permissions and the tailnet
+are the boundary instead.
+
+Put the private half in OpenBao, and copy the public half into the
+configuration:
+
+```
+bao kv put secret/argama/radicle \
+  private_key=@/var/lib/radicle/keys/radicle
+
+cat /var/lib/radicle/keys/radicle.pub
+```
+
+Paste that one line into `publicKey` in `radicle.nix`, with no comment on the
+end, then rebuild. `checkConfig` runs `rad config` against the generated
+`config.json` while it builds, so a wrong setting fails the build and not the
+boot.
+
+### Day to day
+
+`rad-system` runs `rad` inside the node's own namespaces, as the radicle user.
+Use it for anything that touches the seed:
+
+```
+rad-system seed <rid>
+rad-system node status
+```
+
+Hydra reads a jobset from a flake URL, and `radicle-httpd` serves a repository
+over plain git, so a jobset input of
+`git+https://radicle.argama.nix/<rid>.git` builds straight from the seed.
+
+There is no Radicle continuous integration broker here. Radicle has one, but
+Hydra already builds on this machine and two build systems would only disagree.
 
 ## Secrets
 
@@ -135,6 +218,7 @@ itself.
 | `secret/argama/harmonia` | `signing_key`    | The binary cache key     |
 | `secret/argama/grafana`  | `secret_key`     | Grafana's database key   |
 | `secret/argama/paperless` | `admin_password` | The Paperless superuser |
+| `secret/argama/radicle`  | `private_key`    | The Radicle node identity |
 
 ### How the agent delivers a secret
 

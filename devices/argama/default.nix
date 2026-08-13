@@ -13,6 +13,7 @@
     ./git.nix
     ./media.nix
     ./monitoring.nix
+    ./radicle.nix
     ./secrets.nix
     ./web.nix
     ./yubikey.nix
