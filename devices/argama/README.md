@@ -347,7 +347,7 @@ zpool create -f \
   mirror \
     /dev/disk/by-id/wwn-0x5002538ae86f8e20 \
     /dev/disk/by-id/wwn-0x5002538ae86338d0 \
-    /dev/disk/by-id/wwn-0x5002538ae86338d0
+    /dev/disk/by-id/wwn-0x5002538ae86d0ab0
 
 zfs set keylocation=prompt tank
 ```

@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
   inherit (lib) mkMerge mkIf;
 in
@@ -28,9 +33,13 @@ in
   home.enableNixpkgsReleaseCheck = false;
   home.sessionVariables.EDITOR = "nvim";
   programs.home-manager.enable = true;
+  # Ghostty is a GTK 4 program. home-linux.nix turns it back off on a machine
+  # with no screen, because this file cannot read the profile itself. See the
+  # note there.
   programs.ghostty = {
     enableZshIntegration = true;
-    enable = pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform && !pkgs.stdenv.hostPlatform.isRiscV64;
+    enable =
+      pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform && !pkgs.stdenv.hostPlatform.isRiscV64;
   };
   programs.nixvim = {
     enable = pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform;
@@ -99,10 +108,21 @@ in
         settings = {
           keymap = {
             preset = "enter";
-            "<Tab>" = [ "select_next" "fallback" ];
-            "<S-Tab>" = [ "select_prev" "fallback" ];
+            "<Tab>" = [
+              "select_next"
+              "fallback"
+            ];
+            "<S-Tab>" = [
+              "select_prev"
+              "fallback"
+            ];
           };
-          sources.default = [ "lsp" "path" "snippets" "buffer" ];
+          sources.default = [
+            "lsp"
+            "path"
+            "snippets"
+            "buffer"
+          ];
           appearance.nerd_font_variant = "mono";
           completion.documentation.auto_show = true;
           signature.enabled = true;
@@ -321,7 +341,8 @@ in
   };
   manual.manpages.enable = false;
   programs.lsd = {
-    enable = !pkgs.stdenv.hostPlatform.isRiscV64 && pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform;
+    enable =
+      !pkgs.stdenv.hostPlatform.isRiscV64 && pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform;
     settings = {
       icons = {
         when = "never";
