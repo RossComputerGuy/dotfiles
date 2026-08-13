@@ -84,7 +84,10 @@
 
   # Storage
   boot.supportedFilesystems = [ "zfs" ];
-  boot.zfs.devNodes = "/dev/";
+  # devNodes stays at the nixpkgs default of /dev/disk/by-id, unlike zeta3a
+  # which sets /dev/. It is the directory the import scans, and tank is made
+  # from wwn- names. Scanning /dev/ would bind the pool to sdb and sdc instead,
+  # and those letters move as soon as a disk is pulled or a cable changes.
   # hostId is pinned below, so a forced import of the root pool is safe. It
   # prevents a manual import after an unclean shutdown.
   boot.zfs.forceImportRoot = true;
