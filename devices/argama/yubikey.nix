@@ -12,6 +12,7 @@ let
   unseal = pkgs.writeShellApplication {
     name = "argama-unseal";
     runtimeInputs = [
+      pkgs.curl
       pkgs.gnupg
       pkgs.openbao
     ];
@@ -33,10 +34,28 @@ let
         exit 1
       fi
 
+      # "bao operator unseal -" does not read standard input. OpenBao takes one
+      # argument and nothing else, so a "-" becomes the key itself and the API
+      # answers "'key' must be a valid hex or base64 string". Giving no argument
+      # makes it ask on a terminal, and it refuses a pipe: "file descriptor 0 is
+      # not a terminal".
+      #
+      # That leaves the key as an argument, which every local account can read
+      # from /proc. Jellyfin and each arr service run as their own user on this
+      # machine, so a service that is taken over can watch for it. Speak to the
+      # API instead. printf is a shell builtin, so the key stays inside this
+      # process. The share is 64 hex characters, so it needs no JSON escaping.
       for share in "''${shares[@]}"; do
         echo "argama-unseal: $share" >&2
-        gpg --quiet --decrypt "$share" | bao operator unseal -
+        key="$(gpg --quiet --decrypt "$share")"
+        if ! answer="$(printf '{"key":"%s"}' "$key" |
+          curl -sS --fail-with-body -X PUT --data-binary @- \
+            "$BAO_ADDR/v1/sys/unseal")"; then
+          echo "argama-unseal: $answer" >&2
+          exit 1
+        fi
       done
+      unset key
 
       bao status
     '';
