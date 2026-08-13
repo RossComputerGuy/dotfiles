@@ -28,13 +28,17 @@ let
 
   guard = svc: lib.optionalString (svc.auth == "forward") forwardAuth;
 
+  # Almost everything answers on the loopback. A service in its own network
+  # namespace does not, so it names its address in service-ports.nix.
+  upstream = svc: "${svc.host or "127.0.0.1"}:${toString svc.port}";
+
   tlsHosts = lib.mapAttrs' (
     name: svc:
     lib.nameValuePair "${name}.argama.nix" {
       extraConfig = ''
         tls ${certFile} ${certFile}
         ${guard svc}
-        reverse_proxy 127.0.0.1:${toString svc.port}
+        reverse_proxy ${upstream svc}
       '';
     }
   ) ports.tls;
@@ -45,7 +49,7 @@ let
     lib.nameValuePair "http://${name}.argama.nix" {
       extraConfig = ''
         ${guard svc}
-        reverse_proxy 127.0.0.1:${toString svc.port}
+        reverse_proxy ${upstream svc}
       '';
     }
   ) ports.plain;
