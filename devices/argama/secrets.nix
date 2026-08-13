@@ -72,13 +72,23 @@
     };
   };
 
-  # The Mullvad WireGuard configuration comes from OpenBao. The agent writes it
-  # into the PrivateTmp of the mullvad unit, and media.nix points
-  # vpnNamespaces.mullvad.wireguardConfigFile at that path.
+  # The Mullvad WireGuard configuration comes from OpenBao.
+  #
+  # This must NOT go on the mullvad unit itself. Asking the agent for a secret
+  # on a unit gives that unit PrivateTmp, and PrivateTmp gives it a mount
+  # namespace which systemd mounts as a slave. "ip netns add" then makes
+  # /run/netns/mullvad and binds the new namespace onto it. The file reaches
+  # the host and the mount does not, so the host keeps an empty file and every
+  # "ip netns exec" answers "Invalid argument". The tunnel reports success and
+  # nothing works.
+  #
+  # So a second unit holds the secret and copies it to /run, and the mullvad
+  # unit reads it from there with no namespace of its own. harmonia does the
+  # same for the same reason, one level down.
   #
   # Put the secret in OpenBao with:
   #   bao kv put secret/argama/mullvad config=@wg0.conf
-  detsys.vaultAgent.systemd.services.mullvad = {
+  detsys.vaultAgent.systemd.services.mullvad-key = {
     enable = true;
     secretFiles.files."wireguard.conf" = {
       # A new configuration means a new tunnel, so the namespace must go down
@@ -108,6 +118,30 @@
   };
 
   systemd.services = {
+    mullvad-key = {
+      description = "Publish the Mullvad tunnel configuration outside a mount namespace";
+      requiredBy = [ "mullvad.service" ];
+      before = [ "mullvad.service" ];
+      serviceConfig = {
+        Type = "oneshot";
+        RemainAfterExit = true;
+        RuntimeDirectory = "mullvad-key";
+        RuntimeDirectoryMode = "0700";
+        RuntimeDirectoryPreserve = "yes";
+        ExecStart = pkgs.writeShellScript "mullvad-key-publish" ''
+          ${lib.getExe' pkgs.coreutils "install"} -m 0400 \
+            ${config.detsys.vaultAgent.systemd.services.mullvad-key.secretFiles.files."wireguard.conf".path} \
+            /run/mullvad-key/wireguard.conf
+        '';
+      };
+    };
+
+    # A new tunnel configuration means the namespace goes down and comes up.
+    mullvad = {
+      after = [ "mullvad-key.service" ];
+      bindsTo = [ "mullvad-key.service" ];
+    };
+
     harmonia-key = {
       description = "Publish the harmonia signing key where LoadCredential can read it";
       requiredBy = [ "harmonia.service" ];
@@ -140,7 +174,7 @@
   //
     lib.genAttrs
       [
-        "detsys-vaultAgent-mullvad"
+        "detsys-vaultAgent-mullvad-key"
         "detsys-vaultAgent-harmonia-key"
         "detsys-vaultAgent-paperless-scheduler"
         "detsys-vaultAgent-grafana"
