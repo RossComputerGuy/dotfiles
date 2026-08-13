@@ -190,6 +190,31 @@ The console needs no setting. argama is the same board as zeta3a, an ASRockRack
 ALTRAD8UD-1L2T, and its firmware gives the kernel an SPCR table that names the
 console. `default.nix` passes `earlycon` only, which reads that same table.
 
+### 0. The YubiKey
+
+The YubiKey is the credential from the first command, not something added later.
+Slot 2 already answers a challenge with an HMAC, and both keys carry the same
+secret, so nothing needs programming again. argama only needs its own challenge
+strings, which are not secrets:
+
+```
+ykchalresp -2 "argama-zpool-2026"
+ykchalresp -2 "argama-tank-2026"
+```
+
+Write those two strings down. They are not secret, but the answer cannot be
+worked out without them, and a key with no challenge opens nothing.
+
+Confirm the spare really carries the same secret before you trust it as a spare.
+The same challenge must give the same answer on both keys:
+
+```
+ykchalresp -2 "test"      # first key, then swap to the second and repeat
+```
+
+If the two answers differ, the second key never took the secret, and fixing that
+now is far easier than finding out later.
+
 ### 1. Partition
 
 ```
@@ -209,9 +234,13 @@ spinning disks and holds the bulk data, because a 931GB NVMe holds neither a
 media library nor the backups of a fleet.
 
 Both are encrypted at the pool, so every dataset below them is encrypted too.
-Give a passphrase to each. Step 5 replaces both with keys that the TPM holds.
+The YubiKey answer is the passphrase from the start. Write it to a file that the
+pool reads once, because `zpool create` asks for a new passphrase twice and a
+pipe answers only the first ask:
 
 ```
+ykchalresp -2 "argama-zpool-2026" > /tmp/zpool.pass
+
 zpool create -f \
   -o ashift=12 \
   -o autotrim=on \
@@ -221,9 +250,16 @@ zpool create -f \
   -O compression=zstd \
   -O encryption=on \
   -O keyformat=passphrase \
+  -O keylocation=file:///tmp/zpool.pass \
   -O mountpoint=none \
   zpool /dev/disk/by-partlabel/zpool
+
+# The file was for the making of the pool only. From here the pool asks.
+zfs set keylocation=prompt zpool
 ```
+
+`/tmp` in the installer is memory and goes at the next boot, but remove the file
+anyway once both pools exist.
 
 `tank` is 12 drives as four mirrors of three, striped. Each `mirror` word starts
 a new top level group, and ZFS stripes across the groups. It gives 4 drives of
@@ -239,6 +275,8 @@ ls -l /dev/disk/by-id/ | grep -vE 'part[0-9]|/dev/sda|nvme'
 ```
 
 ```
+ykchalresp -2 "argama-tank-2026" > /tmp/tank.pass
+
 zpool create -f \
   -o ashift=12 \
   -O acltype=posixacl \
@@ -247,18 +285,87 @@ zpool create -f \
   -O compression=zstd \
   -O encryption=on \
   -O keyformat=passphrase \
+  -O keylocation=file:///tmp/tank.pass \
   -O mountpoint=none \
   tank \
   mirror /dev/disk/by-id/<d1>  /dev/disk/by-id/<d2>  /dev/disk/by-id/<d3>  \
   mirror /dev/disk/by-id/<d4>  /dev/disk/by-id/<d5>  /dev/disk/by-id/<d6>  \
   mirror /dev/disk/by-id/<d7>  /dev/disk/by-id/<d8>  /dev/disk/by-id/<d9>  \
   mirror /dev/disk/by-id/<d10> /dev/disk/by-id/<d11> /dev/disk/by-id/<d12>
+
+zfs set keylocation=prompt tank
+shred -u /tmp/zpool.pass /tmp/tank.pass
 ```
 
 Check the shape before you trust it. Every `mirror-N` should hold three drives:
 
 ```
 zpool status tank
+```
+
+#### The first group
+
+The disks in the machine. A `wwn-` and a `scsi-` name point at each one, and
+both are stable, but `wwn-` comes from the drive itself, so it holds even when
+the `sd` letters move. They do move: pull one disk and the ones after it shift
+up a letter.
+
+| wwn                        | State                                        |
+| -------------------------- | -------------------------------------------- |
+| `wwn-0x5002538ae86f8e20`   | in the pool                                  |
+| `wwn-0x5002538ae86338d0`   | in the pool                                  |
+| `wwn-0x5002538ae86d0ab0`   | in the pool                                  |
+
+Clear anything a failed attempt left behind, or ZFS finds an old label and
+refuses:
+
+```
+for d in /dev/disk/by-id/wwn-0x5002538ae86f8e20 \
+         /dev/disk/by-id/wwn-0x5002538ae86338d0; do
+  wipefs -a "$d"; sgdisk --zap-all "$d"
+done
+```
+
+Then make the group. Two disks mirror as happily as three, survive one failure
+just the same, and hold the same 7TB, because a mirror's size is one disk:
+
+```
+ykchalresp -2 "argama-tank-2026" > /tmp/tank.pass
+
+zpool create -f \
+  -o ashift=12 \
+  -o autotrim=on \
+  -O acltype=posixacl \
+  -O xattr=sa \
+  -O atime=off \
+  -O compression=zstd \
+  -O encryption=on \
+  -O keyformat=passphrase \
+  -O keylocation=file:///tmp/tank.pass \
+  -O mountpoint=none \
+  tank \
+  mirror \
+    /dev/disk/by-id/wwn-0x5002538ae86f8e20 \
+    /dev/disk/by-id/wwn-0x5002538ae86338d0 \
+    /dev/disk/by-id/wwn-0x5002538ae86338d0
+
+zfs set keylocation=prompt tank
+```
+
+Read the shape back. One `mirror-0`, and the names in it must be the `wwn-`
+ones and not `sdb` and friends:
+
+```
+zpool status tank
+```
+
+Widening it to three later does not need a new group. `attach` adds a disk to
+the mirror that is already there, and ZFS copies onto it:
+
+```
+zpool attach tank wwn-0x5002538ae86f8e20 \
+  /dev/disk/by-id/wwn-0x5002538ae86d0ab0
+zpool status tank      # watch the resilver finish before trusting it
 ```
 
 #### Growing tank
@@ -356,24 +463,27 @@ key in a pocket and not a string to remember.
 if the TPM itself is gone, because a dead board and a cleared TPM take both of
 the paths above with them.
 
-```
-zfs-tpm2-change-key -b /root/zpool.key -P sha256:7 -A zpool
-zfs-tpm2-change-key -b /root/tank.key  -P sha256:7 -A tank
-```
-
-`TZPFMS_PASSPHRASE_HELPER` answers the prompt from the YubiKey instead of the
-keyboard. It runs under `sh -c` and its output is the passphrase:
+`TZPFMS_PASSPHRASE_HELPER` gives the YubiKey answer to `-A` instead of the
+keyboard. It runs under `sh -c` and its output becomes the passphrase. This ran
+on zeta3a and is the form to copy:
 
 ```
 sudo env TZPFMS_PASSPHRASE_HELPER='ykchalresp -2 argama-zpool-2026' \
   zfs-tpm2-change-key -b /root/zpool.key -P sha256:7 -A zpool
+
+sudo env TZPFMS_PASSPHRASE_HELPER='ykchalresp -2 argama-tank-2026' \
+  zfs-tpm2-change-key -b /root/tank.key -P sha256:7 -A tank
 ```
 
-The helper answers every prompt, so use it only when the TPM owner hierarchy has
-no passphrase of its own. Otherwise answer by hand.
+Each prints `Key for <pool> changed` and asks nothing, because the helper
+answers. **Silence is not proof that `-A` took**, since a command without `-A`
+is just as quiet. The helper in the line above is the proof, so keep it in the
+shell history or note it down.
 
-Encrypt both to the YubiKey, put them somewhere away from this machine, then
-destroy the plain copies.
+The helper answers every prompt it is given, so use it only when the TPM owner
+hierarchy has no passphrase of its own. Otherwise answer by hand.
+
+#### Put the backups where only the YubiKey opens them
 
 The card holds the private half only. To encrypt, this machine needs the public
 key, and the card says where to get it:
@@ -386,23 +496,37 @@ gpg --list-keys      # 9F167124D5EC917E is the encryption subkey
 ```
 
 `sudo gpg` reads root's keyring, which is empty, so read the file as root and
-encrypt as yourself:
+encrypt as yourself. A freshly imported key carries no trust and gpg stops
+rather than encrypt to one, so say `--trust-model always` or set the trust once
+with `gpg --edit-key`, then `trust`, then `5`:
 
 ```
 sudo cat /root/zpool.key | gpg --encrypt --recipient 9F167124D5EC917E \
-  --output ~/zpool.key.gpg
+  --trust-model always --output ~/zpool.key.gpg
 sudo cat /root/tank.key  | gpg --encrypt --recipient 9F167124D5EC917E \
-  --output ~/tank.key.gpg
+  --trust-model always --output ~/tank.key.gpg
+```
+
+**Prove both open before you destroy anything.** Each must give back 32 bytes,
+which is the size of a raw wrapping key. Anything else means the file is wrong
+and the plain copy is still the only one there is:
+
+```
+gpg --decrypt ~/zpool.key.gpg | wc -c     # must print 32
+gpg --decrypt ~/tank.key.gpg  | wc -c     # must print 32
+```
+
+Only then:
+
+```
+chmod 600 ~/zpool.key.gpg ~/tank.key.gpg
 sudo shred -u /root/zpool.key /root/tank.key
 ```
 
-A freshly imported key carries no trust, and gpg stops rather than encrypt to
-one it does not trust. Either set the trust once with `gpg --edit-key`, then
-`trust`, then `5`, or add `--trust-model always` to the two commands above.
-
-A copy that stays on argama protects against nothing, because it burns with the
-machine. Off the machine and encrypted to the YubiKey means only the key can
-open it.
+Now move both off argama. A copy that stays here protects against nothing,
+because it burns with the machine, and these two files are what open the media
+and every backup the fleet has sent. Do not put them on zeta3a either, since
+the same YubiKey opens that machine's escrow as well.
 
 ### Three ways into a pool
 
@@ -429,45 +553,39 @@ gpg --decrypt zpool.key.gpg | zfs load-key zpool
 
 #### Before you touch the secure boot firmware
 
-Enrolling or clearing secure boot keys changes PCR 7, and the TPM will then
-refuse to release the pool key. The pool does not open again by itself.
-
-Take the pool off the TPM first, work on the firmware, then put it back:
+Enrolling or clearing secure boot keys changes PCR 7, so the first way in stops
+working. The second one still opens the pool, so this costs a trip to the rescue
+shell with the YubiKey and not the pool. Boot, let the ordinary open fail, then:
 
 ```
-zfs-tpm2-clear-key zpool          # back to a passphrase you choose
-zfs-tpm2-clear-key tank
-# ... change the firmware and enroll the keys, reboot ...
-zfs-tpm2-change-key -b /root/zpool.key zpool   # reseal against the new PCR 7
-zfs-tpm2-change-key -b /root/tank.key  tank
+zfs-tpm2-load-key zpool          # give the answer to argama-zpool-2026
+zfs-tpm2-load-key tank           # and to argama-tank-2026
 ```
 
-ZFS holds one wrapping key and no more. There is no second slot, so a key on
-the TPM and a passphrase cannot both open a pool. That is the whole reason the
-step above is a sequence and not two settings.
+Once the machine is up on the new firmware, seal against the new PCR 7:
 
-#### The YubiKey as the passphrase instead
+```
+sudo env TZPFMS_PASSPHRASE_HELPER='ykchalresp -2 argama-zpool-2026' \
+  zfs-tpm2-change-key -b /root/zpool.key -P sha256:7 -A zpool
+```
 
-A YubiKey can hold the key itself, with slot 2 answering a challenge and the
-answer used as the passphrase. Two keys carrying the same secret give a spare.
+That makes a **new** wrapping key, so the backup file from before dies the
+moment it runs. Encrypt the new one, check that it opens to 32 bytes, and only
+then destroy the old.
+
+#### If a YubiKey is ever lost or replaced
+
+The passphrase is an HMAC of the challenge under a secret in slot 2. A new key
+needs that same secret, or the answers will not match and the second way in is
+gone. Slot 2 was programmed this way, without `-ochal-btn-trig`, so the key
+answers with no touch:
 
 ```
 ykpersonalize -2 -ochal-resp -ochal-hmac -ohmac-lt64 -oserial-api-visible
-ykchalresp -2 "argama-zpool-2026" \
-  | zfs change-key -o keyformat=passphrase -o keylocation=prompt zpool
 ```
 
-This is not what argama uses. The key would have to be in the machine at every
-boot, and it is a daily carry, so argama would wait for a person after each
-reboot. The TPM with the backup above gives the same protection and still boots
-alone. Keep this for a machine that a person starts by hand.
-
-Check that a spare really carries the same secret before you trust it. The same
-challenge must give the same answer on both:
-
-```
-ykchalresp -2 "test"    # first key, then swap to the second and repeat
-```
+The secret is the part to keep. Losing every key that carries it costs the
+second way in but not the pool, because the backup file still opens it.
 
 `boot.zfs.requestEncryptionCredentials` is forced empty in `default.nix`, so
 stage 1 never asks for a passphrase. If the TPM cannot release the key, the
@@ -603,10 +721,13 @@ machine stops at that point and needs a console.
   a week on Sunday at 05:00, using each repository's own password out of
   OpenBao. Keep the `clients` list in `backup.nix` the same as the machines that
   set `ross.backup.enable`.
-- **The YubiKey is a daily carry, so argama never unseals by itself.** Every
-  reboot needs an operator with the key. `argama-unseal` decrypts the shares and
-  unseals in one step. A key that stays in the machine would allow a PKCS#11
-  auto unseal, but a stolen machine would then carry its own key.
+- **Two different unseals, and only one of them is automatic.** The pools open
+  by themselves, because the TPM releases their keys against PCR 7. OpenBao does
+  not: the YubiKey is a daily carry, so every reboot needs an operator to run
+  `argama-unseal`, which decrypts the shares and unseals in one step. So argama
+  reaches a login on its own, and the services that read OpenBao wait. A key
+  that stayed in the machine would allow a PKCS#11 auto unseal, but a stolen
+  machine would then carry its own key.
 - **Secure boot is the same setup as zeta3a**: `lanzaboote` with
   `autoGenerateKeys` and `autoEnrollKeys`, and the keys in `/var/lib/sbctl`.
   They stay on disk on purpose. A signing key on a daily carry YubiKey would
