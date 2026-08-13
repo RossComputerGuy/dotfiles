@@ -20,13 +20,20 @@ let
       # asks for a touch once for each share.
       export BAO_ADDR="''${BAO_ADDR:-http://127.0.0.1:8200}"
 
-      if ! compgen -G "${shareDir}/*.asc" > /dev/null; then
+      # nullglob makes an empty directory give an empty array instead of the
+      # pattern itself. Do not reach for compgen here: writeShellApplication
+      # runs the small bash, which is built without readline, and that build
+      # carries no programmable completion builtins.
+      shopt -s nullglob
+      shares=( ${shareDir}/*.asc )
+
+      if [ ''${#shares[@]} -eq 0 ]; then
         echo "argama-unseal: no shares in ${shareDir}" >&2
         echo "Run bao operator init with -pgp-keys first. See the README." >&2
         exit 1
       fi
 
-      for share in ${shareDir}/*.asc; do
+      for share in "''${shares[@]}"; do
         echo "argama-unseal: $share" >&2
         gpg --quiet --decrypt "$share" | bao operator unseal -
       done
