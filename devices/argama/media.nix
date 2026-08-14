@@ -18,6 +18,7 @@
     "d /var/lib/media/downloads 2775 qbittorrent media -"
     "d /var/lib/media/tv 2775 sonarr media -"
     "d /var/lib/media/movies 2775 radarr media -"
+    "d /var/lib/media/music 2775 lidarr media -"
   ];
 
   services.jellyfin = {
@@ -31,6 +32,15 @@
   };
 
   services.radarr = {
+    enable = true;
+    group = "media";
+  };
+
+  # The same for music. Lidarr leans on MusicBrainz for its metadata, and that
+  # service goes down more often than the ones Sonarr and Radarr use, so a
+  # search that finds nothing is worth checking against MusicBrainz before
+  # looking for a fault here.
+  services.lidarr = {
     enable = true;
     group = "media";
   };
