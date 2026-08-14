@@ -93,15 +93,17 @@
   # an sftp repository on another machine, an object store, or a disk that gets
   # carried off site.
   #
-  #   bao kv put secret/argama/vaultwarden-backup \
-  #     repository=sftp:ross@zeta3a:/tank/vaultwarden password=<a long one>
-  #
-  # An sftp target also needs a key that argama can use without a person, and
-  # zeta3a has to accept it. There is no path for that in this configuration
-  # yet.
+  #   printf '%s' "$(head -c 32 /dev/urandom | base64)" | \
+  #     bao kv put secret/argama/vaultwarden-backup \
+  #       repository=sftp:zeta3a-backup:/var/lib/restic-argama password=-
   #
   # Keep this password somewhere that is not the vault it protects. A password
   # written only in Vaultwarden cannot open the backup of Vaultwarden.
+  #
+  # zeta3a is in the same house, so this survives argama and not the building.
+  # The vault is a few megabytes and already encrypted twice, by restic and by
+  # Vaultwarden itself, so a rented object store would learn nothing from a
+  # second copy. That is the gap to close next.
   detsys.vaultAgent.systemd.services."restic-backups-vaultwarden" = {
     enable = true;
     environment = {
@@ -152,6 +154,24 @@
       RestartSec = "10m";
     };
   };
+
+  # restic runs ssh itself, so it reads this. The alias exists rather than a
+  # plain "Host zeta3a" block, because that would send every ordinary
+  # "ssh zeta3a" from any user on this machine to the backup account with the
+  # wrong key.
+  #
+  # The key is on disk for the same reason the builder key is: this runs from a
+  # timer with nobody present, and a key that waited for an unseal would mean a
+  # backup that only happens when somebody is watching.
+  #
+  #   ssh-keygen -t ed25519 -N "" -f /root/.ssh/zeta3a-backup
+  programs.ssh.extraConfig = ''
+    Host zeta3a-backup
+      HostName zeta3a
+      User resticremote
+      IdentityFile /root/.ssh/zeta3a-backup
+      IdentitiesOnly yes
+  '';
 
   # No port is open here. Caddy publishes pass.argama.nix. See web.nix.
 }

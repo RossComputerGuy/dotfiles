@@ -174,6 +174,16 @@ in
 
   programs.firefox = {
     enable = desktop && !pkgs.stdenv.hostPlatform.isRiscV;
+
+    # Firefox keeps its own list of authorities and does not read the system
+    # one, so security.pki in modules/pki.nix does nothing for it. Both lines
+    # are here on purpose: ImportEnterpriseRoots reads the system store where
+    # the platform supports it, and Install names the file outright where it
+    # does not.
+    policies.Certificates = lib.mkIf (builtins.pathExists ../../certs/argama-root.crt) {
+      ImportEnterpriseRoots = true;
+      Install = [ "${../../certs/argama-root.crt}" ];
+    };
     package = pkgs.firefox.overrideAttrs (old: {
       buildCommand = old.buildCommand + ''
         mkdir -p $out/gmp-widevinecdm/system-installed

@@ -389,6 +389,31 @@ in
     ];
   };
 
+  # Where argama sends its Vaultwarden backup. argama holds the backups of
+  # every other machine, so it has nowhere of its own to put one, and a
+  # password vault is the one thing on it that no rebuild can recreate.
+  #
+  # sftp needs the subsystem, and sshd starts that through the login shell, so
+  # this account cannot have nologin. The key is root only on argama and this
+  # account owns nothing but the repository directory.
+  users.groups.resticremote = { };
+  users.users.resticremote = {
+    isSystemUser = true;
+    group = "resticremote";
+    description = "argama's restic repository";
+    home = "/var/lib/restic-argama";
+    createHome = true;
+    shell = pkgs.bashInteractive;
+    openssh.authorizedKeys.keys = [
+      # argama, /root/.ssh/zeta3a-backup.pub
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILz9sV1yfoAMg3ow0N4ogApGE8R/Ff/HmOTXA3a65SMY root@argama"
+    ];
+  };
+
+  systemd.tmpfiles.rules = [
+    "d /var/lib/restic-argama 0700 resticremote resticremote -"
+  ];
+
   # No ross.remoteBuild here on purpose. This machine has 128 cores and 512GB
   # against argama's 64, so a build sent there finishes later than one kept
   # here. Nix cannot be told "local first" either: with distributedBuilds on,
