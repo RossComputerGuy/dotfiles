@@ -1,6 +1,7 @@
 {
   imports = [
     ./backup.nix
+    ./builder.nix
     ./programs.nix
     ./theme.nix
     ./time-locale.nix

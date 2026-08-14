@@ -33,6 +33,16 @@
       auth = "none";
     };
 
+    # Vaultwarden, the password manager for people. The Bitwarden browser
+    # extension and the phone applications talk to an API and follow no login
+    # page, so a forward check would break every client that is not a browser
+    # tab. That is the same reason Jellyfin carries none. Its own account and
+    # second factor are the boundary.
+    pass = {
+      port = 8222;
+      auth = "none";
+    };
+
     # OpenBao has its own tokens, and it is where Authelia's own secrets come
     # from, so it must answer before Authelia starts.
     vault = {

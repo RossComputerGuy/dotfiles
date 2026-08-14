@@ -51,6 +51,12 @@ in
       description = "Publish Authelia's secrets where LoadCredential can read them";
       requiredBy = [ "authelia-main.service" ];
       before = [ "authelia-main.service" ];
+      # OpenBao starts sealed and waits for an operator, so at every boot this
+      # unit fails first and takes Authelia with it. Restart= cannot help: it
+      # acts on a unit whose own process failed, and Authelia never ran at all.
+      # Upholds= keeps Authelia running for as long as this unit is up, so the
+      # unseal brings Authelia back with no operator.
+      upholds = [ "authelia-main.service" ];
       serviceConfig = {
         Type = "oneshot";
         RemainAfterExit = true;
