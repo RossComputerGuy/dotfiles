@@ -13,6 +13,7 @@
     ./git.nix
     ./media.nix
     ./monitoring.nix
+    ./passwords.nix
     ./radicle.nix
     ./secrets.nix
     ./web.nix
@@ -154,9 +155,18 @@
   #
   # The downloads and the library share this dataset. See media.nix for why they
   # must stay on one filesystem.
+  # nofail, because tank is a media library and a backup target and neither is
+  # worth a machine that will not boot. The enclosure needs about two minutes
+  # to present its disks, and without this a slow drive drops argama into an
+  # emergency shell that no passphrase can reach. The units below bring the
+  # mounts up by themselves once the pool arrives.
   fileSystems."/var/lib/media" = {
     device = "tank/media";
     fsType = "zfs";
+    options = [
+      "nofail"
+      "x-systemd.device-timeout=5min"
+    ];
   };
 
   # The backups that the other machines push. Their own dataset, so a snapshot
@@ -164,6 +174,60 @@
   fileSystems."/var/lib/restic" = {
     device = "tank/backups";
     fsType = "zfs";
+    options = [
+      "nofail"
+      "x-systemd.device-timeout=5min"
+    ];
+  };
+
+  # The tank chain, and why each piece is here.
+  #
+  # zfs-import-tank loops 60 times with a one second sleep and then gives up.
+  # This enclosure takes about 120 seconds to present every disk, so the import
+  # loses that race on a cold boot. Let the whole unit run again instead.
+  #
+  # tzpfms-load-tank runs "zfs-tpm2-load-key" with "|| true" and swallows the
+  # error, so it reports success having loaded nothing, and the mounts then
+  # fail for want of a key. It also orders after nothing but the import, so in
+  # stage 2 it races whatever restores TPM access after switch-root. Replace the
+  # script with one that waits, retries, and fails honestly at the end.
+  #
+  # Upholds= then brings the two mounts up once the key really is loaded. Their
+  # own start already failed by that point, and nofail above means that failure
+  # no longer stops the boot, so something has to ask for them again.
+  systemd.services.zfs-import-tank = {
+    unitConfig.StartLimitIntervalSec = 0;
+    serviceConfig = {
+      Restart = "on-failure";
+      RestartSec = 15;
+    };
+  };
+
+  systemd.services.tzpfms-load-tank = {
+    upholds = [
+      "var-lib-media.mount"
+      "var-lib-restic.mount"
+    ];
+    unitConfig.StartLimitIntervalSec = 0;
+    serviceConfig = {
+      Restart = "on-failure";
+      RestartSec = 10;
+    };
+    script = lib.mkForce ''
+      zfs=${config.boot.zfs.package}/sbin/zfs
+      load=${config.boot.zfs.tzpfms.package}/bin/zfs-tpm2-load-key
+
+      for _ in $(seq 1 60); do
+        if [ "$($zfs get -H -o value keystatus tank)" = available ]; then
+          exit 0
+        fi
+        $load tank || true
+        sleep 1
+      done
+
+      echo "tzpfms: tank key still unavailable after 60 tries" >&2
+      exit 1
+    '';
   };
 
   # Networking
@@ -171,6 +235,25 @@
   networking.hostId = "8564d4ac";
 
   services.openssh.enable = true;
+
+  # The account the other machines send builds to. modules/builder.nix is the
+  # other half. It has no password and no shell of its own beyond what nix
+  # needs, so a key is the only way in.
+  #
+  # Add each machine's public half here. Make one with:
+  #   ssh-keygen -t ed25519 -N "" -f /root/.ssh/argama-builder
+  users.users.nixremote = {
+    isNormalUser = true;
+    description = "Remote build account for the fleet";
+    openssh.authorizedKeys.keys = [
+      # hizack-b, /root/.ssh/argama-builder.pub
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINWbQ/p6TjVNQqP1b3BGXer+ja0fZTWCZkm+xjcRdK0T root@hizack-b"
+    ];
+  };
+
+  # A build sent here has to be able to write the results into the store. Only
+  # a trusted user can, and this account can do nothing else.
+  nix.settings.trusted-users = [ "nixremote" ];
 
   # No port is open here. Hydra answers at hydra.argama.nix and the binary cache
   # at cache.argama.nix, both through Caddy. See web.nix.
@@ -193,6 +276,11 @@
     # /run, because harmonia loads it with LoadCredential=. See that file.
     signKeyPaths = [ "/run/harmonia-key/cache.secret" ];
     settings.bind = "[::]:5000";
+    # Ask argama before cache.nixos.org. A lower number wins, harmonia defaults
+    # to 50, and cache.nixos.org publishes 40, so the default would put the
+    # public cache first on every query. argama is on the same network and
+    # holds everything this flake builds that nixpkgs does not.
+    settings.priority = 30;
   };
 
   services.hydra = {

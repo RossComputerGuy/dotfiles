@@ -122,6 +122,10 @@
       description = "Publish the Mullvad tunnel configuration outside a mount namespace";
       requiredBy = [ "mullvad.service" ];
       before = [ "mullvad.service" ];
+      # The tunnel dies in the same way Authelia does while OpenBao is sealed,
+      # and qBittorrent behind it. Upholds= brings the tunnel back once this
+      # unit has the configuration. See auth.nix for the longer note.
+      upholds = [ "mullvad.service" ];
       serviceConfig = {
         Type = "oneshot";
         RemainAfterExit = true;

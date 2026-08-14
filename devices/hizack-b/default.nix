@@ -60,6 +60,10 @@
   # The split horizon in argama's dns.nix answers with the right address.
   ross.backup.enable = true;
 
+  # Send builds to argama, over the tailnet when away from home. A laptop on
+  # battery has every reason to hand a kernel build to a machine on mains.
+  ross.remoteBuild.enable = true;
+
   hardware.asahi.enable = true;
   hardware.bluetooth.enable = true;
   networking = {

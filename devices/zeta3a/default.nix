@@ -389,6 +389,13 @@ in
     ];
   };
 
+  # No ross.remoteBuild here on purpose. This machine has 128 cores and 512GB
+  # against argama's 64, so a build sent there finishes later than one kept
+  # here. Nix cannot be told "local first" either: with distributedBuilds on,
+  # build-remote hands a job to any matching machine that has a free slot, and
+  # speedFactor only ranks the remote machines against each other. So the way
+  # to keep builds on the biggest machine is to give it no builders at all.
+
   # Networking
   networking.hostName = "zeta3a";
   networking.hostId = "f174c9ca";

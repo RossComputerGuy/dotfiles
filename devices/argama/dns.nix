@@ -93,19 +93,21 @@ in
     settings = blockySettings "127.0.0.1:53,${lanAddress}:53" "127.0.0.1:4000" lanAddress;
   };
 
-  # The nixpkgs module gives blocky "Wants=network-online.target" and no
-  # matching After=. Wants pulls the target in but does not wait for it, so
-  # blocky starts before DHCP has put the address on the interface and the bind
-  # to the LAN address fails.
+  # blocky binds an address that DHCP has not put on the interface yet, and the
+  # bind fails with "cannot assign requested address". freeBind above is the
+  # answer to that, at the socket, so no ordering is needed.
   #
-  # Its Restart=on-failure then retries at the 100ms default, which spends
-  # systemd's five attempts in under a second and leaves the unit dead for
-  # good. Wait for the address, and retry slowly enough to be useful.
+  # Do NOT add After=network-online.target here. The nixpkgs module already
+  # gives blocky Wants=network-online.target, which pulls the target in without
+  # waiting for it. An After= makes blocky wait, and this machine has two
+  # network cards with no cable, so that wait runs to its timeout and holds up
+  # every rebuild.
+  #
+  # Restart=on-failure comes from the module with no RestartSec, so it retries
+  # at the 100ms default and spends systemd's five attempts in under a second.
+  # Slow it down and take the limit off, so a real failure keeps trying.
   systemd.services.blocky = {
-    after = [
-      "network-online.target"
-      "unbound.service"
-    ];
+    after = [ "unbound.service" ];
     unitConfig.StartLimitIntervalSec = 0;
     serviceConfig.RestartSec = 5;
   };
@@ -114,12 +116,13 @@ in
   # one is a plain unit with a generated configuration.
   systemd.services.blocky-tailnet = {
     description = "blocky DNS for the tailnet side of argama.nix";
-    after = [
-      "network-online.target"
-      "unbound.service"
-    ];
-    wants = [ "network-online.target" ];
+    # No network-online.target here, for the reason given on the LAN instance
+    # above. Waiting for it holds up every rebuild on this machine, and this
+    # instance binds a Tailscale address which is late by nature. freeBind is
+    # what makes that bind work, not ordering.
+    after = [ "unbound.service" ];
     wantedBy = [ "multi-user.target" ];
+    unitConfig.StartLimitIntervalSec = 0;
     serviceConfig = {
       DynamicUser = true;
       StateDirectory = "blocky-tailnet";
