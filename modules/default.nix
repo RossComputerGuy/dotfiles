@@ -8,6 +8,7 @@
     ./profile.nix
     ./net.nix
     ./misc.nix
+    ./pki.nix
     ./security.nix
     ./services.nix
     ./virt.nix
