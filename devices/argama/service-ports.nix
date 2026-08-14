@@ -62,6 +62,10 @@
       port = 7878;
       auth = "forward";
     };
+    lidarr = {
+      port = 8686;
+      auth = "forward";
+    };
     prowlarr = {
       port = 9696;
       auth = "forward";
