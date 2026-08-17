@@ -5,6 +5,10 @@
   ...
 }:
 {
+  imports = [
+    ./vr.nix
+  ];
+
   services.udev.extraRules = ''
     ## Steam
     # This rule is needed for basic functionality of the controller in Steam and keyboard/mouse emulation

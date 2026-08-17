@@ -1,8 +1,9 @@
 { config, ... }:
 {
-  imports = [
-    ../../system/linux/desktop.nix
-  ];
+  # Headless. This machine has no video driver and no display, only ZFS, sshd
+  # and the Tenstorrent card. The desktop profile added COSMIC, pipewire, CUPS,
+  # avahi, colord, flatpak, gvfs and fonts for nobody.
+  ross.profile = "standard";
 
   # Bootloader
   boot = {

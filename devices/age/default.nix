@@ -1,5 +1,10 @@
 { config, pkgs, lib, inputs, ... }:
 {
+  # Android's built-in terminal VM. It runs ttyd and has no display, so the
+  # desktop default in system/linux/default.nix does not apply. This file never
+  # imported system/linux/desktop.nix, only the default made it a desktop.
+  ross.profile = "standard";
+
   # Bootloader
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.grub = {
