@@ -83,9 +83,11 @@ in
   # Put the private key in OpenBao with:
   #   bao kv put secret/argama/radicle private_key=@/var/lib/radicle/keys/radicle
   #
-  # The key must carry no passphrase. The module asks systemd for the passphrase
-  # as a credential, and the agent cannot supply a credential for the same reason
-  # it cannot supply the key itself.
+  # The key must carry no passphrase. services.radicle.privateKeyPassphrase names
+  # a systemd credential and not a file, and systemd reads that name with
+  # ImportCredential=, which looks only in the credential store. So a file the
+  # agent writes can never satisfy it. A passphrase would add nothing anyway,
+  # because it would have to live next to the key in the same OpenBao.
   detsys.vaultAgent.systemd.services.radicle-key = {
     enable = true;
     secretFiles.files."radicle" = {

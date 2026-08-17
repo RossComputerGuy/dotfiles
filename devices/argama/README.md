@@ -168,9 +168,33 @@ rad auth --alias argama
 ```
 
 Press Enter at the passphrase prompt to leave it empty. The key must carry no
-passphrase, because the module asks systemd for that passphrase as a credential
-and the agent cannot supply a credential. The file permissions and the tailnet
-are the boundary instead.
+passphrase, because `services.radicle.privateKeyPassphrase` names a systemd
+credential and not a file. systemd reads that name with `ImportCredential=`,
+which looks only in the credential store, so a file the agent writes can never
+satisfy it. The file permissions and the tailnet are the boundary instead.
+
+If the node says `keystore is encrypted; a passphrase is required`, the key went
+in with a passphrase. Take the passphrase off and put the key back. This keeps
+the same identity, so `publicKey` does not change:
+
+```
+umask 077
+export RAD_HOME=$(mktemp -d)
+bao kv get -field=private_key secret/argama/radicle > $RAD_HOME/radicle
+ssh-keygen -p -f $RAD_HOME/radicle
+ssh-keygen -y -f $RAD_HOME/radicle
+bao kv put secret/argama/radicle private_key=@$RAD_HOME/radicle
+shred -u $RAD_HOME/radicle && rmdir $RAD_HOME
+```
+
+`ssh-keygen -p` asks for the old passphrase, then for the new one two times.
+Press Enter both times to leave it empty. The line that `ssh-keygen -y` prints
+must equal `publicKey` in `radicle.nix`, apart from the alias on the end. Then
+make the agent read the new value and start the node again:
+
+```
+sudo systemctl restart detsys-vaultAgent-radicle-key radicle-key
+```
 
 Put the private half in OpenBao, and copy the public half into the
 configuration:
