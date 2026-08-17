@@ -4,6 +4,36 @@
   pkgs,
   ...
 }:
+let
+  # Each *arr application, the port it answers on, and the port its exporter
+  # answers on. exportarr defaults to 9708 for every one of them, and four
+  # cannot share a port, so they are numbered from there.
+  #
+  # keyFile is the config.xml the application writes. It holds the API key that
+  # the application made for itself, so nothing here has to be chosen or kept.
+  arrs = {
+    sonarr = {
+      port = config.services.sonarr.settings.server.port;
+      exporterPort = 9709;
+      keyFile = "${config.services.sonarr.dataDir}/config.xml";
+    };
+    radarr = {
+      port = config.services.radarr.settings.server.port;
+      exporterPort = 9710;
+      keyFile = "${config.services.radarr.dataDir}/config.xml";
+    };
+    lidarr = {
+      port = config.services.lidarr.settings.server.port;
+      exporterPort = 9711;
+      keyFile = "${config.services.lidarr.dataDir}/config.xml";
+    };
+    prowlarr = {
+      port = config.services.prowlarr.settings.server.port;
+      exporterPort = 9712;
+      keyFile = "${config.services.prowlarr.dataDir}/config.xml";
+    };
+  };
+in
 {
   # All of the media services share this group, so they read and write the same
   # library.
@@ -99,10 +129,93 @@
     ];
   };
 
-  systemd.services.qbittorrent.vpnConfinement = {
-    enable = true;
-    vpnNamespace = "mullvad";
-  };
+  # One exporter for each *arr, so the queue, the missing episodes and the
+  # health checks each application already runs show up on a dashboard instead
+  # of in four separate web interfaces.
+  services.prometheus.exporters = lib.mapAttrs' (
+    name: arr:
+    lib.nameValuePair "exportarr-${name}" {
+      enable = true;
+      port = arr.exporterPort;
+      listenAddress = "127.0.0.1";
+      url = "http://127.0.0.1:${toString arr.port}";
+      # systemd reads this as root with LoadCredential= before the exporter
+      # starts, so the file below never has to be readable by anybody else.
+      apiKeyFile = "/run/exportarr-${name}/api-key";
+    }
+  ) arrs;
+
+  # Take each API key out of the configuration the application wrote. Nothing
+  # is chosen by hand and nothing is stored twice, so a key that an application
+  # makes again is picked up by restarting this unit.
+  #
+  # OpenBao is the wrong home for these. It holds what a person decided. These
+  # are made by the application, they live in its own state directory already,
+  # and a copy in OpenBao would only be a second thing to keep in step.
+  systemd.services = lib.mkMerge [
+    {
+      qbittorrent.vpnConfinement = {
+        enable = true;
+        vpnNamespace = "mullvad";
+      };
+    }
+
+    (lib.mapAttrs' (
+      name: arr:
+      lib.nameValuePair "exportarr-${name}-key" {
+      description = "Publish ${name}'s API key where its exporter can read it";
+      requiredBy = [ "prometheus-exportarr-${name}-exporter.service" ];
+      before = [ "prometheus-exportarr-${name}-exporter.service" ];
+      # The file does not exist until the application has started once.
+      after = [ "${name}.service" ];
+      wants = [ "${name}.service" ];
+      serviceConfig = {
+        Type = "oneshot";
+        RemainAfterExit = true;
+        RuntimeDirectory = "exportarr-${name}";
+        RuntimeDirectoryMode = "0700";
+        RuntimeDirectoryPreserve = "yes";
+        # A first boot reaches this before the application has written its
+        # configuration. Keep trying rather than leaving the exporter down
+        # until somebody notices.
+        Restart = "on-failure";
+        RestartSec = "30s";
+        ExecStart = pkgs.writeShellScript "exportarr-${name}-key" ''
+          set -o pipefail
+
+          if [ ! -r ${arr.keyFile} ]; then
+            echo "${arr.keyFile} is not there yet. ${name} writes it on its first start." >&2
+            exit 1
+          fi
+
+          key=$(${lib.getExe pkgs.gnused} -n 's:.*<ApiKey>\(.*\)</ApiKey>.*:\1:p' ${arr.keyFile})
+
+          if [ -z "$key" ]; then
+            echo "No ApiKey element in ${arr.keyFile}." >&2
+            exit 1
+          fi
+
+          ${lib.getExe' pkgs.coreutils "install"} -m 0400 /dev/null /run/exportarr-${name}/api-key
+          ${lib.getExe' pkgs.coreutils "printf"} '%s' "$key" > /run/exportarr-${name}/api-key
+        '';
+      };
+        unitConfig.StartLimitIntervalSec = 0;
+      }
+    ) arrs)
+  ];
+
+  # The scrape job lives here rather than in monitoring.nix, because
+  # scrapeConfigs is a list and NixOS joins the definitions. So the exporters
+  # and the job that reads them stay in one file.
+  services.prometheus.scrapeConfigs = [
+    {
+      job_name = "arr";
+      static_configs = lib.mapAttrsToList (name: arr: {
+        targets = [ "127.0.0.1:${toString arr.exporterPort}" ];
+        labels.instance = name;
+      }) arrs;
+    }
+  ];
 
   # No port is open here. Caddy reaches each of these on the loopback and
   # publishes them as names. See web.nix and service-ports.nix.

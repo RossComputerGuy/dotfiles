@@ -79,6 +79,16 @@ in
   services.caddy = {
     enable = true;
     virtualHosts = tlsHosts // plainHosts;
+    # Caddy always answers /metrics on its admin endpoint, which is
+    # 127.0.0.1:2019 and never leaves this machine. That gives the Go runtime
+    # figures on its own. This option adds the per request counters, which are
+    # the ones worth having: how many requests each virtual host takes, what
+    # they answered, and how long they took.
+    globalConfig = ''
+      servers {
+        metrics
+      }
+    '';
   };
 
   # Caddy cannot get a certificate until OpenBao is unsealed, and the YubiKey is

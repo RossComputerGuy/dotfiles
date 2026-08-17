@@ -381,6 +381,9 @@ in
   ross.firefoxConfigPath = ".config/mozilla/firefox";
 
   # Backup
+  # Appear on argama's dashboards. The exporter answers on the tailnet alone.
+  ross.monitoring.enable = true;
+
   ross.backup = {
     enable = true;
     paths = [

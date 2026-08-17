@@ -52,16 +52,46 @@
       };
     };
 
+    # One job for each kind of exporter, and an instance label that is a machine
+    # name rather than an address. Prometheus only fills instance in from the
+    # address when the target has not set it, so these win, and a dashboard can
+    # then group by instance and read as a list of machines.
     scrapeConfigs = [
       {
-        job_name = "argama";
+        job_name = "node";
         static_configs = [
           {
-            targets = [
-              "127.0.0.1:9100"
-              "127.0.0.1:9134"
-              "127.0.0.1:9633"
-            ];
+            targets = [ "127.0.0.1:9100" ];
+            labels.instance = "argama";
+          }
+          # The rest of the fleet, over the tailnet. modules/monitoring.nix is
+          # the other half. hizack-b is a laptop, so it reads as down whenever
+          # it is away, which is the truth and not a fault.
+          {
+            targets = [ "zeta3a:9100" ];
+            labels.instance = "zeta3a";
+          }
+          {
+            targets = [ "hizack-b:9100" ];
+            labels.instance = "hizack-b";
+          }
+        ];
+      }
+      {
+        job_name = "zfs";
+        static_configs = [
+          {
+            targets = [ "127.0.0.1:9134" ];
+            labels.instance = "argama";
+          }
+        ];
+      }
+      {
+        job_name = "smartctl";
+        static_configs = [
+          {
+            targets = [ "127.0.0.1:9633" ];
+            labels.instance = "argama";
           }
         ];
       }
@@ -70,16 +100,82 @@
         job_name = "blocky";
         static_configs = [
           {
-            targets = [
-              "127.0.0.1:4000"
-              "127.0.0.1:4001"
-            ];
+            targets = [ "127.0.0.1:4000" ];
+            labels.instance = "lan";
+          }
+          {
+            targets = [ "127.0.0.1:4001" ];
+            labels.instance = "tailnet";
           }
         ];
       }
       {
         job_name = "restic";
-        static_configs = [ { targets = [ "127.0.0.1:8000" ]; } ];
+        static_configs = [
+          {
+            targets = [ "127.0.0.1:8000" ];
+            labels.instance = "argama";
+          }
+        ];
+      }
+      {
+        # Prometheus watching itself. A scrape that starts failing everywhere at
+        # once is usually Prometheus and not the targets.
+        job_name = "prometheus";
+        static_configs = [
+          {
+            targets = [ "127.0.0.1:9090" ];
+            labels.instance = "argama";
+          }
+        ];
+      }
+      {
+        # The web server in front of every name in the zone. See web.nix, which
+        # turns the per request counters on. This is the admin endpoint and it
+        # answers on the loopback alone.
+        job_name = "caddy";
+        static_configs = [
+          {
+            targets = [ "127.0.0.1:2019" ];
+            labels.instance = "argama";
+          }
+        ];
+      }
+      {
+        # git.nix turns this on. The port is the loopback one Caddy proxies to.
+        job_name = "forgejo";
+        static_configs = [
+          {
+            targets = [ "127.0.0.1:3001" ];
+            labels.instance = "argama";
+          }
+        ];
+      }
+      {
+        # Hydra serves Prometheus text on its own web port with no option to
+        # set. It counts requests to itself and no builds, so treat this as a
+        # sign of life rather than a picture of the queue.
+        job_name = "hydra";
+        static_configs = [
+          {
+            targets = [ "127.0.0.1:3000" ];
+            labels.instance = "argama";
+          }
+        ];
+      }
+      {
+        # The metrics listener from secrets.nix, not the one the fleet uses.
+        # OpenBao answers here without a token, which is why this address
+        # leaves the machine by no route.
+        job_name = "openbao";
+        metrics_path = "/v1/sys/metrics";
+        params.format = [ "prometheus" ];
+        static_configs = [
+          {
+            targets = [ "127.0.0.1:8202" ];
+            labels.instance = "argama";
+          }
+        ];
       }
     ];
   };
@@ -110,14 +206,37 @@
       http_port = 3002;
       root_url = "https://grafana.argama.nix/";
     };
-    provision.datasources.settings.datasources = [
-      {
-        name = "Prometheus";
-        type = "prometheus";
-        url = "http://127.0.0.1:9090";
-        isDefault = true;
-      }
-    ];
+    # Remove it, then make it again. Grafana invented an identifier for this
+    # datasource the first time it started, and provisioning cannot move an
+    # existing datasource onto a different one. It stops with "Datasource
+    # provisioning error: data source not found" and the whole service fails to
+    # start. Deleting first runs before the list below, so the datasource comes
+    # back with the identifier the dashboards name.
+    #
+    # This is safe to keep. On a machine that has never run Grafana it removes
+    # nothing, and on this one it removes only what the next lines put back.
+    provision.datasources.settings = {
+      deleteDatasources = [
+        {
+          name = "Prometheus";
+          orgId = 1;
+        }
+      ];
+
+      datasources = [
+        {
+          name = "Prometheus";
+          type = "prometheus";
+          url = "http://127.0.0.1:9090";
+          isDefault = true;
+          # Fixed on purpose. Every dashboard in dashboards.nix names the
+          # datasource by this identifier, and Grafana would otherwise invent
+          # one at first start, which a dashboard written ahead of time cannot
+          # name.
+          uid = "prometheus";
+        }
+      ];
+    };
   };
 
   # No port is open here. Caddy publishes both as names. See web.nix.

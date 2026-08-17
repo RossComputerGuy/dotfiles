@@ -39,6 +39,29 @@
         # protection.
         tls_disable = true;
       };
+      # A second listener, for Prometheus alone. The metrics path is the one
+      # place OpenBao will answer without a token, and only where this says so,
+      # so it gets an address that leaves this machine by no route at all. The
+      # listener above stays as it was and still wants a token for everything.
+      #
+      # Metrics name every mount and count every operation, which says more
+      # about this machine than the tailnet needs to know. 8201 is taken by
+      # cluster_addr below, hence 8202.
+      listener.metrics = {
+        type = "tcp";
+        address = "127.0.0.1:8202";
+        tls_disable = true;
+        telemetry.unauthenticated_metrics_access = true;
+      };
+
+      # Without a retention time the Prometheus endpoint answers with almost
+      # nothing. disable_hostname keeps the machine name out of every metric
+      # name, because the scrape already carries it as a label.
+      telemetry = {
+        prometheus_retention_time = "24h";
+        disable_hostname = true;
+      };
+
       # Raft, not the file backend. Raft can auto unseal against a PKCS#11
       # token, and the package has HSM support built in. See the README for the
       # seal stanza to add once the TPM token exists.
