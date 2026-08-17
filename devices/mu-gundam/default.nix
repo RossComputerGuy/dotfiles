@@ -300,8 +300,20 @@
     memSize = lib.mkDefault 4096;
     devices =
       let
-        poolName =
-          if pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform then "zpool" else "zpool-install";
+        # Read the platforms from the options and not from pkgs. disko feeds
+        # disko.devices._config back into the module system, so a pkgs here
+        # asks for the merged configuration, which asks for disko.devices,
+        # which asks for pkgs. That is an infinite recursion and it stopped
+        # this machine evaluating at all.
+        #
+        # mkMachine in flake.nix sets nixpkgs.localSystem and
+        # nixpkgs.crossSystem, and not nixpkgs.hostPlatform, so read the pair
+        # it sets. crossSystem is null for nixosConfigurations and an attribute
+        # set for the cross outputs under packages. Both cases give the same
+        # answer the old pkgs test gave.
+        cross = config.nixpkgs.crossSystem;
+        native = cross == null || (cross.system or null) == config.nixpkgs.localSystem.system;
+        poolName = if native then "zpool" else "zpool-install";
       in
       {
         disk.nvme = {
