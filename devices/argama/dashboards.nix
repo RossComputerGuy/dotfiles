@@ -131,6 +131,13 @@ let
           inherit expr;
           legendFormat = legend;
           refId = "A";
+          # Read the value at this moment and not across the whole window. A
+          # range query keeps every series the window ever held, so a series
+          # that stopped, because a label changed or a target went away, holds
+          # its last value on the panel for as long as the window is wide. That
+          # made a pool which recovered hours ago still read DEGRADED, and it
+          # showed every disk twice.
+          instant = true;
         }
       ];
       options = {
