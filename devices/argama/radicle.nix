@@ -68,6 +68,12 @@ in
     # config.json at build time, so a wrong key fails the build and not the boot.
   };
 
+  # The module puts only `rad-system` on the PATH, and only when the service is
+  # on. That wrapper runs `rad` inside the namespaces of a *running* node, so it
+  # cannot make the identity that the node needs before it can run. Give the
+  # plain command as well, so the first `rad auth` is possible.
+  environment.systemPackages = [ config.services.radicle.package ];
+
   # The gossip port, on the tailnet only. A second machine that seeds these
   # repositories reaches argama here. To seed to the public internet later, move
   # this to networking.firewall.allowedTCPPorts and give the node an external

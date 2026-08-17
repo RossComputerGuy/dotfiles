@@ -39,6 +39,17 @@ in
   # Caddy holds 443 for backup.argama.nix, so 8000 needs no opening of its own.
   # See web.nix.
 
+  # The module makes an empty .htpasswd below dataDir, and privateRepos means
+  # rest-server refuses every request that no account in that file matches. So
+  # a new machine needs an account added by hand before its first backup. See
+  # the README.
+  #
+  # This is the whole Apache package for one small command. htpasswd is the
+  # only tool that adds an account and changes an account in the same step, and
+  # a file written by hand instead would gain a second copy of a name each time
+  # somebody set a password again.
+  environment.systemPackages = [ pkgs.apacheHttpd ];
+
   # Because the server is append only, no client can prune. argama does it from
   # this side, straight on the repository files. Each password comes from
   # OpenBao, the same one the client uses.

@@ -26,6 +26,21 @@
     };
   };
 
+  # Registration is off, so the first account cannot come from the web
+  # interface. It comes from the command below, which needs the forgejo command
+  # on the PATH. The module does not put it there.
+  #
+  #   sudo -u forgejo env \
+  #     FORGEJO_WORK_DIR=/var/lib/forgejo \
+  #     FORGEJO_CUSTOM=/var/lib/forgejo/custom \
+  #     forgejo admin user create --admin \
+  #       --username ross --email you@example.com --random-password
+  #
+  # The environment must be given. forgejo reads its configuration from the
+  # work directory, and a shell has neither variable, so it would make a new
+  # empty instance in the current directory instead of opening this one.
+  environment.systemPackages = [ config.services.forgejo.package ];
+
   # Hydra reads a jobset from a flake URL, so it can build straight from
   # Forgejo. Add the jobset in the Hydra web interface with a flake input of
   # git+https://git.argama.nix/<owner>/<repo>. Hydra has no declarative jobset

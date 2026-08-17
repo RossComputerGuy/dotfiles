@@ -36,5 +36,15 @@
     };
   };
 
+  # OpenBao starts sealed at every boot, so the sidecar above fails first.
+  # secrets.nix makes it retry until the unseal, but a retry only brings back
+  # the sidecar. paperless-scheduler already gave up by then, and it is the unit
+  # that makes the superuser, so a boot with no operator present would leave the
+  # account unmade. Authelia and Vaultwarden carry the same line for the same
+  # reason.
+  systemd.services.detsys-vaultAgent-paperless-scheduler.upholds = [
+    "paperless-scheduler.service"
+  ];
+
   # No port is open here. Caddy publishes paperless.argama.nix. See web.nix.
 }
