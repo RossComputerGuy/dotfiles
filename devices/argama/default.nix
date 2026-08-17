@@ -256,18 +256,17 @@
   ];
 
   # The account the other machines send builds to. modules/builder.nix is the
-  # other half. It has no password and no shell of its own beyond what nix
-  # needs, so a key is the only way in.
+  # other half.
   #
-  # Add each machine's public half here. Make one with:
-  #   ssh-keygen -t ed25519 -N "" -f /root/.ssh/argama-builder
+  # No key is listed here, and no machine adds one. A builder sets
+  # ross.sshCa.clientCerts to [ "nixremote" ], makes its own key, and asks
+  # OpenBao for a certificate with the principal "nixremote". sshd accepts it
+  # through TrustedUserCAKeys, and AuthorizedPrincipalsFile is "none", so the
+  # principal must equal this account name. So a new builder needs nothing here
+  # and no private key travels.
   users.users.nixremote = {
     isNormalUser = true;
     description = "Remote build account for the fleet";
-    openssh.authorizedKeys.keys = [
-      # hizack-b, /root/.ssh/argama-builder.pub
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINWbQ/p6TjVNQqP1b3BGXer+ja0fZTWCZkm+xjcRdK0T root@hizack-b"
-    ];
   };
 
   # A build sent here has to be able to write the results into the store. Only
