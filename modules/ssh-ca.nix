@@ -136,12 +136,16 @@ in
             ssh-keygen -t ed25519 -N "" -f "$key"
           fi
 
-          jq -n --arg pk "$(cat "$key.pub")" '{public_key:$pk}' \
+          # Exactly one newline on the end. OpenBao ends signed_key with one and
+          # jq adds a second, and that empty line makes ssh-keygen report
+          # "invalid format" for line 2 while it still reads line 1.
+          signed=$(jq -n --arg pk "$(cat "$key.pub")" '{public_key:$pk}' \
             | curl -sS --fail-with-body \
                 -H "X-Vault-Token: $BAO_TOKEN" \
                 -X POST --data @- \
                 "$addr/v1/ssh-client-signer/sign/ross" \
-            | jq -r '.data.signed_key' > "$key-cert.pub"
+            | jq -r '.data.signed_key')
+          printf '%s\n' "$signed" > "$key-cert.pub"
 
           echo "Wrote $key-cert.pub"
           ssh-keygen -L -f "$key-cert.pub" | grep -E 'Valid|Principals' -A 1
