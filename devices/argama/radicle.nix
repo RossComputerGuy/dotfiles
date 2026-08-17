@@ -11,7 +11,7 @@ let
   # Paste the one line from /var/lib/radicle/keys/radicle.pub here, with no
   # comment on the end. Radicle stays off until you do, because a seed node with
   # no identity cannot start. See the README.
-  publicKey = "";
+  publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINO6hPUXqS1I2z/JnBmP/V/nSpfoXoaGA75ndgeHEogG";
 
   # The agent writes the private half into the PrivateTmp of the sidecar. The
   # unit below copies it to /run, because the module gives it to radicle-node
