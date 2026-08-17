@@ -109,10 +109,18 @@ in
         # Keep the directory across a restart of this unit, so the node never
         # finds the key missing while the key is written again.
         RuntimeDirectoryPreserve = "yes";
+        # The key gets one newline too many on the way here. The stored value
+        # ends with a newline, and the agent template adds a second one after
+        # {{ end }}. radicle reads the file with a strict PEM parser, which
+        # refuses the blank line, while OpenSSH accepts it. So do not copy the
+        # file. Take the text without any trailing newline, then write back
+        # exactly one. Command substitution removes every trailing newline, and
+        # it cannot touch the lines between the two boundaries.
         ExecStart = pkgs.writeShellScript "radicle-key-publish" ''
-          ${lib.getExe' pkgs.coreutils "install"} -m 0400 \
-            ${agent.secretFiles.files."radicle".path} \
-            ${keyDir}/radicle
+          ${lib.getExe' pkgs.coreutils "install"} -m 0400 /dev/null ${keyDir}/radicle
+          ${lib.getExe' pkgs.coreutils "printf"} '%s\n' \
+            "$(${lib.getExe' pkgs.coreutils "cat"} ${agent.secretFiles.files."radicle".path})" \
+            > ${keyDir}/radicle
         '';
       };
     };
