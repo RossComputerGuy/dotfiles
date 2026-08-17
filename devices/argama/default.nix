@@ -236,6 +236,25 @@
 
   services.openssh.enable = true;
 
+  # A host certificate from the ssh-host-signer mount, renewed daily. It removes
+  # the "authenticity of host cannot be established" question on a machine that
+  # has never met argama. See modules/ssh-ca.nix.
+  ross.sshCa.hostCert = true;
+
+  # Every name a person dials. A client refuses a certificate that does not
+  # carry the name it asked for, and it does not fall back to the plain host
+  # key, so a name that is missing here becomes an error that reads like a
+  # wrong key.
+  #
+  # 192.168.1.163 is absent on purpose. The address comes from DHCP, so a
+  # certificate could not follow it. Reach argama by name, and use the KVM or
+  # the serial console when the name does not resolve.
+  ross.sshCa.hostPrincipals = [
+    "argama"
+    "argama.nix"
+    "argama.tailde5a8.ts.net"
+  ];
+
   # The account the other machines send builds to. modules/builder.nix is the
   # other half. It has no password and no shell of its own beyond what nix
   # needs, so a key is the only way in.
