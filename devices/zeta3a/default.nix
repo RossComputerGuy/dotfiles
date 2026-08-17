@@ -280,6 +280,36 @@ in
     ];
   };
 
+  # NVENC only exists in this package when CUDA is on. The derivation sets
+  # WIVRN_USE_NVENC from cudaSupport, which is false by default. The OBS patch
+  # above is not necessary here, because WiVRn puts no architecture gate on
+  # NVENC and builds it on aarch64.
+  services.wivrn = {
+    package = pkgs.wivrn.override { cudaSupport = true; };
+    config = {
+      # system/linux/vr.nix turns config on and sets the application. Only the
+      # encoder is machine specific.
+      #
+      # One entry for each stream, and not a list of fallbacks. WiVRn encodes
+      # the left eye, the right eye and the alpha channel as three streams, and
+      # each entry sets the encoder for one of them.
+      json.encoder = [
+        {
+          encoder = "nvenc";
+          codec = "h265";
+        }
+        {
+          encoder = "nvenc";
+          codec = "h265";
+        }
+        {
+          encoder = "nvenc";
+          codec = "h265";
+        }
+      ];
+    };
+  };
+
   # allow matthewcroughan to do remote builds
   nix = {
     settings.trusted-users = [ "nix-ssh" ];
