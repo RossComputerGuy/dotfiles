@@ -58,6 +58,20 @@
         systems.follows = "systems";
       };
     };
+    # The palette, as sources and not as a package. modules/theme.nix used to
+    # name a file inside pkgs.base16-schemes, and stylix reads that file while
+    # it evaluates. So Nix had to build base16-schemes for the machine's own
+    # platform before it could evaluate the machine at all, and a riscv64
+    # machine could then only be evaluated on riscv64 hardware. A source path
+    # needs no build, so every machine now evaluates from any machine.
+    #
+    # The repository is "schemes" and the files are below base16/. The nixpkgs
+    # package renames that directory to share/themes, which is why the old path
+    # looked different.
+    base16-schemes = {
+      url = "github:tinted-theming/schemes";
+      flake = false;
+    };
   };
 
   nixConfig = rec {
@@ -280,6 +294,22 @@
       };
       forAllMachines = func: lib.mapAttrs func machines;
 
+      # The machines Hydra builds every night, so argama holds their store paths
+      # before anybody rebuilds. harmonia serves argama's own store and nothing
+      # else, so a path argama has never seen cannot come from argama, and the
+      # client goes to cache.nixos.org over the internet instead.
+      #
+      # These three are here because people rebuild them. The rest are left out
+      # on purpose: jegan and mu-gundam are riscv64 and argama has no builder
+      # for that architecture, and regz is x86_64 for the same reason. See
+      # services.hydra.buildMachinesFiles in devices/argama/default.nix, which
+      # is empty.
+      cachedMachines = [
+        "argama"
+        "zeta3a"
+        "hizack-b"
+      ];
+
       machineCross = {
         jegan = {
           extraModules = [
@@ -337,6 +367,14 @@
             {
               documentation.nixos.enable = false;
               home-manager.sharedModules = homeManagerModules;
+              # modules/theme.nix is a home-manager module as well as a NixOS
+              # one, and it names a file inside the base16-schemes input. The
+              # NixOS side of home-manager passes none of the outer arguments
+              # down, so without this the module has no inputs to read.
+              # homeConfigurations below already does the same thing.
+              home-manager.extraSpecialArgs = {
+                inherit inputs;
+              };
               nixpkgs = {
                 overlays = (builtins.attrValues overlays);
                 inherit crossSystem localSystem;
@@ -352,7 +390,15 @@
             stylix.nixosModules.stylix
             inputs.nixos-vault-service.nixosModules.nixos-vault-service
           ]
-          ++ lib.optional ((crossSystem.system or null) != "riscv64-linux") determinate.nixosModules.default
+          # Determinate has no riscv64 support, so gate on the platform the
+          # machine runs, which is crossSystem when there is one and localSystem
+          # otherwise. The old test read crossSystem alone, and crossSystem is
+          # null for every nixosConfigurations entry, so jegan and mu-gundam
+          # took the module and failed with "attribute 'riscv64-linux' missing".
+          # Only the cross outputs under packages ever passed.
+          ++
+            lib.optional ((crossSystem.system or localSystem.system) != "riscv64-linux")
+              determinate.nixosModules.default
           ++ (cfg.extraModules or [ ])
           ++ extraModules;
         };
@@ -525,6 +571,10 @@
           modules = [
             {
               home-manager.sharedModules = homeManagerModules;
+              # See the note beside the same line in mkMachine.
+              home-manager.extraSpecialArgs = {
+                inherit inputs;
+              };
             }
             home-manager.darwinModules.default
             stylix.darwinModules.stylix
@@ -538,6 +588,13 @@
 
       nixosConfigurations = forAllMachines (
         machine: system: mkMachine machine { inherit system; } null [ ]
+      );
+
+      # What Hydra builds. Point a jobset at this flake and it fills argama's
+      # store, which harmonia then serves to the fleet. The list is
+      # cachedMachines above.
+      hydraJobs.nixos = lib.genAttrs cachedMachines (
+        machine: self.nixosConfigurations.${machine}.config.system.build.toplevel
       );
     };
 }
