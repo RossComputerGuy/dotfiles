@@ -1059,14 +1059,25 @@ bao read -field=public_key ssh-host-signer/config/ca > certs/ssh-host-ca.pub
 One role for people. Twelve hours, because you renew it by logging in again:
 
 ```
-bao write ssh-client-signer/roles/ross \
-  key_type=ca \
-  allow_user_certificates=true \
-  allowed_users="ross,root" \
-  default_user=ross \
-  ttl=12h \
-  default_extensions=permit-pty,permit-agent-forwarding
+bao write ssh-client-signer/roles/ross - <<'EOF'
+{
+  "key_type": "ca",
+  "allow_user_certificates": true,
+  "allowed_users": "ross,root",
+  "default_user": "ross",
+  "ttl": "12h",
+  "default_extensions": {
+    "permit-pty": "",
+    "permit-agent-forwarding": ""
+  }
+}
+EOF
 ```
+
+`default_extensions` is a map and not a list. The `key=value` form of `bao
+write` makes every value a string, so a map field always fails there with
+`expected type 'map[string]interface {}'`. A single `-` reads the whole request
+as JSON from standard input instead, which keeps the types.
 
 One role for each service account. Thirty days, because these run with nobody
 present. The private key stays on disk and only the certificate is renewed, so
@@ -1074,13 +1085,16 @@ OpenBao must stay sealed for a month before a build or a backup fails:
 
 ```
 for r in nixremote resticremote; do
-  bao write ssh-client-signer/roles/$r \
-    key_type=ca \
-    allow_user_certificates=true \
-    allowed_users="$r" \
-    default_user="$r" \
-    ttl=720h \
-    default_extensions=permit-pty
+  bao write ssh-client-signer/roles/$r - <<EOF
+{
+  "key_type": "ca",
+  "allow_user_certificates": true,
+  "allowed_users": "$r",
+  "default_user": "$r",
+  "ttl": "720h",
+  "default_extensions": { "permit-pty": "" }
+}
+EOF
 done
 ```
 
