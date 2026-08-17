@@ -3,6 +3,20 @@
   lib,
   ...
 }:
+let
+  # Where Vaultwarden keeps its files. The name is "bitwarden_rs" on a machine
+  # whose stateVersion is older than 24.11, and "vaultwarden" on a newer one.
+  # argama is an older one, so a written path of /var/lib/vaultwarden matched
+  # nothing. restic then said "does not match any files, skipping" and reported
+  # success, so the attachments and the token signing key were never saved.
+  #
+  # This repeats the test the module makes, rather than reading StateDirectory
+  # from the unit. The restic module writes units of its own, so a path option
+  # that read systemd.services would make a cycle.
+  dataDir = "/var/lib/${
+    if lib.versionOlder config.system.stateVersion "24.11" then "bitwarden_rs" else "vaultwarden"
+  }";
+in
 {
   # Vaultwarden is the human half of the secret story. OpenBao holds what the
   # machines read, and this holds what a person types. They do not overlap:
@@ -22,9 +36,9 @@
     # takes a proper sqlite backup, and restic below copies that result rather
     # than the live file.
     #
-    # This path must not begin with the data directory. The module tests a
-    # string prefix, not a path one, so "/var/lib/vaultwarden-backup" fails
-    # against "/var/lib/vaultwarden" even though one is not inside the other.
+    # This path must not begin with the data directory, which is dataDir above.
+    # The module tests a string prefix and not a path one, so a name that only
+    # starts the same fails even when one is not inside the other.
     backupDir = "/var/backup/vaultwarden";
 
     config = {
@@ -121,12 +135,12 @@
       # The consistent copy of the database.
       "/var/backup/vaultwarden"
       # Attachments, sends, and the key that signs the tokens. None of these
-      # are in the database.
-      "/var/lib/vaultwarden"
+      # are in the database. Losing the key signs every client out.
+      dataDir
     ];
     exclude = [
       # The live database. The copy above is the one that is safe to read.
-      "/var/lib/vaultwarden/db.sqlite3*"
+      "${dataDir}/db.sqlite3*"
     ];
     environmentFile = "/run/keys/environment/restic-backups-vaultwarden/EnvFile";
     initialize = true;
