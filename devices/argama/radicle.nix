@@ -99,6 +99,11 @@ in
   };
 
   systemd.services = lib.mkIf config.services.radicle.enable {
+    # radicle-key has BindsTo on the sidecar, so a sealed OpenBao stops both,
+    # and the node with them. It is a oneshot that stays active, so this starts
+    # it once after the unseal. See monitoring.nix for the longer note.
+    detsys-vaultAgent-radicle-key.upholds = [ "radicle-key.service" ];
+
     radicle-key = {
       description = "Publish the radicle node key where LoadCredential can read it";
       requiredBy = [ "radicle-node.service" ];

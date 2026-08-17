@@ -215,5 +215,16 @@
           Restart = "always";
           RestartSec = 15;
         };
-      });
+      })
+  # Bring each publish unit back after the unseal. They have BindsTo on their
+  # sidecar, so a sealed OpenBao stops the sidecar and stops them too, and
+  # BindsTo carries only the stop. Each of these is a oneshot that stays active
+  # after it finishes, so Upholds= starts it once and leaves it alone. Do not
+  # add a plain oneshot here, such as a restic prune, because Upholds= would
+  # start it again the moment it finished.
+  //
+    {
+      detsys-vaultAgent-mullvad-key.upholds = [ "mullvad-key.service" ];
+      detsys-vaultAgent-harmonia-key.upholds = [ "harmonia-key.service" ];
+    };
 }
