@@ -40,6 +40,25 @@ let
       machine="$1"
       export BAO_ADDR="''${BAO_ADDR:-http://127.0.0.1:8200}"
 
+      # This command has to be root, because it writes a file that belongs to
+      # the restic user. sudo gives root a home with no token in it, so find the
+      # token of the person who called sudo.
+      if [ -z "''${BAO_TOKEN:-}" ] && [ -n "''${SUDO_USER:-}" ]; then
+        home=$(getent passwd "$SUDO_USER" | cut -d: -f6)
+        if [ -r "$home/.vault-token" ]; then
+          BAO_TOKEN=$(cat "$home/.vault-token")
+          export BAO_TOKEN
+        fi
+      fi
+
+      # Ask before anything changes. htpasswd used to run first, so a missing
+      # token left the machine with an account whose password nothing recorded.
+      if ! bao token lookup > /dev/null 2>&1; then
+        echo "No OpenBao token that works." >&2
+        echo "Run: bao login -method=userpass username=ross" >&2
+        exit 1
+      fi
+
       # The list below comes from this file, so the two always agree. The weekly
       # prune reads the same list, and a repository that the prune does not know
       # grows without end.
