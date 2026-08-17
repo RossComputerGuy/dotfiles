@@ -155,6 +155,17 @@
     };
   };
 
+  # The key and the certificate this backup logs in with. The unit makes the key
+  # on its first run and renews only the certificate after that, so the private
+  # half is made here and never travels. See modules/ssh-ca.nix.
+  #
+  # This replaces a key that was pasted into zeta3a's authorized_keys. zeta3a
+  # trusts the user authority already, and its AuthorizedPrincipalsFile is
+  # "none", so sshd compares the principal in the certificate against the login
+  # name. The role signs the principal "resticremote", which is the account
+  # zeta3a keeps for this repository.
+  ross.sshCa.clientCerts = [ "resticremote" ];
+
   # restic runs ssh itself, so it reads this. The alias exists rather than a
   # plain "Host zeta3a" block, because that would send every ordinary
   # "ssh zeta3a" from any user on this machine to the backup account with the
@@ -162,14 +173,15 @@
   #
   # The key is on disk for the same reason the builder key is: this runs from a
   # timer with nobody present, and a key that waited for an unseal would mean a
-  # backup that only happens when somebody is watching.
-  #
-  #   ssh-keygen -t ed25519 -N "" -f /root/.ssh/zeta3a-backup
+  # backup that only happens when somebody is watching. The certificate beside
+  # it lives 30 days and renews daily, so OpenBao can stay sealed for a month
+  # before this backup stops. OpenSSH finds the certificate by itself, because
+  # it sits next to the key and carries the "-cert.pub" ending.
   programs.ssh.extraConfig = ''
     Host zeta3a-backup
       HostName zeta3a
       User resticremote
-      IdentityFile /root/.ssh/zeta3a-backup
+      IdentityFile /var/lib/ssh-client-cert/resticremote
       IdentitiesOnly yes
   '';
 

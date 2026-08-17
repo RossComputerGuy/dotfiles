@@ -404,6 +404,14 @@ in
     home = "/var/lib/restic-argama";
     createHome = true;
     shell = pkgs.bashInteractive;
+    # argama logs in with a certificate now. This machine trusts the user
+    # authority, and AuthorizedPrincipalsFile is "none", so sshd compares the
+    # principal "resticremote" against this account name. See
+    # devices/argama/passwords.nix and modules/ssh-ca.nix.
+    #
+    # The pasted key stays until the certificate has carried one backup. Remove
+    # it after that, together with /root/.ssh/zeta3a-backup on argama. A backup
+    # that fails is quiet, so do not remove both at the same time.
     openssh.authorizedKeys.keys = [
       # argama, /root/.ssh/zeta3a-backup.pub
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILz9sV1yfoAMg3ow0N4ogApGE8R/Ff/HmOTXA3a65SMY root@argama"
