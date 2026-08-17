@@ -1052,9 +1052,17 @@ machine stops at that point and needs a console.
    `No value found at auth/approle/role/<machine>/role-id` otherwise.
 
    A client reads the root certificate, which every machine shares, and its own
-   restic repository, which no other machine may see. It signs its host key,
-   and it signs one client key for each role in `ross.sshCa.clientCerts`. Drop
-   the last line on a machine that has no service account:
+   restic repository, which no other machine may see. On top of that it gets
+   one line for each certificate it asks for, and no more:
+
+   | line | give it to |
+   |---|---|
+   | `ssh-host-signer/sign/host` | a machine with `ross.sshCa.hostCert` on |
+   | `ssh-client-signer/sign/<role>` | one line per role in `ross.sshCa.clientCerts` |
+
+   So zeta3a takes the host line and no client line, and hizack-b takes the
+   client line and no host line, because it runs no sshd and nothing connects
+   to it.
 
    ```
    machine=hizack-b
@@ -1062,7 +1070,6 @@ machine stops at that point and needs a console.
    bao policy write "$machine" - <<EOF
    path "secret/data/argama/ca"             { capabilities = ["read"] }
    path "secret/data/$machine/*"            { capabilities = ["read"] }
-   path "ssh-host-signer/sign/host"         { capabilities = ["update"] }
    path "ssh-client-signer/sign/nixremote"  { capabilities = ["update"] }
    EOF
 
@@ -1223,8 +1230,8 @@ signer paths are part of the machine policy in step 9 of the setup above.
 second policy with only these lines. That would take the restic paths away and
 stop the backup.
 
-argama signs `resticremote` in place of `nixremote`, and zeta3a signs neither,
-so each machine gets only the lines it needs.
+Who signs what today: argama signs a host key and `resticremote`, zeta3a signs
+a host key only, and hizack-b signs `nixremote` only.
 
 ### Turning host certificates on
 

@@ -387,6 +387,10 @@ in
       "/home"
       "/var/lib"
     ];
+    # argama keeps its Vaultwarden repository here, below /var/lib. Without
+    # this line, zeta3a sends argama's backup back to argama, which protects
+    # nothing and grows with every snapshot argama takes.
+    exclude = [ "/var/lib/restic-argama" ];
   };
 
   # Where argama sends its Vaultwarden backup. argama holds the backups of
