@@ -157,9 +157,13 @@ Radicle stays off until the node has an identity. `radicle.nix` holds an empty
 `publicKey`, and `services.radicle.enable` reads it, so the configuration builds
 today and the node starts on the day you fill it in.
 
-Make the identity on argama:
+Make the identity on argama. `rad` writes to `$RAD_HOME`, which is
+`~/.radicle` by default, so name a scratch directory instead. The service keeps
+its own `/var/lib/radicle` and reads the key from OpenBao, so nothing here has
+to land in that directory:
 
 ```
+export RAD_HOME=$(mktemp -d)
 rad auth --alias argama
 ```
 
@@ -173,15 +177,21 @@ configuration:
 
 ```
 bao kv put secret/argama/radicle \
-  private_key=@/var/lib/radicle/keys/radicle
+  private_key=@$RAD_HOME/keys/radicle
 
-cat /var/lib/radicle/keys/radicle.pub
+cat $RAD_HOME/keys/radicle.pub
 ```
 
 Paste that one line into `publicKey` in `radicle.nix`, with no comment on the
 end, then rebuild. `checkConfig` runs `rad config` against the generated
 `config.json` while it builds, so a wrong setting fails the build and not the
-boot.
+boot. Then remove the scratch directory, because it still holds a copy of the
+private key:
+
+```
+shred -u $RAD_HOME/keys/radicle
+rm -rf $RAD_HOME
+```
 
 ### Day to day
 
@@ -994,11 +1004,20 @@ machine stops at that point and needs a console.
    repository address and password in OpenBao:
 
    ```
-   htpasswd -B /var/lib/restic/.htpasswd <machine>
+   sudo -u restic htpasswd -B /var/lib/restic/.htpasswd <machine>
    bao kv put secret/<machine>/restic \
      repository=rest:https://<machine>:<pass>@backup.argama.nix/ \
      password=<repository password>
    ```
+
+   Two different passwords appear here. `htpasswd` sets the one that opens the
+   HTTP connection, which goes in the repository address. `password` is the one
+   that encrypts the repository, which the server never learns. Give them
+   different values.
+
+   The file belongs to the restic user with mode 0700, so the command needs
+   `sudo -u restic`. Until a machine has a line in this file, the server answers
+   every one of its requests with 401 Unauthorized.
 
 9. Give each client its AppRole. The secret ID travels inside a single use
    token, so an intercepted token arrives already spent and the theft shows:
@@ -1014,6 +1033,113 @@ machine stops at that point and needs a console.
    ```
    ip netns exec mullvad curl https://am.i.mullvad.net/connected
    ```
+
+## SSH certificate authorities
+
+Two mounts. One signs the keys of people, the other signs the host keys of
+machines. They stay apart, because an authority that could do both would let
+whoever took it pretend to be argama to every machine you own.
+
+```
+bao secrets enable -path=ssh-client-signer ssh
+bao write ssh-client-signer/config/ca generate_signing_key=true
+
+bao secrets enable -path=ssh-host-signer ssh
+bao write ssh-host-signer/config/ca generate_signing_key=true
+```
+
+Put both public halves in the repository. They are public, so git is the right
+place, and a machine can then trust the fleet before it has met argama:
+
+```
+bao read -field=public_key ssh-client-signer/config/ca > certs/ssh-user-ca.pub
+bao read -field=public_key ssh-host-signer/config/ca > certs/ssh-host-ca.pub
+```
+
+One role for people. Twelve hours, because you renew it by logging in again:
+
+```
+bao write ssh-client-signer/roles/ross \
+  key_type=ca \
+  allow_user_certificates=true \
+  allowed_users="ross,root" \
+  default_user=ross \
+  ttl=12h \
+  default_extensions=permit-pty,permit-agent-forwarding
+```
+
+One role for each service account. Thirty days, because these run with nobody
+present. The private key stays on disk and only the certificate is renewed, so
+OpenBao must stay sealed for a month before a build or a backup fails:
+
+```
+for r in nixremote resticremote; do
+  bao write ssh-client-signer/roles/$r \
+    key_type=ca \
+    allow_user_certificates=true \
+    allowed_users="$r" \
+    default_user="$r" \
+    ttl=720h \
+    default_extensions=permit-pty
+done
+```
+
+One role for host keys. The principals come from the request, which
+`modules/ssh-ca.nix` builds from `ross.sshCa.hostPrincipals`:
+
+```
+bao write ssh-host-signer/roles/host \
+  key_type=ca \
+  allow_host_certificates=true \
+  allowed_domains="argama,zeta3a,hizack-b" \
+  allow_bare_domains=true \
+  ttl=720h
+```
+
+Each machine signs with the AppRole it already holds for restic, so each policy
+gains one rule. Give a machine its own paths and no others:
+
+```
+bao policy write hizack-b - <<'EOF'
+path "ssh-host-signer/sign/host"        { capabilities = ["update"] }
+path "ssh-client-signer/sign/nixremote" { capabilities = ["update"] }
+EOF
+```
+
+argama signs `resticremote` in place of `nixremote`, and zeta3a signs neither,
+so each machine gets only the lines it needs.
+
+### Getting in from a new device
+
+```
+tailscale up
+bao login -method=userpass username=ross
+argama-ssh-cert
+ssh argama
+```
+
+`bao login` works on a device that has never met argama, because
+`certs/argama-root.crt` is in the repository and `modules/pki.nix` installs it,
+so `https://vault.argama.nix` is already trusted.
+
+### If SSH stops working
+
+An expired host certificate is the one failure that is not quiet. A client with
+a `@cert-authority` line refuses an expired host certificate and does not fall
+back to the plain host key, so a machine whose renewal has been failing goes
+away from every client at once. Watch the Grafana alert on
+`ssh_host_cert_not_after`.
+
+To recover, use the KVM, the serial console or the local login, then:
+
+```
+systemctl start ssh-host-cert.service
+journalctl -u ssh-host-cert.service -n 50
+```
+
+`sshd` also refuses to start when `HostCertificate` names a file that is not
+there. So `ross.sshCa.hostCert` must stay off until the mount answers, and the
+certificate lives below `/var/lib` where a reboot cannot remove it.
 
 ## Notes
 

@@ -221,6 +221,32 @@
                     --replace-fail "char buff[total_size];" "char buff[sizeof(struct lsm_ctx) + 8];"
                 '';
             });
+
+            # fonttools fails 68 tests under pkgsLLVM, and each one compares a
+            # float in text: it gets 0.037499999999999999 where it wants 0.0375.
+            # pkgsLLVM is a crossSystem, so configure takes a --host argument,
+            # and autoconf sets cross_compiling=yes because the argument is
+            # there rather than because the platforms differ. Python then cannot
+            # run its own test for short float repr and keeps the %.17g one.
+            # nixpkgs still runs the checks, because it compares the platforms
+            # and sees they match.
+            #
+            # Only pkgsLLVM needs this. That set has no cache anyway, while the
+            # ordinary one does, and pythonPackagesExtensions rebuilds every
+            # python package below it.
+            #
+            # zeta3a reaches it through boot.kernelPackages: nvidiaPackages
+            # comes from the same set, and nvidia-settings pulls gtk+3, pango,
+            # harfbuzz and fonttools after it.
+            pythonPackagesExtensions =
+              prev.pythonPackagesExtensions
+              ++ lib.optional final.stdenv.hostPlatform.useLLVM (
+                pyfinal: pyprev: {
+                  fonttools = pyprev.fonttools.overridePythonAttrs (_: {
+                    doCheck = false;
+                  });
+                }
+              );
           }
         );
       };

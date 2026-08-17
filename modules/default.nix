@@ -10,6 +10,7 @@
     ./misc.nix
     ./pki.nix
     ./security.nix
+    ./ssh-ca.nix
     ./services.nix
     ./virt.nix
   ];

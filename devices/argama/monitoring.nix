@@ -4,6 +4,14 @@
   ...
 }:
 {
+  # The textfile collector below complains at every scrape when its directory is
+  # absent, and nothing makes it until ross.sshCa.hostCert is on. Make it here,
+  # so the collector stays quiet while it has nothing to read.
+  systemd.tmpfiles.rules = [
+    "d /var/lib/node_exporter 0755 root root -"
+    "d /var/lib/node_exporter/textfile 0755 root root -"
+  ];
+
   services.prometheus = {
     enable = true;
     port = 9090;
@@ -19,6 +27,15 @@
         enabledCollectors = [
           "systemd"
           "processes"
+          # ssh-host-cert.service writes the end of this machine's host
+          # certificate here. An expired one takes this machine away from every
+          # client at once, because a client that holds a cert-authority line
+          # refuses an expired host certificate and does not fall back to the
+          # plain host key. See modules/ssh-ca.nix.
+          "textfile"
+        ];
+        extraFlags = [
+          "--collector.textfile.directory=/var/lib/node_exporter/textfile"
         ];
       };
       # The pools hold the media, the backups and the OpenBao data, so their
