@@ -9,6 +9,26 @@ let
   # The agent writes its environment file below /run, which no PrivateTmp
   # covers, so the restic unit reads it as a normal EnvironmentFile.
   envFile = "/run/keys/environment/restic-backups-argama/EnvFile";
+
+  # What no machine here needs to keep. A pattern with no slash in it matches
+  # the base name at any depth, so one line covers every checkout.
+  alwaysExclude = [
+    # Caches and rubbish.
+    "/home/*/.cache"
+    "/home/*/.local/share/Trash"
+    "/var/lib/systemd/coredump"
+
+    # Build output. A build makes each of these again from the sources beside
+    # them, so a copy only makes every restore larger. On zeta3a these three
+    # directories held 59 GiB of an 83 GiB first snapshot.
+    "node_modules"
+    "target"
+    "result"
+    "result-*"
+    ".direnv"
+    ".zig-cache"
+    "zig-pkg"
+  ];
 in
 {
   options.ross.backup = {
@@ -30,13 +50,13 @@ in
     };
 
     exclude = lib.mkOption {
-      description = "Patterns that the backup passes over.";
+      description = ''
+        More patterns that the backup passes over, added to the ones below that
+        every machine gets. Give a machine only what is true of that machine.
+      '';
       type = lib.types.listOf lib.types.str;
-      default = [
-        "/home/*/.cache"
-        "/home/*/.local/share/Trash"
-        "/var/lib/systemd/coredump"
-      ];
+      default = [ ];
+      example = [ "/var/lib/restic-argama" ];
     };
   };
 
@@ -46,7 +66,12 @@ in
     # backup.argama.nix. Nothing is on this disk except the AppRole files.
     #
     #   bao kv put secret/${config.networking.hostName}/restic \
-    #     repository=rest:https://<user>:<pass>@backup.argama.nix/ password=<password>
+    #     repository=rest:https://<user>:<pass>@backup.argama.nix/<user>/ password=<password>
+    #
+    # The account name at the end of the address is not optional. rest-server
+    # runs with privateRepos, so it compares the first part of the path against
+    # the account that asked, and an address with no path answers 401
+    # Unauthorized. Use argama-add-restic-client, which builds this correctly.
     #   bao kv put secret/argama/ca certificate=@root.crt
     #
     # The agent reaches OpenBao over the tailnet on plain HTTP, not through
@@ -94,7 +119,8 @@ in
     };
 
     services.restic.backups.argama = {
-      inherit (cfg) paths exclude;
+      inherit (cfg) paths;
+      exclude = alwaysExclude ++ cfg.exclude;
       # The module takes this in place of repository and passwordFile, and it
       # satisfies both of its assertions.
       environmentFile = envFile;

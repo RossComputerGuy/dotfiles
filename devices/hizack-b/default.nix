@@ -64,6 +64,17 @@
   # battery has every reason to hand a kernel build to a machine on mains.
   ross.remoteBuild.enable = true;
 
+  # The key that reaches the nixremote account on argama. The unit makes the
+  # key here on its first run and renews only the certificate after that, so
+  # nothing secret travels and argama needs no pasted key. See
+  # modules/ssh-ca.nix.
+  #
+  # No host certificate here. This machine runs no sshd, so nothing connects to
+  # it and it has nothing to prove. Leave ross.sshCa.hostCert off, and leave
+  # ssh-host-signer out of this machine's OpenBao policy.
+  ross.sshCa.clientCerts = [ "nixremote" ];
+  ross.remoteBuild.sshKey = "/var/lib/ssh-client-cert/nixremote";
+
   hardware.asahi.enable = true;
   hardware.bluetooth.enable = true;
   networking = {

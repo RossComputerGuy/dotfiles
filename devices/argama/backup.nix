@@ -31,6 +31,7 @@ let
       pkgs.openbao
       pkgs.jq
       pkgs.util-linux
+      pkgs.systemd
     ];
     text = ''
       if [ $# -ne 1 ]; then
@@ -96,13 +97,26 @@ let
       printf '%s' "$http" \
         | runuser -u restic -- htpasswd -B -i ${dataDir}/.htpasswd "$machine"
 
+      # The address ends with the account name, and it must. privateRepos makes
+      # rest-server compare the first part of the path against the account that
+      # asked, and an address with no path at all fails that test. It answers
+      # 401 Unauthorized, which reads like a wrong password and is not one.
+      # See handlers.go in rest-server, and the prune units below, which read
+      # the same directory from this side.
+      #
       # Standard input, not the command line. An argument would show in ps for
       # as long as the command runs.
       jq -n \
-          --arg r "rest:https://$machine:$http@backup.argama.nix/" \
+          --arg r "rest:https://$machine:$http@backup.argama.nix/$machine/" \
           --arg p "$repo" \
           '{repository:$r, password:$p}' \
         | bao kv put "secret/$machine/restic" -
+
+      # rest-server reads the account file once, when it starts. Without this,
+      # the new machine answers 401 Unauthorized until somebody restarts the
+      # server by hand, and the cause looks like a wrong password. A backup that
+      # is running at this moment fails and the timer takes it again.
+      systemctl restart restic-rest-server.service
 
       echo "Added $machine. Neither password was shown, and neither is needed." >&2
       echo "The agent on $machine finds them inside 15 seconds." >&2

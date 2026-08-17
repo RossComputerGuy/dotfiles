@@ -33,7 +33,17 @@ in
         A key that arrives later would make every build fail until an operator
         turned up, which is worse than a build credential on a root only file.
 
-        Make one per machine, and give the public half to argama:
+        The better answer is a certificate. Set `ross.sshCa.clientCerts` to
+        `[ "nixremote" ]` and point this at
+        `/var/lib/ssh-client-cert/nixremote`. The key is then made on the
+        machine and never travels, argama needs no pasted key, and OpenSSH
+        finds the certificate beside it with no configuration. It keeps the
+        ordering property too: the key and the last certificate both survive a
+        reboot, and the certificate lives 30 days, so only OpenBao that stays
+        sealed for a month stops a build.
+
+        Without the certificate, make one key per machine and give the public
+        half to argama by hand:
 
           ssh-keygen -t ed25519 -N "" -f /root/.ssh/argama-builder
       '';
