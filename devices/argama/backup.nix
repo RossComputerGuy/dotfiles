@@ -20,6 +20,75 @@ let
     "--keep-weekly 5"
     "--keep-monthly 12"
   ];
+
+  # Give a machine its account and its repository in one step. Neither password
+  # is typed, shown, or written to a file, so neither can be read from a shell
+  # history or from the list of processes.
+  addClient = pkgs.writeShellApplication {
+    name = "argama-add-restic-client";
+    runtimeInputs = [
+      pkgs.apacheHttpd
+      pkgs.openbao
+      pkgs.jq
+      pkgs.util-linux
+    ];
+    text = ''
+      if [ $# -ne 1 ]; then
+        echo "usage: argama-add-restic-client <machine>" >&2
+        exit 1
+      fi
+      machine="$1"
+      export BAO_ADDR="''${BAO_ADDR:-http://127.0.0.1:8200}"
+
+      # The list below comes from this file, so the two always agree. The weekly
+      # prune reads the same list, and a repository that the prune does not know
+      # grows without end.
+      known=0
+      for c in ${lib.concatStringsSep " " clients}; do
+        if [ "$c" = "$machine" ]; then
+          known=1
+        fi
+      done
+
+      if [ "$known" -eq 0 ]; then
+        echo "$machine is not in the clients list in devices/argama/backup.nix." >&2
+        echo "Add it there first, then rebuild, then run this again." >&2
+        exit 1
+      fi
+
+      # The repository password is the one that encrypts the data. A second one
+      # would make every snapshot already in the repository unreadable, and
+      # restic gives no way back. So this command adds a machine and it never
+      # changes one.
+      if bao kv get -field=password "secret/$machine/restic" > /dev/null 2>&1; then
+        echo "secret/$machine/restic exists already." >&2
+        echo "A new repository password would lose every snapshot it holds." >&2
+        exit 1
+      fi
+
+      # Hexadecimal, because the first one goes inside a URL. base64 gives "/"
+      # and "+", which end the user name early and point the address somewhere
+      # else. 128 bits opens the connection, 256 bits encrypts the repository.
+      http=$(od -An -tx1 -N16 /dev/urandom | tr -d ' \n')
+      repo=$(od -An -tx1 -N32 /dev/urandom | tr -d ' \n')
+
+      # The file belongs to the restic user with mode 0700, and htpasswd writes
+      # it again in place, so this runs as that user and keeps the owner.
+      printf '%s' "$http" \
+        | runuser -u restic -- htpasswd -B -i ${dataDir}/.htpasswd "$machine"
+
+      # Standard input, not the command line. An argument would show in ps for
+      # as long as the command runs.
+      jq -n \
+          --arg r "rest:https://$machine:$http@backup.argama.nix/" \
+          --arg p "$repo" \
+          '{repository:$r, password:$p}' \
+        | bao kv put "secret/$machine/restic" -
+
+      echo "Added $machine. Neither password was shown, and neither is needed." >&2
+      echo "The agent on $machine finds them inside 15 seconds." >&2
+    '';
+  };
 in
 {
   # argama receives the backups for the fleet. Each machine pushes to its own
@@ -48,7 +117,10 @@ in
   # only tool that adds an account and changes an account in the same step, and
   # a file written by hand instead would gain a second copy of a name each time
   # somebody set a password again.
-  environment.systemPackages = [ pkgs.apacheHttpd ];
+  environment.systemPackages = [
+    pkgs.apacheHttpd
+    addClient
+  ];
 
   # Because the server is append only, no client can prune. argama does it from
   # this side, straight on the repository files. Each password comes from

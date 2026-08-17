@@ -1024,24 +1024,28 @@ machine stops at that point and needs a console.
    bao kv put secret/argama/ca certificate=@root.crt
    ```
 
-8. Add a restic account for each machine that backs up here, then put its
-   repository address and password in OpenBao:
+8. Give each machine that backs up here its account and its repository:
 
    ```
-   sudo -u restic htpasswd -B /var/lib/restic/.htpasswd <machine>
-   bao kv put secret/<machine>/restic \
-     repository=rest:https://<machine>:<pass>@backup.argama.nix/ \
-     password=<repository password>
+   sudo argama-add-restic-client <machine>
    ```
 
-   Two different passwords appear here. `htpasswd` sets the one that opens the
-   HTTP connection, which goes in the repository address. `password` is the one
-   that encrypts the repository, which the server never learns. Give them
-   different values.
+   Two different passwords exist here, and the command makes both. One opens
+   the HTTP connection and goes inside the repository address. The other
+   encrypts the repository, and argama never learns it. Neither is shown,
+   neither is typed, and neither has to be kept, because the machine reads them
+   from OpenBao.
 
-   The file belongs to the restic user with mode 0700, so the command needs
-   `sudo -u restic`. Until a machine has a line in this file, the server answers
-   every one of its requests with 401 Unauthorized.
+   Add the machine to the `clients` list in `backup.nix` first. The command
+   stops if the name is not there, because the weekly prune reads that same
+   list and a repository it does not know grows without end.
+
+   The command adds a machine and it never changes one. A second repository
+   password would make every snapshot already there unreadable, and restic
+   gives no way back, so it stops when `secret/<machine>/restic` exists.
+
+   Until a machine has an account, the server answers every one of its requests
+   with 401 Unauthorized.
 
 9. Make a policy and an AppRole for each client. `argama-issue-approle` only
    reads a role that is already there, so this step comes first. It answers
@@ -1091,7 +1095,33 @@ machine stops at that point and needs a console.
    argama-issue-approle <machine>
    ```
 
-   On that machine, unwrap it into `/var/lib/vault-agent/`.
+   It prints the role ID, then a wrapping token that lives five minutes. On the
+   machine that receives them, write both into `/var/lib/vault-agent/`. A client
+   carries no OpenBao command, so this uses curl:
+
+   ```
+   sudo install -d -m 0700 /var/lib/vault-agent
+
+   printf '%s' '<role_id>' \
+     | sudo tee /var/lib/vault-agent/role-id > /dev/null
+
+   curl -sS --fail-with-body \
+       -H "X-Vault-Token: <wrapping_token>" \
+       -X POST https://vault.argama.nix/v1/sys/wrapping/unwrap \
+     | jq -r '.data.secret_id' \
+     | sudo tee /var/lib/vault-agent/secret-id > /dev/null
+
+   sudo chmod 0600 /var/lib/vault-agent/role-id /var/lib/vault-agent/secret-id
+   ```
+
+   A token that answers `wrapping token is not valid or does not exist` was
+   already used. Somebody read it before you, so make a new one and find out
+   how. The agents look for these files every 15 seconds, so they start on
+   their own. Watch one:
+
+   ```
+   journalctl -fu detsys-vaultAgent-restic-backups-argama
+   ```
 
 11. Confirm the VPN confinement works:
 

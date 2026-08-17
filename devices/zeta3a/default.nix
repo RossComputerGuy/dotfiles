@@ -435,6 +435,24 @@ in
 
   services.openssh.enable = true;
 
+  # A host certificate from the ssh-host-signer mount, renewed daily. argama
+  # reaches this machine to write its own backup, from a timer with nobody
+  # present, so a host key that nobody has accepted stops that backup. See
+  # devices/argama/passwords.nix and modules/ssh-ca.nix.
+  #
+  # Make the first certificate by hand before the rebuild that turns this on.
+  # sshd refuses to start when HostCertificate names a file that is not there.
+  ross.sshCa.hostCert = true;
+
+  # Every name a person or a timer dials. A client refuses a certificate that
+  # does not carry the name it asked for, and it does not fall back to the
+  # plain host key. argama uses the short name, through the zeta3a-backup alias.
+  ross.sshCa.hostPrincipals = [
+    "zeta3a"
+    "zeta3a.nix"
+    "zeta3a.tailde5a8.ts.net"
+  ];
+
   # Graphics
   services.xserver.enable = true;
   services.xserver.videoDrivers = [ "nvidia" ];

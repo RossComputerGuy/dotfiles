@@ -12,6 +12,27 @@ let
   # them. modules/pki.nix does the same for the TLS root.
   userPresent = builtins.pathExists userCa;
   hostPresent = builtins.pathExists hostCa;
+
+  # Both units below ask OpenBao over a pipe, and a pipe hides the exit status
+  # of every command but the last. So a failed curl used to reach jq, which
+  # wrote the word "null", and the unit only stopped later at ssh-keygen with a
+  # message about an invalid key. pipefail makes the unit stop at the command
+  # that failed, and say so.
+  #
+  # The AppRole files come from an operator, by hand, once. See step 10 of the
+  # argama README. A machine that has not had that step yet would otherwise
+  # send two requests with an empty token and report the answer to the second.
+  preamble = ''
+    set -o pipefail
+
+    for f in /var/lib/vault-agent/role-id /var/lib/vault-agent/secret-id; do
+      if [ ! -s "$f" ]; then
+        echo "$f is missing or empty." >&2
+        echo "This machine has no AppRole yet. See step 10 of the argama README." >&2
+        exit 1
+      fi
+    done
+  '';
 in
 {
   options.ross.sshCa.hostCert = lib.mkEnableOption ''
@@ -162,6 +183,7 @@ in
           };
           unitConfig.StartLimitIntervalSec = 0;
           script = ''
+            ${preamble}
             addr="https://vault.argama.nix"
             out=/var/lib/ssh-host-cert/ssh_host_ed25519_key-cert.pub
 
@@ -173,7 +195,12 @@ in
                   "$addr/v1/auth/approle/login" \
               | jq -r '.auth.client_token')
 
-            jq -n \
+            # OpenBao ends signed_key with a newline and jq adds a second one.
+            # That empty line makes ssh-keygen report "invalid format" for line
+            # 2 while it still reads line 1, so the check below would print an
+            # error and pass. Command substitution removes every trailing
+            # newline, and the printf puts back exactly one.
+            signed=$(jq -n \
                 --arg pk "$(cat /etc/ssh/ssh_host_ed25519_key.pub)" \
                 --arg pr "${lib.concatStringsSep "," config.ross.sshCa.hostPrincipals}" \
                 '{public_key:$pk, cert_type:"host", valid_principals:$pr}' \
@@ -181,7 +208,8 @@ in
                   -H "X-Vault-Token: $token" \
                   -X POST --data @- \
                   "$addr/v1/ssh-host-signer/sign/host" \
-              | jq -r '.data.signed_key' > "$out.new"
+              | jq -r '.data.signed_key')
+            printf '%s\n' "$signed" > "$out.new"
 
             # Check the new file before it replaces the working one. A truncated or
             # empty answer would stop sshd at its next start.
@@ -230,6 +258,7 @@ in
             };
             unitConfig.StartLimitIntervalSec = 0;
             script = ''
+              ${preamble}
               addr="https://vault.argama.nix"
               key=/var/lib/ssh-client-cert/${role}
 
@@ -247,12 +276,15 @@ in
                     "$addr/v1/auth/approle/login" \
                 | jq -r '.auth.client_token')
 
-              jq -n --arg pk "$(cat "$key.pub")" '{public_key:$pk}' \
+              # Exactly one newline on the end, for the reason in ssh-host-cert
+              # above.
+              signed=$(jq -n --arg pk "$(cat "$key.pub")" '{public_key:$pk}' \
                 | curl -sS --fail-with-body \
                     -H "X-Vault-Token: $token" \
                     -X POST --data @- \
                     "$addr/v1/ssh-client-signer/sign/${role}" \
-                | jq -r '.data.signed_key' > "$key-cert.pub.new"
+                | jq -r '.data.signed_key')
+              printf '%s\n' "$signed" > "$key-cert.pub.new"
 
               ssh-keygen -L -f "$key-cert.pub.new" > /dev/null
               mv "$key-cert.pub.new" "$key-cert.pub"
