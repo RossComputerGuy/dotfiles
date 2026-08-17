@@ -136,6 +136,17 @@ in
     # A client sees only the repository that its own account can reach.
     privateRepos = true;
     prometheus = true;
+    # Without this, /metrics answers 401 and Prometheus records nothing at all.
+    # privateRepos makes rest-server demand an account named "metrics" for that
+    # one path, and the scrape sends no credentials. See wrapMetricsAuth in
+    # rest-server's mux.go.
+    #
+    # The alternative is an htpasswd account called "metrics" and a password on
+    # argama's disk for Prometheus to read. The port takes its socket from
+    # systemd and answers on every address, but the firewall opens it on no
+    # interface, not even the tailnet, so only this machine reaches it. The
+    # account would guard a path nobody else can ask for.
+    extraFlags = [ "--prometheus-no-auth" ];
   };
 
   # Caddy holds 443 for backup.argama.nix, so 8000 needs no opening of its own.

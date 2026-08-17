@@ -8,6 +8,7 @@
     ./profile.nix
     ./net.nix
     ./misc.nix
+    ./monitoring.nix
     ./pki.nix
     ./security.nix
     ./ssh-ca.nix

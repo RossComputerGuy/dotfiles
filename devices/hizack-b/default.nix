@@ -60,6 +60,10 @@
   # The split horizon in argama's dns.nix answers with the right address.
   ross.backup.enable = true;
 
+  # Appear on argama's dashboards. A laptop is away often, so expect this one to
+  # read as down for long stretches. That is the truth and not a fault.
+  ross.monitoring.enable = true;
+
   # Send builds to argama, over the tailnet when away from home. A laptop on
   # battery has every reason to hand a kernel build to a machine on mains.
   ross.remoteBuild.enable = true;

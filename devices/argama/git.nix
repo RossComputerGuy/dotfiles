@@ -23,6 +23,11 @@
       # Lets a repository pull from GitHub on a timer, so the code stays here
       # if GitHub goes away.
       mirror.ENABLED = true;
+      # Answers at /metrics on the port above, which is the loopback, so
+      # Prometheus reaches it and nothing else does. A TOKEN here would add a
+      # bearer check, and it would guard a path that only this machine can ask
+      # for. See monitoring.nix for the scrape.
+      metrics.ENABLED = true;
     };
   };
 

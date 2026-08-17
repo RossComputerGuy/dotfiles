@@ -8,6 +8,7 @@
   imports = [
     ./auth.nix
     ./backup.nix
+    ./dashboards.nix
     ./dns.nix
     ./documents.nix
     ./git.nix
