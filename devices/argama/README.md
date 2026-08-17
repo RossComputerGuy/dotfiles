@@ -1043,7 +1043,48 @@ machine stops at that point and needs a console.
    `sudo -u restic`. Until a machine has a line in this file, the server answers
    every one of its requests with 401 Unauthorized.
 
-9. Give each client its AppRole. The secret ID travels inside a single use
+9. Make a policy and an AppRole for each client. `argama-issue-approle` only
+   reads a role that is already there, so this step comes first. It answers
+   `No value found at auth/approle/role/<machine>/role-id` otherwise.
+
+   A client reads the root certificate, which every machine shares, and its own
+   restic repository, which no other machine may see. It signs its host key,
+   and it signs one client key for each role in `ross.sshCa.clientCerts`. Drop
+   the last line on a machine that has no service account:
+
+   ```
+   machine=hizack-b
+
+   bao policy write "$machine" - <<EOF
+   path "secret/data/argama/ca"             { capabilities = ["read"] }
+   path "secret/data/$machine/*"            { capabilities = ["read"] }
+   path "ssh-host-signer/sign/host"         { capabilities = ["update"] }
+   path "ssh-client-signer/sign/nixremote"  { capabilities = ["update"] }
+   EOF
+
+   bao write "auth/approle/role/$machine" \
+     token_policies="$machine" \
+     token_ttl=1h token_max_ttl=24h \
+     secret_id_num_uses=0 secret_id_ttl=0
+   ```
+
+   The secret ID must not expire or burn after one use, for the reason in step
+   4. `secret/data/$machine/*` gives a machine its own repository and nothing
+   else, so a machine an attacker takes cannot read another machine's backup.
+
+   argama itself needs the same two signer lines. Its policy already exists, so
+   read it, add them, and write it back rather than replacing it:
+
+   ```
+   bao policy read argama > /tmp/argama.hcl
+   cat >> /tmp/argama.hcl <<'EOF'
+   path "ssh-host-signer/sign/host"            { capabilities = ["update"] }
+   path "ssh-client-signer/sign/resticremote"  { capabilities = ["update"] }
+   EOF
+   bao policy write argama /tmp/argama.hcl && rm /tmp/argama.hcl
+   ```
+
+10. Give each client its AppRole. The secret ID travels inside a single use
    token, so an intercepted token arrives already spent and the theft shows:
 
    ```
@@ -1052,7 +1093,7 @@ machine stops at that point and needs a console.
 
    On that machine, unwrap it into `/var/lib/vault-agent/`.
 
-10. Confirm the VPN confinement works:
+11. Confirm the VPN confinement works:
 
    ```
    ip netns exec mullvad curl https://am.i.mullvad.net/connected
@@ -1129,23 +1170,65 @@ One role for host keys. The principals come from the request, which
 bao write ssh-host-signer/roles/host \
   key_type=ca \
   allow_host_certificates=true \
-  allowed_domains="argama,zeta3a,hizack-b" \
+  allowed_domains="argama,zeta3a,hizack-b,nix,tailde5a8.ts.net" \
   allow_bare_domains=true \
+  allow_subdomains=true \
   ttl=720h
 ```
 
-Each machine signs with the AppRole it already holds for restic, so each policy
-gains one rule. Give a machine its own paths and no others:
+The list holds four kinds of name. The three machine names cover `ssh argama`,
+which needs `allow_bare_domains`. `nix` covers `argama.nix`, and
+`tailde5a8.ts.net` covers `argama.tailde5a8.ts.net`, both of which need
+`allow_subdomains`. A name that is not here cannot be signed, and a name that
+is not signed cannot be dialled once the machine has a certificate.
 
-```
-bao policy write hizack-b - <<'EOF'
-path "ssh-host-signer/sign/host"        { capabilities = ["update"] }
-path "ssh-client-signer/sign/nixremote" { capabilities = ["update"] }
-EOF
-```
+No address is in the list. The machines take their addresses from DHCP, so a
+certificate could not follow one. `ssh 192.168.1.163` stops working on a
+machine that has a host certificate. Use the KVM or the serial console when a
+name does not resolve.
+
+Each machine signs with the AppRole it already holds for restic, so the two
+signer paths are part of the machine policy in step 9 of the setup above.
+`bao policy write` replaces a policy and does not add to it, so do not write a
+second policy with only these lines. That would take the restic paths away and
+stop the backup.
 
 argama signs `resticremote` in place of `nixremote`, and zeta3a signs neither,
 so each machine gets only the lines it needs.
+
+### Turning host certificates on
+
+Make the first certificate by hand, before the first rebuild. `nixos-rebuild
+switch` restarts sshd, `HostCertificate` is set as soon as `ross.sshCa.hostCert`
+is on, and sshd refuses to start when that file is not there. Nothing orders
+`ssh-host-cert.service` in front of that restart, and nothing can, because the
+unit needs an unsealed OpenBao while sshd must start at every boot.
+
+On the machine, with the principals from its own `ross.sshCa.hostPrincipals`:
+
+```
+sudo install -d -m 0755 /var/lib/ssh-host-cert
+
+bao write -field=signed_key ssh-host-signer/sign/host \
+  public_key=@/etc/ssh/ssh_host_ed25519_key.pub \
+  cert_type=host \
+  valid_principals="argama,argama.nix,argama.tailde5a8.ts.net" \
+  | sudo tee /var/lib/ssh-host-cert/ssh_host_ed25519_key-cert.pub > /dev/null
+
+ssh-keygen -L -f /var/lib/ssh-host-cert/ssh_host_ed25519_key-cert.pub
+```
+
+Read the `Principals` line and check every name you dial is there. Then rebuild
+and confirm sshd took it:
+
+```
+sudo sshd -T | grep -i hostcertificate
+ssh -v argama true 2>&1 | grep -i "host certificate\|Server host certificate"
+```
+
+Keep the session you already have open until a second one succeeds. From then
+on `ssh-host-cert.service` renews daily against a certificate that lives 30
+days, so OpenBao can stay sealed for a month before a client refuses argama.
 
 ### Getting in from a new device
 
