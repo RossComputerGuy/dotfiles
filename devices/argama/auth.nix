@@ -47,6 +47,12 @@ in
   };
 
   systemd.services = {
+    # The sidecar must uphold authelia-keys, or the chain breaks one link
+    # earlier than the line below covers: a sealed OpenBao stops the sidecar,
+    # BindsTo stops authelia-keys, and its own Upholds= never gets the chance
+    # to bring Authelia back. See monitoring.nix.
+    detsys-vaultAgent-authelia-keys.upholds = [ "authelia-keys.service" ];
+
     authelia-keys = {
       description = "Publish Authelia's secrets where LoadCredential can read them";
       requiredBy = [ "authelia-main.service" ];

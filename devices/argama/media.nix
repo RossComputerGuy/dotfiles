@@ -96,6 +96,22 @@ in
         # all of the addresses in that namespace. The port mapping below is the
         # only way in.
         Address = "*";
+
+        # No password is set here, and qBittorrent answers that by making a new
+        # random one at every start and writing it to the journal. So every
+        # restart broke the *arr applications, which had the old one.
+        #
+        # Take the credential away instead of trying to keep one in step. Only
+        # two things can reach this port. Caddy proxies to the namespace address
+        # from the bridge, and service-ports.nix gives qbit auth = "forward", so
+        # that path has already been through Authelia. The *arr applications
+        # reach it from the same bridge. Nothing else can: 8080 is open on no
+        # interface.
+        AuthSubnetWhitelistEnabled = true;
+        AuthSubnetWhitelist = lib.concatStringsSep "," [
+          "${config.vpnNamespaces.mullvad.bridgeAddress}/32"
+          "${config.vpnNamespaces.mullvad.namespaceAddress}/32"
+        ];
       };
       BitTorrent.Session = {
         DefaultSavePath = "/var/lib/media/downloads";
@@ -158,6 +174,16 @@ in
         enable = true;
         vpnNamespace = "mullvad";
       };
+
+      # The last link in the chain that a sealed OpenBao breaks. The sidecar
+      # upholds mullvad-key, mullvad-key upholds mullvad, and without this
+      # mullvad upholds nothing, so qbittorrent stays down after every unseal.
+      # qbittorrent has BindsTo on mullvad, so it goes down with the tunnel and
+      # nothing would start it again. See devices/argama/monitoring.nix.
+      #
+      # BindsTo is the right relation and stays. qbittorrent must never run
+      # outside the namespace, so it has to stop when the tunnel does.
+      mullvad.upholds = [ "qbittorrent.service" ];
     }
 
     (lib.mapAttrs' (

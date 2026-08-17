@@ -76,6 +76,12 @@ in
     };
   };
 
+  # Caddy has BindsTo on the sidecar, so a sealed OpenBao stops the sidecar and
+  # takes Caddy with it. This one matters most of all, because Caddy is the way
+  # in to every name in the zone, so its absence looks like the whole machine
+  # is gone. See monitoring.nix for the longer note.
+  systemd.services.detsys-vaultAgent-caddy.upholds = [ "caddy.service" ];
+
   services.caddy = {
     enable = true;
     virtualHosts = tlsHosts // plainHosts;

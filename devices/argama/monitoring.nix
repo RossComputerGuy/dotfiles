@@ -1,9 +1,12 @@
 {
   config,
   lib,
+  pkgs,
   ...
 }:
 {
+  environment.systemPackages = [ pkgs.smartmontools ];
+
   # The textfile collector below complains at every scrape when its directory is
   # absent, and nothing makes it until ross.sshCa.hostCert is on. Make it here,
   # so the collector stays quiet while it has nothing to read.
@@ -50,6 +53,9 @@
         port = 9633;
         listenAddress = "127.0.0.1";
       };
+      # The exporter carries its own copy of smartctl and puts none on the
+      # PATH, so an operator looking at a faulted disk cannot ask it anything.
+      # A dashboard says which disk, and this says why.
     };
 
     # One job for each kind of exporter, and an instance label that is a machine
@@ -194,6 +200,14 @@
       '';
     };
   };
+
+  # Grafana has BindsTo on the sidecar, so a sealed OpenBao stops the sidecar
+  # and takes Grafana with it. Nothing would start Grafana again, because
+  # BindsTo only carries the stop and multi-user.target has long since been
+  # reached. OpenBao seals at every boot, so without this the dashboards stay
+  # down after every restart until an operator notices. Authelia, Vaultwarden
+  # and paperless carry the same line for the same reason.
+  systemd.services.detsys-vaultAgent-grafana.upholds = [ "grafana.service" ];
 
   services.grafana = {
     enable = true;
