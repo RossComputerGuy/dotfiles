@@ -134,7 +134,6 @@ in
       "127.0.0.1"
       "100.64.0.0/10"
       "192.168.0.0/16"
-      "10.0.0.0/8"
     ];
     portMappings = [
       {
@@ -189,42 +188,42 @@ in
     (lib.mapAttrs' (
       name: arr:
       lib.nameValuePair "exportarr-${name}-key" {
-      description = "Publish ${name}'s API key where its exporter can read it";
-      requiredBy = [ "prometheus-exportarr-${name}-exporter.service" ];
-      before = [ "prometheus-exportarr-${name}-exporter.service" ];
-      # The file does not exist until the application has started once.
-      after = [ "${name}.service" ];
-      wants = [ "${name}.service" ];
-      serviceConfig = {
-        Type = "oneshot";
-        RemainAfterExit = true;
-        RuntimeDirectory = "exportarr-${name}";
-        RuntimeDirectoryMode = "0700";
-        RuntimeDirectoryPreserve = "yes";
-        # A first boot reaches this before the application has written its
-        # configuration. Keep trying rather than leaving the exporter down
-        # until somebody notices.
-        Restart = "on-failure";
-        RestartSec = "30s";
-        ExecStart = pkgs.writeShellScript "exportarr-${name}-key" ''
-          set -o pipefail
+        description = "Publish ${name}'s API key where its exporter can read it";
+        requiredBy = [ "prometheus-exportarr-${name}-exporter.service" ];
+        before = [ "prometheus-exportarr-${name}-exporter.service" ];
+        # The file does not exist until the application has started once.
+        after = [ "${name}.service" ];
+        wants = [ "${name}.service" ];
+        serviceConfig = {
+          Type = "oneshot";
+          RemainAfterExit = true;
+          RuntimeDirectory = "exportarr-${name}";
+          RuntimeDirectoryMode = "0700";
+          RuntimeDirectoryPreserve = "yes";
+          # A first boot reaches this before the application has written its
+          # configuration. Keep trying rather than leaving the exporter down
+          # until somebody notices.
+          Restart = "on-failure";
+          RestartSec = "30s";
+          ExecStart = pkgs.writeShellScript "exportarr-${name}-key" ''
+            set -o pipefail
 
-          if [ ! -r ${arr.keyFile} ]; then
-            echo "${arr.keyFile} is not there yet. ${name} writes it on its first start." >&2
-            exit 1
-          fi
+            if [ ! -r ${arr.keyFile} ]; then
+              echo "${arr.keyFile} is not there yet. ${name} writes it on its first start." >&2
+              exit 1
+            fi
 
-          key=$(${lib.getExe pkgs.gnused} -n 's:.*<ApiKey>\(.*\)</ApiKey>.*:\1:p' ${arr.keyFile})
+            key=$(${lib.getExe pkgs.gnused} -n 's:.*<ApiKey>\(.*\)</ApiKey>.*:\1:p' ${arr.keyFile})
 
-          if [ -z "$key" ]; then
-            echo "No ApiKey element in ${arr.keyFile}." >&2
-            exit 1
-          fi
+            if [ -z "$key" ]; then
+              echo "No ApiKey element in ${arr.keyFile}." >&2
+              exit 1
+            fi
 
-          ${lib.getExe' pkgs.coreutils "install"} -m 0400 /dev/null /run/exportarr-${name}/api-key
-          ${lib.getExe' pkgs.coreutils "printf"} '%s' "$key" > /run/exportarr-${name}/api-key
-        '';
-      };
+            ${lib.getExe' pkgs.coreutils "install"} -m 0400 /dev/null /run/exportarr-${name}/api-key
+            ${lib.getExe' pkgs.coreutils "printf"} '%s' "$key" > /run/exportarr-${name}/api-key
+          '';
+        };
         unitConfig.StartLimitIntervalSec = 0;
       }
     ) arrs)
