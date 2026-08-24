@@ -33,6 +33,10 @@ let
       keyFile = "${config.services.prowlarr.dataDir}/config.xml";
     };
   };
+
+  # Where /etc/resolv.conf really ends up. NixOS makes it a symlink to
+  # /etc/static/resolv.conf, and that one points here.
+  resolvConf = config.environment.etc."resolv.conf".source;
 in
 {
   # All of the media services share this group, so they read and write the same
@@ -200,6 +204,120 @@ in
       # BindsTo is the right relation and stays. qbittorrent must never run
       # outside the namespace, so it has to stop when the tunnel does.
       mullvad.upholds = [ "qbittorrent.service" ];
+
+      # Give qBittorrent the tunnel's resolver.
+      #
+      # VPN-Confinement already asks for this. Its systemd.nix carries
+      #   BindReadOnlyPaths = [ "/etc/netns/mullvad/resolv.conf:/etc/resolv.conf:norbind" ]
+      # and the directive does reach the unit, but no such mount appears in
+      # /proc/PID/mountinfo. So qBittorrent read argama's own resolv.conf,
+      # which names 127.0.0.53. That is the systemd-resolved stub, and it
+      # listens in argama's network namespace and not in this one, so every
+      # name lookup was refused at once.
+      #
+      # The tunnel itself was never at fault. A request to an address answered
+      # 301 while the same request to a name answered nothing, and DHT kept
+      # working the whole time because DHT holds addresses and asks for no
+      # names. What broke was only the trackers, which is why 35 torrents sat
+      # on "Host not found (non-authoritative), try again later" while the
+      # speed slowly fell to zero as the peers DHT had found went away. A
+      # restart looked like a cure because it made libtorrent find peers
+      # again, and then the same decay started over.
+      #
+      # /etc/resolv.conf is a symlink to /etc/static/resolv.conf, which points
+      # at the file below. Name that file, because a bind mount follows the
+      # symlink to it anyway. The mount belongs to this unit alone, so
+      # systemd-resolved on argama keeps its own file.
+      #
+      # This adds to the module's entry rather than replacing it, because
+      # NixOS joins lists in serviceConfig. The other entry stays and does
+      # nothing, the same as before.
+      qbittorrent.serviceConfig.BindReadOnlyPaths = [
+        "/etc/netns/mullvad/resolv.conf:${resolvConf}:norbind"
+      ];
+
+      # Watch the one thing that breaks. A tracker lookup failing inside the
+      # tunnel namespace writes nothing to the journal and fails no unit, so
+      # this took three sessions to find. It cost hours of downloads each time
+      # while every dashboard read green.
+      #
+      # Two numbers, both read from qBittorrent's own namespaces:
+      #
+      #  - Is the tunnel's resolver mounted where the process reads it. Zero
+      #    means the trap above came back, which a systemd change can do on
+      #    its own with no edit here.
+      #  - Does a name resolve. Zero with a working tunnel means the same
+      #    fault, whatever caused it.
+      #
+      # A plain getent cannot answer the second one. This unit keeps AF_UNIX,
+      # so nss-resolved answers it from argama's resolver and reports success
+      # while qBittorrent, which has no AF_UNIX, gets nothing. Ask the
+      # nameserver directly instead and let no name service stand in between.
+      qbittorrent-dns-probe = {
+        description = "Check that qBittorrent can still resolve a name";
+        serviceConfig = {
+          Type = "oneshot";
+          ExecStart = pkgs.writeShellScript "qbittorrent-dns-probe" ''
+            set -o pipefail
+
+            PATH=${
+              lib.makeBinPath [
+                pkgs.coreutils
+                pkgs.dnsutils
+                pkgs.gnugrep
+                pkgs.systemd
+                pkgs.util-linux
+              ]
+            }
+
+            out=/var/lib/node_exporter/textfile/qbittorrent-dns.prom
+
+            pid=$(systemctl show qbittorrent.service -p MainPID --value)
+
+            {
+              echo "# HELP qbittorrent_dns_probe_up Whether this check could run at all."
+              echo "# TYPE qbittorrent_dns_probe_up gauge"
+
+              if [ "$pid" = "0" ] || [ ! -d "/proc/$pid" ]; then
+                echo "qbittorrent_dns_probe_up 0"
+              else
+                echo "qbittorrent_dns_probe_up 1"
+
+                # --mount matters. Without it this reads argama's resolv.conf
+                # and never sees the fault.
+                ns=$(nsenter --mount --net --target "$pid" \
+                  grep -m1 '^nameserver' /etc/resolv.conf 2>/dev/null | cut -d' ' -f2)
+
+                echo "# HELP qbittorrent_resolv_mount Whether the tunnel's resolver is the one this process reads."
+                echo "# TYPE qbittorrent_resolv_mount gauge"
+
+                # 127.0.0.53 is argama's stub, which listens in argama's
+                # namespace and not in this one. Any other address means the
+                # bind mount landed.
+                if [ -n "$ns" ] && [ "$ns" != "127.0.0.53" ]; then
+                  echo "qbittorrent_resolv_mount 1"
+                else
+                  echo "qbittorrent_resolv_mount 0"
+                fi
+
+                echo "# HELP qbittorrent_dns_up Whether a name resolves from inside the tunnel namespace."
+                echo "# TYPE qbittorrent_dns_up gauge"
+
+                if [ -z "$ns" ]; then
+                  echo "qbittorrent_dns_up 0"
+                elif nsenter --mount --net --target "$pid" \
+                    dig +short +time=3 +tries=1 "@$ns" example.com > /dev/null 2>&1; then
+                  echo "qbittorrent_dns_up 1"
+                else
+                  echo "qbittorrent_dns_up 0"
+                fi
+              fi
+            } > "$out.new"
+
+            mv "$out.new" "$out"
+          '';
+        };
+      };
     }
 
     (lib.mapAttrs' (
@@ -245,6 +363,18 @@ in
       }
     ) arrs)
   ];
+
+  # Every two minutes. A name lookup through the tunnel is real traffic to a
+  # real resolver, so there is no reason to do it at the scrape interval. The
+  # fault lasts for hours once it starts, so two minutes finds it early enough.
+  systemd.timers.qbittorrent-dns-probe = {
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnBootSec = "2m";
+      OnUnitActiveSec = "2m";
+      AccuracySec = "20s";
+    };
+  };
 
   # The scrape job lives here rather than in monitoring.nix, because
   # scrapeConfigs is a list and NixOS joins the definitions. So the exporters

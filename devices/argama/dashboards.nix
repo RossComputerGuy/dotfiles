@@ -909,6 +909,47 @@ let
           unit = "bytes";
           w = 24;
         })
+
+
+        # The fault that starved this for three sessions. A tracker lookup
+        # inside the tunnel namespace failed, wrote nothing to the journal and
+        # failed no unit, while DHT carried on and hid it. See media.nix.
+        (stat {
+          title = "qBittorrent DNS";
+          description = "Whether a name resolves from inside the tunnel namespace. Zero means every tracker will report the host as not found, while DHT keeps working and hides it.";
+          expr = "qbittorrent_dns_up";
+          w = 12;
+          mappings = [
+            {
+              value = 0;
+              text = "BROKEN";
+              color = "red";
+            }
+            {
+              value = 1;
+              text = "OK";
+              color = "green";
+            }
+          ];
+        })
+        (stat {
+          title = "Tunnel resolver mounted";
+          description = "Zero means qBittorrent is reading argama's resolv.conf instead of the tunnel's, which names a stub that does not listen inside the namespace. That is the cause, and a systemd change can bring it back with no edit here.";
+          expr = "qbittorrent_resolv_mount";
+          w = 12;
+          mappings = [
+            {
+              value = 0;
+              text = "WRONG FILE";
+              color = "red";
+            }
+            {
+              value = 1;
+              text = "OK";
+              color = "green";
+            }
+          ];
+        })
       ];
     };
   };
