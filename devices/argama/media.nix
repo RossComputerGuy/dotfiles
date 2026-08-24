@@ -116,6 +116,23 @@ in
       BitTorrent.Session = {
         DefaultSavePath = "/var/lib/media/downloads";
         TempPathEnabled = false;
+
+        # Bind to the tunnel. libtorrent reads the routing table before it
+        # announces, and it skips a tracker that the bound address cannot
+        # reach. The namespace holds two addresses. The veth address
+        # 192.168.15.1 reaches only the host, so every announce failed with
+        # "skipping tracker announce (unreachable)". This address is on
+        # mullvad0, which holds the default route.
+        #
+        # The module writes this file again at each start, so a value that a
+        # person sets in the WebUI is lost at the next restart. The value must
+        # be here.
+        #
+        # Mullvad gives this address with the WireGuard key. A new key gives a
+        # different address, and then qBittorrent binds to nothing and stops
+        # without a message. If that happens, read the new address from
+        # "ip netns exec mullvad ip -brief addr show mullvad0".
+        InterfaceAddress = "10.68.222.190";
       };
     };
   };

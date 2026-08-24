@@ -106,6 +106,6 @@ in
     "d ${shareDir} 0700 root root -"
   ];
 
-  # An operator needs a smartcard reader to reach the YubiKey over ssh.
-  services.pcscd.enable = true;
+  # pcscd is what lets an operator reach the YubiKey over ssh. It is in
+  # modules/smartcard.nix now, because every machine has it.
 }

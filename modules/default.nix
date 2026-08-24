@@ -13,6 +13,7 @@
     ./security.nix
     ./ssh-ca.nix
     ./services.nix
+    ./smartcard.nix
     ./virt.nix
   ];
 }
