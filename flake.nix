@@ -261,6 +261,22 @@
                   });
                 }
               );
+
+            # nghttp2 1.70.0's template_test.cc includes <spanstream> and
+            # calls std::spanstream on every platform except Apple. libc++
+            # has no spanstream implementation at all, so the unit test
+            # cannot compile under pkgsLLVM. The library and the programs
+            # build without it. Only make check fails, and nixpkgs runs make
+            # check here for the same reason as fonttools above.
+            #
+            # Only pkgsLLVM needs this, for the same cache reason as
+            # fonttools. zeta3a reaches nghttp2 through boot.kernelPackages
+            # the same way: nvidiaPackages comes from the same set.
+            nghttp2 = prev.nghttp2.overrideAttrs (
+              f: p: {
+                doCheck = p.doCheck && !final.stdenv.hostPlatform.useLLVM;
+              }
+            );
           }
         );
       };
