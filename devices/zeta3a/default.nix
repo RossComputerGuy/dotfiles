@@ -512,6 +512,14 @@ in
                 "MODLIB=$(out)/lib/modules/${kernel.modDirVersion}"
                 "DATE="
                 "TARGET_ARCH=aarch64"
+                # nixpkgs sets INSTALL_MOD_STRIP=1, so modules_install runs
+                # $(STRIP). The kernel Makefile defaults STRIP to
+                # $(CROSS_COMPILE)strip, and CROSS_COMPILE is empty here, so
+                # it runs a bare strip. That name is not in PATH: this LLVM
+                # stdenv only has the target-prefixed strip. Give it the
+                # absolute path, the same as common-flags.nix does for the
+                # kernel itself.
+                "STRIP=${lib.getExe' kernel.stdenv.cc.bintools.bintools "${kernel.stdenv.cc.targetPrefix}strip"}"
               ];
             }
           );
