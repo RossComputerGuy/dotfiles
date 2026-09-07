@@ -1,0 +1,36 @@
+Add /healthz, a readiness probe that answers 503 until the engine serves.
+
+/health answers HTTP 200 in every lifecycle state, which includes "loading"
+and "error". A process supervisor that reads only the status code, such as
+llama-swap, therefore accepts a loading or dead engine as ready and sends it
+traffic. /health keeps its behaviour, because the desktop app and the daemon
+proxy read its body for load progress. This adds a second route for
+supervisors.
+
+diff --git a/python/freetoken/server/control_api.py b/python/freetoken/server/control_api.py
+--- a/python/freetoken/server/control_api.py
++++ b/python/freetoken/server/control_api.py
+@@ -10,6 +10,7 @@ import time
+ from typing import Any, Callable
+
+ from fastapi import FastAPI
++from fastapi.responses import JSONResponse
+
+
+ def build_health(state: Any, version: str) -> dict:
+@@ -57,6 +58,15 @@ def register_control_routes(
+     async def health():
+         return build_health(get_state(), app.version)
+
++    # Readiness probe for process supervisors. /health above answers 200 for
++    # every lifecycle state, so a supervisor that reads only the status code
++    # treats a loading engine, and a dead one, as ready. This route answers 503
++    # until the engine serves. The body is the same document.
++    @app.get("/healthz")
++    async def healthz():
++        doc = build_health(get_state(), app.version)
++        return JSONResponse(doc, status_code=200 if doc.get("status") == "ok" else 503)
++
+     from . import request_ring
+
+     @app.get("/v1/requests")
