@@ -38,8 +38,14 @@ in
   # note there.
   programs.ghostty = {
     enableZshIntegration = true;
+    # The availableOn test covers macOS, where nixpkgs marks ghostty as not
+    # supported and refuses to evaluate it. Ask the package what it supports
+    # rather than naming platforms here, so a later nixpkgs that gains or loses
+    # a platform needs no edit.
     enable =
-      pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform && !pkgs.stdenv.hostPlatform.isRiscV64;
+      pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform
+      && !pkgs.stdenv.hostPlatform.isRiscV64
+      && lib.meta.availableOn pkgs.stdenv.hostPlatform pkgs.ghostty;
   };
   programs.nixvim = {
     enable = pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform;
