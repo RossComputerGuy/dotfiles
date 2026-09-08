@@ -304,6 +304,29 @@
               }
             );
 
+            # argama runs paperless. One of its tests depends on the clock and
+            # the machine's time zone, and it fails with "AssertionError: 8 !=
+            # 7" whenever the two disagree about the date.
+            #
+            # The test overrides TIME_ZONE to America/Chicago, then compares the
+            # day of the document, which the consumer reads from the file's
+            # st_mtime, against the day of timezone.localtime(timezone.now()).
+            # The build log shows the consumer using -05:00 and reporting
+            # 2026-09-08 01:39, while the comparison value reported the 7th.
+            # That same instant is the 7th at -07:00, so the two halves of the
+            # test resolved different zones. It passes in the morning and fails
+            # in the evening, which is no basis for a build.
+            #
+            # nixpkgs already removes two flaky tests from this package the same
+            # way, so this follows that list rather than inventing a mechanism.
+            paperless-ngx = prev.paperless-ngx.overrideAttrs (
+              f: p: {
+                disabledTestPaths = p.disabledTestPaths ++ [
+                  "src/documents/tests/test_consumer.py::TestConsumer::testNormalOperation"
+                ];
+              }
+            );
+
             # The MoE serving engine on zeta3a. It reads the NVFP4 checkpoints
             # that llama.cpp cannot, and it is built from FreeToken's own
             # uv.lock because its torch and triton pins are older than the ones
