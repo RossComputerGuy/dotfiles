@@ -226,6 +226,17 @@ in
     pkiBundle = "/var/lib/sbctl";
     autoGenerateKeys.enable = true;
     autoEnrollKeys.enable = true;
+    # /boot is 863MB, and one generation costs about 177MB there: a 62MB kernel
+    # and an initrd of 110 to 119MB. The initrd is not shared between
+    # generations that run the same kernel, because it is built from the whole
+    # initrd configuration and not from the kernel version alone. There were two
+    # separate 6.18.42 initrds here.
+    #
+    # A switch writes the new generation before it removes the old ones, so the
+    # partition has to hold limit + 1 of them. Three gives a peak near 708MB and
+    # keeps about 150MB spare. Four would peak near 885MB, which does not fit,
+    # and that is how this partition filled to 100% with nothing set.
+    configurationLimit = 3;
   };
 
   boot.zfs.tzpfms = {
