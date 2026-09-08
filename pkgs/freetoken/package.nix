@@ -33,11 +33,22 @@ let
   # value avoids the difference.
   gpuArch = "12.0";
 
+  # A commit on main, and not the v0.1.2 tag. The tag registers neither
+  # Qwen4ExpForConditionalGeneration nor Glm5NextForConditionalGeneration, so
+  # Qwen3.8-Flash-Next and GLM-5.3-Flash both stop with "Model architecture ...
+  # not supported". docs/models.md names those models, but that file is on main
+  # and describes the code there, not the code at the tag. The version string
+  # still reads 0.1.2 on main, so it identifies nothing: check
+  # python/freetoken/models/register.py for the architecture before moving this
+  # revision.
+  #
+  # The dependency and build-system lists are identical to the tag, so uv.lock
+  # needs no regeneration.
   src = fetchFromGitHub {
     owner = "FlashML-org";
     repo = "FreeToken";
-    rev = "9db1a39455a3fb107f3db83e381d10ceadfe5d99"; # v0.1.2
-    hash = "sha256-0MhuubuTjNvtQZxisC2cg1dJeR+A6wZ901H5FRv+l+c=";
+    rev = "af71ba43206e124f5ff6419b47ee36c6e9981078"; # main, 2026-09-04
+    hash = "sha256-FCHUdRPTf+E4J2O+R4FKiVhUjmEJt3sNK9p50R84xSg=";
   };
 
   # setup.py, tvm-ffi and flashinfer each probe one prefix for bin/nvcc,
