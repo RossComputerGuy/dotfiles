@@ -72,32 +72,6 @@
       url = "github:tinted-theming/schemes";
       flake = false;
     };
-    # FreeToken serves the NVFP4 models on zeta3a. It publishes x86_64 wheels
-    # only, so aarch64 must build it from source, and its pins put nixpkgs out
-    # of reach: it needs torch 2.11 and triton 3.6.0, while nixpkgs carries
-    # 2.12 and 3.7.0, and sglang-kernel 0.4.5 links libtorch symbols that only
-    # 2.11 has. These three inputs read FreeToken's own uv.lock and fetch the
-    # upstream wheels by hash, which keeps the build pure without asking
-    # nixpkgs for a torch it does not have.
-    pyproject-nix = {
-      url = "github:pyproject-nix/pyproject.nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    uv2nix = {
-      url = "github:pyproject-nix/uv2nix";
-      inputs = {
-        nixpkgs.follows = "nixpkgs";
-        pyproject-nix.follows = "pyproject-nix";
-      };
-    };
-    pyproject-build-systems = {
-      url = "github:pyproject-nix/build-system-pkgs";
-      inputs = {
-        nixpkgs.follows = "nixpkgs";
-        pyproject-nix.follows = "pyproject-nix";
-        uv2nix.follows = "uv2nix";
-      };
-    };
   };
 
   nixConfig = rec {
@@ -327,14 +301,6 @@
               }
             );
 
-            # The MoE serving engine on zeta3a. It reads the NVFP4 checkpoints
-            # that llama.cpp cannot, and it is built from FreeToken's own
-            # uv.lock because its torch and triton pins are older than the ones
-            # in nixpkgs. Only aarch64-linux gets it, because the package names
-            # one GPU architecture, sm_120, for the RTX 5070.
-            freetoken = final.callPackage ./pkgs/freetoken/package.nix {
-              inherit (inputs) pyproject-nix uv2nix pyproject-build-systems;
-            };
           }
         );
       };

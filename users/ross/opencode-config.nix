@@ -12,11 +12,9 @@ let
     inherit name;
     tools = true;
   };
-  mcpEnv =
-    name:
-    lib.optionalAttrs (name == "memory") {
-      MEMORY_FILE_PATH = "{env:HOME}/.opencode-memory.json";
-    };
+  mcpEnv = name: lib.optionalAttrs (name == "memory") {
+    MEMORY_FILE_PATH = "{env:HOME}/.opencode-memory.json";
+  };
   mcpEntry = name: s: {
     type = "local";
     command = s.command;
@@ -80,9 +78,9 @@ in
       };
     };
 
-    provider.freetoken = {
+    provider.llamacpp = {
       npm = "@ai-sdk/openai-compatible";
-      name = "FreeToken (zeta3a)";
+      name = "llama.cpp (zeta3a)";
       options = {
         inherit baseURL;
         apiKey = "local";
