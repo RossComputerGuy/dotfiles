@@ -292,17 +292,23 @@
             # leaves behind. The grep after it turns a silent miss into a build
             # error, so a release that renames or fixes the test tells us
             # instead of quietly skipping nothing.
-            libreoffice-unwrapped = prev.libreoffice-unwrapped.overrideAttrs (
-              f: p:
-              lib.optionalAttrs final.stdenv.hostPlatform.isAarch64 {
-                postPatch = (p.postPatch or "") + ''
-                  sed -i '/CPPUNIT_TEST_FIXTURE(SwUiWriterTest4, testMsWordCompTrailingBlanks_false)/{n;s/^{$/{\n    return;/}' \
-                    sw/qa/extras/uiwriter/uiwriter4.cxx
-                  grep -A2 'testMsWordCompTrailingBlanks_false)' sw/qa/extras/uiwriter/uiwriter4.cxx \
-                    | grep -q 'return;'
-                '';
-              }
-            );
+            # libreoffice-stable, and not libreoffice-unwrapped. The latter is
+            # only an alias for libreoffice.unwrapped, so overriding it changes
+            # nothing that anybody installs. The real derivation is built inline
+            # inside libreoffice-stable, and libreoffice is hiPrio of that.
+            libreoffice-stable = prev.libreoffice-stable.override (old: {
+              unwrapped = old.unwrapped.overrideAttrs (
+                f: p:
+                lib.optionalAttrs final.stdenv.hostPlatform.isAarch64 {
+                  postPatch = (p.postPatch or "") + ''
+                    sed -i '/CPPUNIT_TEST_FIXTURE(SwUiWriterTest4, testMsWordCompTrailingBlanks_false)/{n;s/^{$/{\n    return;/}' \
+                      sw/qa/extras/uiwriter/uiwriter4.cxx
+                    grep -A2 'testMsWordCompTrailingBlanks_false)' sw/qa/extras/uiwriter/uiwriter4.cxx \
+                      | grep -q 'return;'
+                  '';
+                }
+              );
+            });
 
             # argama runs paperless. One of its tests depends on the clock and
             # the machine's time zone, and it fails with "AssertionError: 8 !=
