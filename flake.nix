@@ -151,6 +151,23 @@
               );
             };
 
+            # The dirty-log unit test in the block crate assumes 4K pages. The
+            # bitmap granularity comes from sysconf at build time, so on the
+            # 64K-page kernels of the Ampere machines (and the 16K pages of
+            # Asahi) one bit covers a whole page and the test's "page not
+            # transferred" assertion cannot hold. Over-marking dirty pages is
+            # safe for migration, so skip the test there. Drop the skip when
+            # upstream makes the test page-size aware.
+            cloud-hypervisor = prev.cloud-hypervisor.overrideAttrs (
+              f: p: {
+                cargoTestFlags =
+                  p.cargoTestFlags or [ ]
+                  ++ lib.optionals final.stdenv.hostPlatform.isAarch64 [
+                    "--skip=io_impl::request::tests::read_marks_survive_a_dirty_log_harvest_while_in_flight"
+                  ];
+              }
+            );
+
             libdrm = prev.libdrm.override {
               withValgrind =
                 !final.stdenv.hostPlatform.useLLVM
