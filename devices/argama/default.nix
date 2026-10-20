@@ -15,7 +15,6 @@
     ./media.nix
     ./monitoring.nix
     ./passwords.nix
-    ./radicle.nix
     ./secrets.nix
     ./web.nix
     ./yubikey.nix
@@ -308,12 +307,19 @@
     listenHost = "localhost";
     port = 3000;
     notificationSender = "hydra@argama";
-    # argama builds for itself. Add remote machines to this file when the other
-    # architectures must build too.
-    buildMachinesFiles = [ ];
     # Pull a path from cache.nixos.org if it is there. It is faster than a
     # local build of the same path.
     useSubstitutes = true;
+  };
+
+  # The queue runner no longer builds by itself. This agent runs the builds on
+  # this machine and dials the runner over gRPC. The endpoint listens on the
+  # loopback interface alone, so no remote machine can reach it. maxJobs
+  # matches nix.settings.max-jobs above.
+  services.hydra-builder = {
+    enable = true;
+    queueRunnerAddr = "http://[::1]:50051";
+    settings.maxJobs = 8;
   };
 
   services.irqbalance.enable = true;

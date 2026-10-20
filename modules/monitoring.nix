@@ -30,8 +30,7 @@ in
       enable = true;
       inherit (cfg) port;
       # Answer on every address, then let the firewall decide. The rule below
-      # opens the port on the tailnet and nowhere else, which is the same shape
-      # radicle.nix uses for its gossip port.
+      # opens the port on the tailnet and nowhere else.
       #
       # The loopback alone would not do, because argama scrapes across the
       # tailnet and a laptop has no fixed address to bind to.

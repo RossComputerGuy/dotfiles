@@ -55,6 +55,10 @@
     ];
   };
 
+  # sstp carries an open CVE and no fix has shipped. Keep the plugin, since a
+  # VPN that only talks SSTP is no use without it.
+  nixpkgs.config.permittedInsecurePackages = [ "NetworkManager-sstp-gnome-1.3.2" ];
+
   # Backup
   # A laptop is away from home often, so it reaches argama over the tailnet.
   # The split horizon in argama's dns.nix answers with the right address.
@@ -92,11 +96,11 @@
       plugins = lib.mkForce (
         with pkgs;
         [
-          networkmanager-fortisslvpn
           networkmanager-iodine
           networkmanager-l2tp
+          networkmanager-openconnect
           networkmanager-openvpn
-          networkmanager-vpnc
+          networkmanager-libreswan
           networkmanager-sstp
         ]
       );
