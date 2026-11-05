@@ -13,6 +13,7 @@ let
   clients = [
     "zeta3a"
     "hizack-b"
+    "jeda"
   ];
 
   keep = [

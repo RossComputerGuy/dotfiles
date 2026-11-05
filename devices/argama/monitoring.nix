@@ -71,8 +71,8 @@
             labels.instance = "argama";
           }
           # The rest of the fleet, over the tailnet. modules/monitoring.nix is
-          # the other half. hizack-b is a laptop, so it reads as down whenever
-          # it is away, which is the truth and not a fault.
+          # the other half. hizack-b and jeda are portable, so they read as down
+          # whenever they are away, which is the truth and not a fault.
           {
             targets = [ "zeta3a:9100" ];
             labels.instance = "zeta3a";
@@ -80,6 +80,10 @@
           {
             targets = [ "hizack-b:9100" ];
             labels.instance = "hizack-b";
+          }
+          {
+            targets = [ "jeda:9100" ];
+            labels.instance = "jeda";
           }
         ];
       }

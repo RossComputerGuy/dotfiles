@@ -1113,7 +1113,7 @@ second policy with only these lines. That would take the restic paths away and
 stop the backup.
 
 Who signs what today: argama signs a host key and `resticremote`, zeta3a signs
-a host key only, and hizack-b signs `nixremote` only.
+a host key only, and hizack-b and jeda sign `nixremote` only.
 
 ### Turning host certificates on
 

@@ -40,7 +40,11 @@ in
 {
   imports = [
     ./home.nix
+    ./cosmic.nix
   ];
+
+  # `config` is the NixOS config here. A standalone home configuration has no services option.
+  ross.cosmic.enable = config.services.desktopManager.cosmic.enable or false;
 
   xdg.mime = {
     sharedMimeInfoPackage = lib.mkForce pkgs.pkgsBuildBuild.shared-mime-info;
