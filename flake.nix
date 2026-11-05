@@ -21,11 +21,20 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    cosmic-manager = {
+      url = "github:HeitorAugustoLN/cosmic-manager";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        home-manager.follows = "home-manager";
+      };
+    };
     darwin = {
       url = "github:lnl7/nix-darwin/master";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nixos-hardware.url = "github:NixOS/nixos-hardware";
+    # The FydeTab Duo work is not upstream yet.
+    nixos-hardware-fydetab.url = "github:RossComputerGuy/nixos-hardware/feat/fydetabduo-kernel-patches";
     disko.url = "github:nix-community/disko";
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
     nixvim = {
@@ -295,37 +304,15 @@
               }
             );
 
-            # testMsWordCompTrailingBlanks_false counts the portions a line of
-            # text breaks into, and on aarch64 it finds 7 where it wants 5. The
-            # sibling test one function above already carries "return; // fails
-            # on aarch64" from nixpkgs' skip-broken-tests-stable.patch, but
-            # upstream since split that test into _True, _false, _EmptyDocument
-            # and _Docx, and the patch still names the old unsuffixed function.
-            # It lands on _True through patch fuzz, so _false runs and stops the
-            # build.
-            #
-            # sed, and not a patch file, because the skip patch edits the same
-            # file and a diff here would have to guess the line numbers it
-            # leaves behind. The grep after it turns a silent miss into a build
-            # error, so a release that renames or fixes the test tells us
-            # instead of quietly skipping nothing.
-            # libreoffice-stable, and not libreoffice-unwrapped. The latter is
-            # only an alias for libreoffice.unwrapped, so overriding it changes
-            # nothing that anybody installs. The real derivation is built inline
-            # inside libreoffice-stable, and libreoffice is hiPrio of that.
-            libreoffice-stable = prev.libreoffice-stable.override (old: {
-              unwrapped = old.unwrapped.overrideAttrs (
-                f: p:
-                lib.optionalAttrs final.stdenv.hostPlatform.isAarch64 {
-                  postPatch = (p.postPatch or "") + ''
-                    sed -i '/CPPUNIT_TEST_FIXTURE(SwUiWriterTest4, testMsWordCompTrailingBlanks_false)/{n;s/^{$/{\n    return;/}' \
-                      sw/qa/extras/uiwriter/uiwriter4.cxx
-                    grep -A2 'testMsWordCompTrailingBlanks_false)' sw/qa/extras/uiwriter/uiwriter4.cxx \
-                      | grep -q 'return;'
-                  '';
-                }
-              );
-            });
+            # nixpkgs bumped opencode to 2.2.5 with a stale node_modules hash.
+            # Remove this once upstream fixes the hash.
+            opencode = prev.opencode.overrideAttrs (
+              f: p: {
+                node_modules = p.node_modules.overrideAttrs {
+                  outputHash = "sha256-prx9dX7kUvs/E3zopkaPk5LXh3xJAy5sZeum/W8L7cA=";
+                };
+              }
+            );
 
             # argama runs paperless. One of its tests depends on the clock and
             # the machine's time zone, and it fails with "AssertionError: 8 !=
@@ -367,6 +354,8 @@
           overlays = (builtins.attrValues overlays);
           config = {
             allowUnfree = true;
+            # Home Manager's input method module always builds a gtk2 immodule cache.
+            problems.handlers."gtk+".broken = "warn";
           };
         }
       );
@@ -467,7 +456,11 @@
               nixpkgs = {
                 overlays = (builtins.attrValues overlays);
                 inherit crossSystem localSystem;
-                config.allowUnfree = true;
+                config = {
+                  allowUnfree = true;
+                  # Home Manager's input method module always builds a gtk2 immodule cache.
+                  problems.handlers."gtk+".broken = "warn";
+                };
               };
             }
             (cfg.home-manager or inputs.home-manager).nixosModules.default

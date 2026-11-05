@@ -281,7 +281,7 @@ let
       panels = [
         (stat {
           title = "Machines up";
-          description = "hizack-b is a laptop and reads as down whenever it is away.";
+          description = "hizack-b and jeda are portable and read as down whenever they are away.";
           expr = ''sum(up{job="node"})'';
           w = 6;
           steps = [
