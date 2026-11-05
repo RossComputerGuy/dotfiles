@@ -145,21 +145,7 @@ in
 
   services.llama-cpp = {
     enable = true;
-    package = (pkgs.llama-cpp.override { cudaSupport = true; }).overrideAttrs (old: {
-      # Pinned past nixpkgs' 9925 to upstream b10209 (newest at the time). We
-      # briefly ran YanissAmz's dspark-dsv4 fork to try DSpark speculative
-      # decoding for DeepSeek-V4-Flash, but it is not viable on this box (see the
-      # zeta3a-dspark-dead-end memory), so we are back on stock upstream. The
-      # version bump moves the bundled webui npm lockfile (npmRoot=tools/ui), so
-      # npmDepsHash moves with it (prefetch-npm-deps on b10209 tools/ui lockfile).
-      version = "10209";
-      npmDepsHash = "sha256-B7uEynAG70a3xauBKc20RuFa9cnWaWzVBCh+LPLBnIM=";
-      src = pkgs.fetchFromGitHub {
-        owner = "ggml-org";
-        repo = "llama.cpp";
-        tag = "b10209";
-        hash = "sha256-5w9IyT2xBTfzea51zovg0TzsBDk6jL5Td3ax8pjYNjw=";
-      };
+    package = (pkgs.llama-cpp.override { cudaSupport = true; }).overrideAttrs (_: {
       NVCC_APPEND_FLAGS = "-ccbin ${pkgs.gcc13}/bin/g++";
     });
     settings = {
@@ -508,32 +494,13 @@ in
   hardware.nvidia = {
     open = true;
     modesetting.enable = false;
+    # The open module takes its makeFlags from the kernel's
+    # kernelModuleMakeFlags. That already names the absolute STRIP for this
+    # LLVM stdenv and supplies cmd_sign (kmodigest), so do not replace it.
+    # nvidia-settings is a separate build and still needs its own STRIP_CMD.
     package = config.boot.kernelPackages.nvidiaPackages.stable.overrideAttrs (
-      f: p:
-      let
-        inherit (config.boot.kernelPackages) kernel;
-      in
-      {
+      f: p: {
         passthru = p.passthru // {
-          open = p.passthru.open.overrideAttrs (
-            f: p: {
-              makeFlags = [
-                "SYSSRC=${kernel.dev}/lib/modules/${kernel.modDirVersion}/source"
-                "SYSOUT=${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
-                "MODLIB=$(out)/lib/modules/${kernel.modDirVersion}"
-                "DATE="
-                "TARGET_ARCH=aarch64"
-                # nixpkgs sets INSTALL_MOD_STRIP=1, so modules_install runs
-                # $(STRIP). The kernel Makefile defaults STRIP to
-                # $(CROSS_COMPILE)strip, and CROSS_COMPILE is empty here, so
-                # it runs a bare strip. That name is not in PATH: this LLVM
-                # stdenv only has the target-prefixed strip. Give it the
-                # absolute path, the same as common-flags.nix does for the
-                # kernel itself.
-                "STRIP=${lib.getExe' kernel.stdenv.cc.bintools.bintools "${kernel.stdenv.cc.targetPrefix}strip"}"
-              ];
-            }
-          );
           settings = p.passthru.settings.overrideAttrs (
             f: p: {
               makeFlags = p.makeFlags ++ [

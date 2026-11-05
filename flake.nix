@@ -286,6 +286,21 @@
                     doCheck = false;
                   });
                 }
+              )
+              ++ lib.optional final.stdenv.hostPlatform.isAarch64 (
+                pyfinal: pyprev: {
+                  # Kaleido starts a bundled browser for these tests. It does
+                  # not start on aarch64 in the build sandbox, and nixpkgs
+                  # only skips this file on Darwin.
+                  plotly = pyprev.plotly.overridePythonAttrs (p: {
+                    disabledTestPaths =
+                      p.disabledTestPaths ++ [ "tests/test_optional/test_kaleido" ];
+                  });
+                  optuna = pyprev.optuna.overridePythonAttrs (p: {
+                    disabledTestPaths =
+                      p.disabledTestPaths ++ [ "tests/visualization_tests" ];
+                  });
+                }
               );
 
             # nghttp2 1.70.0's template_test.cc includes <spanstream> and
@@ -301,6 +316,36 @@
             nghttp2 = prev.nghttp2.overrideAttrs (
               f: p: {
                 doCheck = p.doCheck && !final.stdenv.hostPlatform.useLLVM;
+              }
+            );
+
+            # krb5 1.22.2 assigns the result of strchr on a const string to a
+            # char pointer in ccbase.c and ktbase.c. GCC reports this as
+            # -Wdiscarded-qualifiers, so nixpkgs already passes
+            # -Wno-error=discarded-qualifiers. Clang has no such option and
+            # instead reports the same code under
+            # -Wincompatible-pointer-types-discards-qualifiers, which
+            # -Werror=incompatible-pointer-types from krb5's configure turns
+            # into an error. Downgrade the clang name back to a warning.
+            krb5 = prev.krb5.overrideAttrs (o: {
+              env = o.env // lib.optionalAttrs final.stdenv.cc.isClang {
+                NIX_CFLAGS_COMPILE =
+                  o.env.NIX_CFLAGS_COMPILE
+                  + " -Wno-error=incompatible-pointer-types-discards-qualifiers";
+              };
+            });
+
+            # librsvg builds rsvg-convert with rustc, and that link runs
+            # through the native GCC wrapper while pkgsLLVM builds the GIO
+            # stack with clang. libselinux, pulled in by GIO, comes from the
+            # native set and leaves its libgcc_s references for runtime,
+            # where its RUNPATH finds them. rustc's -lgcc_s is dropped under
+            # --as-needed, so stop ld from resolving those references in the
+            # executable instead.
+            librsvg = prev.librsvg.overrideAttrs (
+              o:
+              lib.optionalAttrs final.stdenv.hostPlatform.useLLVM {
+                NIX_LDFLAGS = (o.NIX_LDFLAGS or "") + " --allow-shlib-undefined";
               }
             );
 
@@ -377,7 +422,7 @@
       # else, so a path argama has never seen cannot come from argama, and the
       # client goes to cache.nixos.org over the internet instead.
       #
-      # These three are here because people rebuild them. The rest are left out
+      # These four are here because people rebuild them. The rest are left out
       # on purpose: jegan and mu-gundam are riscv64 and argama has no builder
       # for that architecture, and regz is x86_64 for the same reason. See
       # services.hydra.buildMachinesFiles in devices/argama/default.nix, which
@@ -386,6 +431,7 @@
         "argama"
         "zeta3a"
         "hizack-b"
+        "jeda"
       ];
 
       machineCross = {
