@@ -38,6 +38,11 @@ let
       ctx-size = 32768;
       batch-size = 512;
       ubatch-size = 512;
+      # Same draftless speculation as DeepSeek: decode is CPU-expert-bound,
+      # while a speculative verify batch runs at prefill speed. Only helps when
+      # the output repeats text already in the prompt (code rewriting).
+      spec-type = "ngram-simple";
+      spec-draft-n-max = 64;
     };
     # DeepSeek-V4.1-Flash: the 135k default ctx at 4096 ubatch wants a ~70GB
     # CUDA compute buffer and OOMs the 12GB card. Cap the ctx like GLM to get a
@@ -50,6 +55,14 @@ let
       ctx-size = 32768;
       batch-size = 512;
       ubatch-size = 512;
+      # Single-token decode is compute-bound at ~3 t/s, while batched
+      # prefill/verify runs ~105 t/s warm. Draftless n-gram speculation turns
+      # decode into batches of drafts. ngram-simple is the variant documented
+      # for code rewriting: it matches a 12-token key anywhere in the prompt
+      # history and drafts the 48 tokens that followed it. ngram-mod produced
+      # zero drafts on prose because it needs a 24-token repeat.
+      spec-type = "ngram-simple";
+      spec-draft-n-max = 64;
     };
     # GLM-4.7-Flash: the fast daily model, kept resident on the GPU with all
     # attention offloaded (n-gpu-layers=999 from the shared defaults). It uses
@@ -126,6 +139,10 @@ in
     yubikey-personalization
     nvtopPackages.nvidia
     dsview
+    openfpgaloader
+    openocd
+    dfu-util
+    sigrok-cli
   ];
 
   services.llama-cpp = {
@@ -140,7 +157,11 @@ in
       parallel = 1;
       flash-attn = "on";
       jinja = true;
-      no-mmap = true;
+      # Expose the child's counters so spec acceptance is measurable.
+      metrics = true;
+      # llama.cpp build 11960 (v0.8.0) dropped --no-mmap in favour of
+      # --load-mode; "none" is the old no-mmap behaviour.
+      load-mode = "none";
       # Decode wants NUMA-node-aligned thread counts. llama-bench IQ1_S sweep:
       # tg 16->1.05, 24->1.42, 32->1.57, 48->0.99 (1.5 nodes, misaligned), 64->1.61.
       # Decode plateaus ~1.6 from 24-64, so it is NOT thread-bound past this, it
@@ -164,7 +185,10 @@ in
       # the preset INI (see llamaSharedDefaults / llamaModelOverrides). Passing
       # them here would let the router override every child's per-model value.
       cpu-moe = true;
-      tools = "read_file,file_glob_search,grep_search,get_datetime";
+      # build 11960 removed the get_datetime built-in; get_info is the
+      # read-only replacement (OS/cwd). Date/time comes from the MCP `time`
+      # server declared above.
+      tools = "read_file,file_glob_search,grep_search,get_info";
       ui-mcp-proxy = true;
       ui-config-file = pkgs.writeText "llama-ui-config.json" mcpUiConfig;
     };
@@ -329,13 +353,42 @@ in
     datasets = [ "zpool" ];
   };
 
-  services.udev.packages = [ pkgs.dsview ];
+  # dsview: DSLogic U3Pro32. openfpgaloader 99-* rules: FT2232H (KC705/Arty),
+  # FT231X (ULX3S), OrangeCrab, iCESugar and more. openocd 60-* rules: FT232H
+  # 0403:6014, ST-Link 0483:3748/374b, Digilent 1443:0007, CMSIS-DAP.
+  services.udev.packages = [
+    pkgs.dsview
+    pkgs.openfpgaloader
+    pkgs.openocd
+  ];
 
   services.udev.extraRules = ''
     SUBSYSTEM=="usb", ATTR{idVendor}=="1209", GROUP="plugdev", MODE="0660"
     SUBSYSTEM=="usb", ATTRS{idVendor}=="2a0e", GROUP="plugdev", MODE="0660"
     SUBSYSTEM=="usb", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6010", GROUP="plugdev", MODE="0660", TAG+="uaccess"
+    SUBSYSTEM=="usb", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6015", GROUP="plugdev", MODE="0660", TAG+="uaccess"
+    # /dev/vfio/* for the user's qemu microVM PCIe passthrough.
+    SUBSYSTEM=="vfio", GROUP="kvm", MODE="0660"
   '';
+
+  # Glacier runs a raw qemu microVM here and later passes the KC705 via VFIO.
+  # /dev/kvm for the user, or qemu drops to TCG. VFIO pins all guest RAM, so the
+  # qemu process needs a high memlock. No hugepages.
+  users.users.ross.extraGroups = [ "kvm" ];
+  security.pam.loginLimits = [
+    {
+      domain = "@kvm";
+      type = "soft";
+      item = "memlock";
+      value = "unlimited";
+    }
+    {
+      domain = "@kvm";
+      type = "hard";
+      item = "memlock";
+      value = "unlimited";
+    }
+  ];
 
   boot.kernelPackages = pkgs.pkgsLLVM.linuxPackages_6_18;
 
@@ -385,6 +438,15 @@ in
     "nvidia"
     "nvidia_modeset"
     "nvidia_drm"
+  ];
+
+  # VFIO for PCIe passthrough (KC705 to a VM). Loaded, nothing bound by default:
+  # the KC705 IDs are not fixed yet (dev bitstream is Xilinx 10ee). vfio_pci
+  # pulls vfio_pci_core.
+  boot.kernelModules = [
+    "vfio"
+    "vfio_pci"
+    "vfio_iommu_type1"
   ];
 
   # Firefox already had a profile here before Home Manager took over
@@ -474,6 +536,11 @@ in
   boot.kernelParams = [
     "nvidia-drm.modeset=1"
     "quiet"
+    # SMMUv3 already translates and the kernel defaults to strict DMA. Pin the
+    # intent so a future defconfig change cannot flip to passthrough. KC705 is
+    # passed to a VM with VFIO, which needs real translation.
+    "iommu.passthrough=0"
+    "iommu.strict=1"
   ];
 
   hardware.nvidia = {
