@@ -293,12 +293,10 @@
                   # not start on aarch64 in the build sandbox, and nixpkgs
                   # only skips this file on Darwin.
                   plotly = pyprev.plotly.overridePythonAttrs (p: {
-                    disabledTestPaths =
-                      p.disabledTestPaths ++ [ "tests/test_optional/test_kaleido" ];
+                    disabledTestPaths = p.disabledTestPaths ++ [ "tests/test_optional/test_kaleido" ];
                   });
                   optuna = pyprev.optuna.overridePythonAttrs (p: {
-                    disabledTestPaths =
-                      p.disabledTestPaths ++ [ "tests/visualization_tests" ];
+                    disabledTestPaths = p.disabledTestPaths ++ [ "tests/visualization_tests" ];
                   });
                 }
               );
@@ -328,11 +326,12 @@
             # -Werror=incompatible-pointer-types from krb5's configure turns
             # into an error. Downgrade the clang name back to a warning.
             krb5 = prev.krb5.overrideAttrs (o: {
-              env = o.env // lib.optionalAttrs final.stdenv.cc.isClang {
-                NIX_CFLAGS_COMPILE =
-                  o.env.NIX_CFLAGS_COMPILE
-                  + " -Wno-error=incompatible-pointer-types-discards-qualifiers";
-              };
+              env =
+                o.env
+                // lib.optionalAttrs final.stdenv.cc.isClang {
+                  NIX_CFLAGS_COMPILE =
+                    o.env.NIX_CFLAGS_COMPILE + " -Wno-error=incompatible-pointer-types-discards-qualifiers";
+                };
             });
 
             # librsvg builds rsvg-convert with rustc, and that link runs
@@ -354,7 +353,7 @@
             opencode = prev.opencode.overrideAttrs (
               f: p: {
                 node_modules = p.node_modules.overrideAttrs {
-                  outputHash = "sha256-prx9dX7kUvs/E3zopkaPk5LXh3xJAy5sZeum/W8L7cA=";
+                  outputHash = "sha256-UOF9owEBSuVKX/hBhef7Wr4ymlNgTL21BiVBr+9a8Zo=";
                 };
               }
             );
