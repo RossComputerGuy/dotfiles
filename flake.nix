@@ -134,6 +134,37 @@
         apple-silicon = nixos-apple-silicon.overlays.default;
         default = (
           final: prev: {
+            # Ross's fork adds a libcosmic editing and censoring UI, so this
+            # needs the full libcosmic build inputs, not only a new source.
+            # overrideAttrs cannot regenerate the vendored crates of a
+            # buildRustPackage, so cargoDeps is replaced here. The cargoHash is
+            # a placeholder: run the build once and set it from the error.
+            cosmic-screenshot = prev.cosmic-screenshot.overrideAttrs (f: p: {
+              version = "1.11.0-editing";
+              src = final.fetchFromGitHub {
+                owner = "RossComputerGuy";
+                repo = "cosmic-screenshot";
+                rev = "ab6401acc695d922861b0917106bfbad05d73398";
+                hash = "sha256-rVFBVcFOnOCNsEXSudgQ/SgOXiadgv4ccHvar68OQNE=";
+              };
+
+              cargoDeps = final.rustPlatform.fetchCargoVendor {
+                inherit (f) src;
+                name = "cosmic-screenshot-1.11.0-editing";
+                hash = "sha256-2o+Ont23htlxq41LobgZOchEUhRfPT7adr2fWW9/oIg=";
+              };
+
+              nativeBuildInputs = (p.nativeBuildInputs or [ ]) ++ [
+                final.libcosmicAppHook
+              ];
+
+              buildInputs = (p.buildInputs or [ ]) ++ [
+                final.glib
+                final.fontconfig
+                final.freetype
+              ];
+            });
+
             shuba-cursors = final.stdenv.mkDerivation {
               pname = "shuba-cursors";
               version = "git-${inputs.shuba-cursors.shortRev or "dirty"}";
