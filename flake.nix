@@ -356,6 +356,18 @@
             # -Wincompatible-pointer-types-discards-qualifiers, which
             # -Werror=incompatible-pointer-types from krb5's configure turns
             # into an error. Downgrade the clang name back to a warning.
+            # tzdata 2026f runs make check, whose now.ck step compares zones
+            # against the release date. Hydra built the native package while it
+            # passed, and that output stays cached. The pkgsLLVM set has no such
+            # cache, so it runs the check today, when zones like Phoenix and
+            # Vancouver have become identical, and now.ck exits 1. Skip the check
+            # under pkgsLLVM. Same cache reason as nghttp2 above.
+            tzdata = prev.tzdata.overrideAttrs (
+              f: p: {
+                doCheck = p.doCheck && !final.stdenv.hostPlatform.useLLVM;
+              }
+            );
+
             krb5 = prev.krb5.overrideAttrs (o: {
               env =
                 o.env
