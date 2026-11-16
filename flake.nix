@@ -368,6 +368,18 @@
               }
             );
 
+            # sqlite 3.54.0's devtest suite fails test/waliter.test under
+            # clang, 2 errors out of ~991k. The native build passes it and
+            # stays cached. Here sqlite reaches pkgsLLVM only as a build tool:
+            # it feeds python3, which the kernel and zfs modules build against,
+            # so this copy never runs a real database. Skip the check under
+            # pkgsLLVM. Same cache reason as nghttp2 above.
+            sqlite = prev.sqlite.overrideAttrs (
+              f: p: {
+                doCheck = p.doCheck && !final.stdenv.hostPlatform.useLLVM;
+              }
+            );
+
             krb5 = prev.krb5.overrideAttrs (o: {
               env =
                 o.env
