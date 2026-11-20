@@ -48,6 +48,7 @@ they cannot drift apart.
 | Name                    | Reaches     | Login    |
 | ----------------------- | ----------- | -------- |
 | `auth.argama.nix`       | Authelia    | itself   |
+| `chock.argama.nix`      | Chock       | OIDC     |
 | `seerr.argama.nix`      | Seerr       | Authelia |
 | `sonarr.argama.nix`     | Sonarr      | Authelia |
 | `radarr.argama.nix`     | Radarr      | Authelia |
@@ -135,6 +136,38 @@ itself.
 | `secret/argama/harmonia` | `signing_key`    | The binary cache key     |
 | `secret/argama/grafana`  | `secret_key`     | Grafana's database key   |
 | `secret/argama/paperless` | `admin_password` | The Paperless superuser |
+
+### Chock and Authelia OIDC
+
+Before switching to this configuration, create the OIDC signing key and HMAC
+secret in OpenBao. Authelia depends on these files at startup, so an absent
+secret also takes down the existing forward-authenticated services. Run on
+argama with OpenBao unsealed and an authenticated operator session:
+
+```sh
+umask 077
+openssl genrsa -out /tmp/authelia-oidc.pem 2048
+bao kv put secret/argama/authelia-oidc \
+  oidc_key=@/tmp/authelia-oidc.pem oidc_hmac="$(openssl rand -hex 64)"
+rm /tmp/authelia-oidc.pem
+bao kv put secret/argama/chock admin_subject=pending
+```
+
+After rebuilding, sign in to Chock once with the intended administrator.
+Authelia creates an opaque subject at first OIDC login; this first login is a
+regular member. Look up the subject on argama, choosing the row for that
+username and the public OIDC subject:
+
+```sh
+sudo sqlite3 -header -column /var/lib/authelia-main/db.sqlite3 \
+  "SELECT service, sector_id, username, identifier FROM user_opaque_identifier;"
+bao kv put secret/argama/chock admin_subject=REPLACE_WITH_IDENTIFIER
+```
+
+The agent restarts Chock when the secret changes. Sign out and in again to
+grant that exact subject instance administration. Treat the signing key and
+Authelia database as persistent: replacing either can invalidate existing
+OIDC identities or sessions. Chock stores its own state in `/var/lib/chock`.
 
 ### How the agent delivers a secret
 

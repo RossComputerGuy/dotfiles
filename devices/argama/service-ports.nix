@@ -50,6 +50,12 @@
       auth = "none";
     };
 
+    # Chock handles OIDC itself and Caddy reaches its Unix socket.
+    chock = {
+      socket = "/run/chock-web/serve.sock";
+      auth = "none";
+    };
+
     seerr = {
       port = 5055;
       auth = "forward";

@@ -8,6 +8,7 @@
   imports = [
     ./auth.nix
     ./backup.nix
+    ./chock.nix
     ./dashboards.nix
     ./dns.nix
     ./documents.nix
@@ -303,6 +304,18 @@
 
   services.hydra = {
     enable = true;
+    # Hydra 0.2's queue runner can reuse a daemon connection with unread NAR
+    # data after a cancelled transfer. This upstream change reads path state
+    # directly from the local store database instead.
+    package = pkgs.hydra.overrideAttrs (old: {
+      version = "0.2.0-unstable-2026-11-17";
+      src = pkgs.fetchFromGitHub {
+        owner = "NixOS";
+        repo = "hydra";
+        rev = "bc9f0bb1a49ceed391b1604a62dcbd3938ca932b";
+        hash = "sha256-+ixSco+9niv6pno0e4kVKs0+jJlbovQy85hDEATyuLQ=";
+      };
+    });
     hydraURL = "https://hydra.argama.nix";
     listenHost = "localhost";
     port = 3000;

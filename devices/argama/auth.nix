@@ -17,6 +17,8 @@ let
     "jwt" = "secret/data/argama/authelia";
     "session" = "secret/data/argama/authelia";
     "storage" = "secret/data/argama/authelia";
+    "oidc_hmac" = "secret/data/argama/authelia-oidc";
+    "oidc_key" = "secret/data/argama/authelia-oidc";
   };
 in
 {
@@ -104,6 +106,8 @@ in
       jwtSecretFile = "${keyDir}/jwt";
       sessionSecretFile = "${keyDir}/session";
       storageEncryptionKeyFile = "${keyDir}/storage";
+      oidcHmacSecretFile = "${keyDir}/oidc_hmac";
+      oidcIssuerPrivateKeyFile = "${keyDir}/oidc_key";
     };
 
     settings = {
@@ -137,6 +141,22 @@ in
         user_verification = "preferred";
       };
       totp.issuer = "argama.nix";
+
+      identity_providers.oidc.clients = [
+        {
+          client_id = "chock";
+          client_name = "Chock";
+          public = true;
+          authorization_policy = "two_factor";
+          redirect_uris = [ "https://chock.argama.nix/auth/callback" ];
+          scopes = [ "openid" "profile" "email" ];
+          grant_types = [ "authorization_code" ];
+          response_types = [ "code" ];
+          token_endpoint_auth_method = "none";
+          require_pkce = true;
+          pkce_challenge_method = "S256";
+        }
+      ];
 
       access_control = {
         # Nothing passes unless a rule below lets it.

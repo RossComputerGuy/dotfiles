@@ -52,6 +52,10 @@
       url = "github:astro/microvm.nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    chock = {
+      url = "git+https://git.lilithsemi.com/LilithSemi/chock.git";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     # Puts qBittorrent in a network namespace whose only route out is the
     # Mullvad tunnel. It has no inputs of its own.
     vpn-confinement.url = "github:Maroka-chan/VPN-Confinement";
@@ -132,6 +136,7 @@
       overlays = {
         nur = nur.overlays.default;
         apple-silicon = nixos-apple-silicon.overlays.default;
+        chock = inputs.chock.overlays.default;
         default = (
           final: prev: {
             # Ross's fork adds a libcosmic editing and censoring UI, so this
@@ -139,31 +144,33 @@
             # overrideAttrs cannot regenerate the vendored crates of a
             # buildRustPackage, so cargoDeps is replaced here. The cargoHash is
             # a placeholder: run the build once and set it from the error.
-            cosmic-screenshot = prev.cosmic-screenshot.overrideAttrs (f: p: {
-              version = "1.11.0-editing";
-              src = final.fetchFromGitHub {
-                owner = "RossComputerGuy";
-                repo = "cosmic-screenshot";
-                rev = "ab6401acc695d922861b0917106bfbad05d73398";
-                hash = "sha256-rVFBVcFOnOCNsEXSudgQ/SgOXiadgv4ccHvar68OQNE=";
-              };
+            cosmic-screenshot = prev.cosmic-screenshot.overrideAttrs (
+              f: p: {
+                version = "1.11.0-editing";
+                src = final.fetchFromGitHub {
+                  owner = "RossComputerGuy";
+                  repo = "cosmic-screenshot";
+                  rev = "ab6401acc695d922861b0917106bfbad05d73398";
+                  hash = "sha256-rVFBVcFOnOCNsEXSudgQ/SgOXiadgv4ccHvar68OQNE=";
+                };
 
-              cargoDeps = final.rustPlatform.fetchCargoVendor {
-                inherit (f) src;
-                name = "cosmic-screenshot-1.11.0-editing";
-                hash = "sha256-2o+Ont23htlxq41LobgZOchEUhRfPT7adr2fWW9/oIg=";
-              };
+                cargoDeps = final.rustPlatform.fetchCargoVendor {
+                  inherit (f) src;
+                  name = "cosmic-screenshot-1.11.0-editing";
+                  hash = "sha256-2o+Ont23htlxq41LobgZOchEUhRfPT7adr2fWW9/oIg=";
+                };
 
-              nativeBuildInputs = (p.nativeBuildInputs or [ ]) ++ [
-                final.libcosmicAppHook
-              ];
+                nativeBuildInputs = (p.nativeBuildInputs or [ ]) ++ [
+                  final.libcosmicAppHook
+                ];
 
-              buildInputs = (p.buildInputs or [ ]) ++ [
-                final.glib
-                final.fontconfig
-                final.freetype
-              ];
-            });
+                buildInputs = (p.buildInputs or [ ]) ++ [
+                  final.glib
+                  final.fontconfig
+                  final.freetype
+                ];
+              }
+            );
 
             shuba-cursors = final.stdenv.mkDerivation {
               pname = "shuba-cursors";
@@ -503,6 +510,7 @@
         # vault.argama.nix.
         argama.extraModules = [
           inputs.vpn-confinement.nixosModules.default
+          inputs.chock.nixosModules.chock-daemon
         ];
       };
 

@@ -30,7 +30,7 @@ let
 
   # Almost everything answers on the loopback. A service in its own network
   # namespace does not, so it names its address in service-ports.nix.
-  upstream = svc: "${svc.host or "127.0.0.1"}:${toString svc.port}";
+  upstream = svc: if svc ? socket then "unix/${svc.socket}" else "${svc.host or "127.0.0.1"}:${toString svc.port}";
 
   tlsHosts = lib.mapAttrs' (
     name: svc:
