@@ -20,6 +20,12 @@ in
   # error. The NixOS and nix-darwin modules apply the same overlays at the
   # system level, where they do take effect, so nothing is lost.
   stylix.overlays.enable = false;
+  # Stylix still has a wayprompt target, and it sets programs.wayprompt, an
+  # option Home Manager removed along with the package. Home Manager's removed
+  # option check rejects any definition of it, so every profile fails to
+  # evaluate. Stylix has not dropped the target yet; delete this once
+  # <https://github.com/nix-community/stylix/pull/2559> lands.
+  stylix.targets.wayprompt.enable = false;
 
   home.packages = with pkgs; [
     jq
