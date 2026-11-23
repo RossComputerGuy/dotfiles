@@ -302,6 +302,14 @@
     settings.priority = 30;
   };
 
+  # Nixpkgs removed PostgreSQL 14, and the module's default for our
+  # system.stateVersion of 23.05 is exactly 14, which made every evaluation of
+  # this machine throw. Forgejo and Hydra share the cluster in
+  # /var/lib/postgresql/14, so it was moved to 17 with pg_upgrade. Pin the
+  # version explicitly so a future nixpkgs default cannot move it again
+  # without another deliberate migration.
+  services.postgresql.package = pkgs.postgresql_17;
+
   services.hydra = {
     enable = true;
     # Hydra 0.2's queue runner can reuse a daemon connection with unread NAR
