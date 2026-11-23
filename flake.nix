@@ -326,7 +326,32 @@
                 }
               )
               ++ lib.optional final.stdenv.hostPlatform.isAarch64 (
-                pyfinal: pyprev: {
+                pyfinal: pyprev:
+                let
+                  # This test blanks ocrmypdf.builtin_plugins.__path__ and then
+                  # expects the explicit imports in _plugin_manager to resolve
+                  # from sys.modules. That only holds once another test has
+                  # called get_plugin_manager, and pytest-xdist is free to run
+                  # this one first in a worker. The remaining plugin-manager
+                  # tests cover the same registration path.
+                  patchOcrmypdf =
+                    p:
+                    p.overridePythonAttrs (o: {
+                      disabledTests = o.disabledTests ++ [
+                        "test_builtins_registered_without_package_discovery"
+                      ];
+                    });
+                  # paperless-ngx calls .override { tesseract = tesseract5; }
+                  # on ocrmypdf, so keep .override working and carry the test
+                  # disable through it.
+                  ocrmypdfFor =
+                    base:
+                    patchOcrmypdf base
+                    // {
+                      override = args: ocrmypdfFor (base.override args);
+                    };
+                in
+                {
                   # Kaleido starts a bundled browser for these tests. It does
                   # not start on aarch64 in the build sandbox, and nixpkgs
                   # only skips this file on Darwin.
@@ -336,6 +361,7 @@
                   optuna = pyprev.optuna.overridePythonAttrs (p: {
                     disabledTestPaths = p.disabledTestPaths ++ [ "tests/visualization_tests" ];
                   });
+                  ocrmypdf = ocrmypdfFor pyprev.ocrmypdf;
                 }
               );
 
@@ -407,16 +433,6 @@
               o:
               lib.optionalAttrs final.stdenv.hostPlatform.useLLVM {
                 NIX_LDFLAGS = (o.NIX_LDFLAGS or "") + " --allow-shlib-undefined";
-              }
-            );
-
-            # nixpkgs bumped opencode to 2.2.5 with a stale node_modules hash.
-            # Remove this once upstream fixes the hash.
-            opencode = prev.opencode.overrideAttrs (
-              f: p: {
-                node_modules = p.node_modules.overrideAttrs {
-                  outputHash = "sha256-UOF9owEBSuVKX/hBhef7Wr4ymlNgTL21BiVBr+9a8Zo=";
-                };
               }
             );
 
