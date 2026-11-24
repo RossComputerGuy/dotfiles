@@ -325,6 +325,20 @@
                   });
                 }
               )
+              # torch writes the path to ninja and to the C++ compiler into its
+              # own code for torch.compile and torch.utils.cpp_extension, and
+              # reads both from targetPackages. A two-platform cross set leaves
+              # pkgsTargetTarget empty, because it is only populated for a
+              # three-platform canadian cross. So packages.x86_64-linux.argama,
+              # which cross builds aarch64 from x86_64, stopped inside
+              # paperless's torch with "attribute 'ninja' missing" and took
+              # nix flake show with it. The cross set itself is the right
+              # source: its ninja and its compiler both produce target code.
+              ++ lib.optional (final.stdenv.hostPlatform != final.stdenv.buildPlatform) (
+                pyfinal: pyprev: {
+                  torch = pyprev.torch.override { targetPackages = final; };
+                }
+              )
               ++ lib.optional final.stdenv.hostPlatform.isAarch64 (
                 pyfinal: pyprev:
                 let
@@ -629,19 +643,33 @@
           pkgs = nixpkgsFor.${localSystem};
         in
         lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux (
-          forAllMachines (
-            machine: crossSystem:
-            let
-              cfg = machineCross.${machine} or { };
-              nixos = mkMachine machine { system = localSystem; } { system = crossSystem; } (
-                cfg.extraModules or [ ]
-              );
-            in
-            nixos.config.system.build.${cfg.output or "toplevel"}
-            // {
-              inherit nixos;
-            }
-          )
+          # riscv64 is a target here and never a builder. Building an aarch64
+          # machine from a riscv64 host needs CUDA and triton as build tools,
+          # and nixpkgs has neither for riscv64, so packages.riscv64-linux
+          # stopped at "Refusing to evaluate package" for argama and zeta3a.
+          # A riscv64 host still builds its own two machines natively, and the
+          # aarch64 and x86_64 hosts still build every machine, jegan and
+          # mu-gundam included, so nothing that can be built is lost.
+          lib.filterAttrs
+            (machine: _: localSystem != "riscv64-linux" || machines.${machine} == "riscv64-linux")
+            (
+              forAllMachines (
+                machine: crossSystem:
+                let
+                  cfg = machineCross.${machine} or { };
+                  nixos = mkMachine machine { system = localSystem; } { system = crossSystem; } (
+                    cfg.extraModules or [ ]
+                  );
+                  drv = nixos.config.system.build.${cfg.output or "toplevel"};
+                in
+                drv
+                // {
+                  passthru = (drv.passthru or { }) // {
+                    inherit nixos;
+                  };
+                }
+              )
+            )
         )
         //
           lib.optionalAttrs
